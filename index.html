@@ -124,6 +124,8 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 .svc-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);margin-bottom:6px;cursor:pointer;transition:all .15s}
 .svc-item:hover{border-color:var(--gold-b);background:var(--gold-p)}
 .svc-item.sel{border-color:var(--gold);background:var(--gold-p)}
+.tipo-btn{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-family:'Segoe UI',sans-serif;transition:all .15s}
+.tipo-btn.on{background:var(--gold-p);border-color:var(--gold-b);color:var(--gold)}
 .orden-list-item{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;transition:all .15s}
 .orden-list-item.abierta{border-left:3px solid var(--gold)}
 .orden-list-item.cerrada{border-left:3px solid var(--green)}
@@ -411,13 +413,22 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
     <div class="field"><label>Concesero</label><select id="ord-concesero"></select></div>
     <div class="field"><label>Placa</label><input type="text" id="ord-placa" placeholder="ABC 123" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"/></div>
   </div>
-  <div class="field"><label>Servicio principal</label>
-    <div id="servicios-lista" style="max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:7px;padding:6px;background:var(--navy-d)"></div>
+  <div class="field"><label>Tipo de vehículo</label>
+    <div style="display:flex;gap:5px;flex-wrap:wrap" id="tipo-btns">
+      <button class="tipo-btn on" onclick="filtrarTipo('Todos',this)">🚘 Todos</button>
+      <button class="tipo-btn" onclick="filtrarTipo('Automovil',this)">🚗 Automóvil</button>
+      <button class="tipo-btn" onclick="filtrarTipo('Camionetas',this)">🚙 Camioneta</button>
+      <button class="tipo-btn" onclick="filtrarTipo('Motos',this)">🏍️ Moto</button>
+      <button class="tipo-btn" onclick="filtrarTipo('Cuatrimoto',this)">🏎️ Cuatrimoto</button>
+      <button class="tipo-btn" onclick="filtrarTipo('Bicicletas',this)">🚲 Bicicleta</button>
+      <button class="tipo-btn" onclick="filtrarTipo('Otros',this)">📦 Otros</button>
+    </div>
   </div>
-  <div class="field"><label>Forma de pago</label>
-    <div class="pay-toggle">
-      <button class="pt pt-ef on-ef" onclick="selPay(this,'ef')" id="pay-ef">💵 Efectivo</button>
-      <button class="pt pt-qr" onclick="selPay(this,'qr')" id="pay-qr">📲 QR</button>
+  <div class="field"><label>Buscar servicio</label>
+    <input type="text" id="svc-search" placeholder="Ej: brillada, rines, moto..." oninput="filtrarServicios()" style="margin-bottom:6px"/>
+    <div id="servicios-lista" style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:7px;padding:6px;background:var(--navy-d)"></div>
+    <div id="svc-selected-info" style="margin-top:6px;padding:8px 10px;background:var(--gold-p);border:1px solid var(--gold-b);border-radius:7px;font-size:12px;display:none">
+      ✅ <span id="svc-selected-text"></span>
     </div>
   </div>
   <div class="divider"></div>
@@ -440,18 +451,75 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 </div>
 </div>
 
+
+
+<!-- Modal borrar orden -->
+<div id="modal-borrar-orden" class="modal-bg" style="display:none">
+<div class="modal">
+  <div class="modal-title" style="color:#FCA5A5">🗑️ Borrar orden</div>
+  <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:14px;margin-bottom:16px">
+    <div style="font-size:13px;margin-bottom:6px">¿Seguro que quieres borrar la <strong>Orden #<span id="borrar-ord-num"></span></strong>?</div>
+    <div style="font-size:11px;color:#FCA5A5">⚠️ Esta acción no se puede deshacer. La orden y sus servicios se eliminarán permanentemente.</div>
+  </div>
+  <div class="field"><label>Motivo del borrado (obligatorio)</label>
+    <input type="text" id="borrar-motivo" placeholder="Ej: Error al registrar, orden duplicada..."/>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:8px">
+    <button class="btn btn-r" style="flex:1;padding:10px;font-size:13px" onclick="ejecutarBorrarOrden()">🗑️ Sí, borrar</button>
+    <button class="btn btn-g" style="flex:1;padding:10px" onclick="cerrarModal('modal-borrar-orden')">Cancelar</button>
+  </div>
+</div>
+</div>
+<!-- Modal editar orden -->
+<div id="modal-editar-orden" class="modal-bg" style="display:none">
+<div class="modal">
+  <div class="modal-title">✏️ Editar orden #<span id="edit-ord-num"></span></div>
+  <input type="hidden" id="edit-ord-id"/>
+  <div class="form-grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label>Concesero</label><select id="edit-ord-concesero"></select></div>
+    <div class="field"><label>Placa</label><input type="text" id="edit-ord-placa" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"/></div>
+  </div>
+  <div class="field"><label>Tipo de vehículo</label>
+    <div style="display:flex;gap:5px;flex-wrap:wrap" id="edit-tipo-btns">
+      <button class="tipo-btn on" onclick="editFiltrarTipo('Todos',this)">🚘 Todos</button>
+      <button class="tipo-btn" onclick="editFiltrarTipo('Automovil',this)">🚗 Automóvil</button>
+      <button class="tipo-btn" onclick="editFiltrarTipo('Camionetas',this)">🚙 Camioneta</button>
+      <button class="tipo-btn" onclick="editFiltrarTipo('Motos',this)">🏍️ Moto</button>
+      <button class="tipo-btn" onclick="editFiltrarTipo('Cuatrimoto',this)">🏎️ Cuatrimoto</button>
+      <button class="tipo-btn" onclick="editFiltrarTipo('Bicicletas',this)">🚲 Bicicleta</button>
+      <button class="tipo-btn" onclick="editFiltrarTipo('Otros',this)">📦 Otros</button>
+    </div>
+  </div>
+  <div class="field"><label>Buscar / cambiar servicio</label>
+    <input type="text" id="edit-svc-search" placeholder="Buscar servicio..." oninput="editFiltrarServicios()"/>
+    <div id="edit-servicios-lista" style="max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:7px;padding:6px;background:var(--navy-d);margin-top:6px"></div>
+    <div id="edit-svc-selected-info" style="margin-top:6px;padding:8px 10px;background:var(--gold-p);border:1px solid var(--gold-b);border-radius:7px;font-size:12px;display:none">
+      ✅ <span id="edit-svc-selected-text"></span>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:8px">
+    <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarEditarOrden()">💾 Guardar cambios</button>
+    <button class="btn btn-g" onclick="cerrarModal('modal-editar-orden')">Cancelar</button>
+  </div>
+</div>
+</div>
 <!-- Modal cerrar orden -->
 <div id="modal-cerrar" class="modal-bg" style="display:none">
 <div class="modal">
-  <div class="modal-title">✅ Cerrar orden #<span id="cerrar-num"></span></div>
+  <div class="modal-title">💰 Cerrar orden #<span id="cerrar-num"></span></div>
   <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px">
     <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--muted)">Placa:</span><span style="font-weight:700;color:var(--gold)" id="cerrar-placa"></span></div>
     <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--muted)">Concesero:</span><span id="cerrar-concesero"></span></div>
-    <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Total:</span><span style="font-weight:700;font-size:16px;color:var(--gold)" id="cerrar-total"></span></div>
+    <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Total:</span><span style="font-weight:700;font-size:18px;color:var(--gold)" id="cerrar-total"></span></div>
   </div>
-  <div style="display:flex;gap:8px">
-    <button class="btn btn-gr" style="flex:1;padding:10px" onclick="confirmarCerrar()">✅ Confirmar cierre</button>
-    <button class="btn btn-p" style="padding:10px" onclick="reimprimir()">🖨️ Reimprimir</button>
+  <div class="field"><label>¿Cómo pagó el cliente?</label>
+    <div class="pay-toggle" id="cerrar-pay-toggle">
+      <button class="pt pt-ef on-ef" onclick="selCerrarPay(this,'efectivo')" id="cpay-ef" style="flex:1;padding:12px;font-size:13px">💵 Efectivo</button>
+      <button class="pt pt-qr" onclick="selCerrarPay(this,'qr')" id="cpay-qr" style="flex:1;padding:12px;font-size:13px">📲 QR</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:8px">
+    <button class="btn btn-gr" style="flex:1;padding:10px" onclick="confirmarCerrar()">🖨️ Cerrar e imprimir</button>
     <button class="btn btn-g" onclick="cerrarModal('modal-cerrar')">Cancelar</button>
   </div>
 </div>
@@ -542,7 +610,8 @@ const H = {"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"appl
 // State
 let currentUser = null;
 let conceseros = [];
-let servicios = [];
+let servicios = [{"id": 1, "nombre": "LAVADA SENCILLA + RINES Y CHASIS", "precio": 25000, "tipo": "Automovil"}, {"id": 2, "nombre": "LAVADA SENCILLA + MOTOR", "precio": 40000, "tipo": "Automovil"}, {"id": 3, "nombre": "LAVADA SENCILLA + DESMANCHADA", "precio": 45000, "tipo": "Automovil"}, {"id": 4, "nombre": "LAVADA SENCILLA + BRILLADA A MANO", "precio": 40000, "tipo": "Automovil"}, {"id": 5, "nombre": "LAVADA SENCILLA + BRILLADA MAQUINA", "precio": 120000, "tipo": "Automovil"}, {"id": 6, "nombre": "LAVADA SENCILLA + GRAFITADA", "precio": 40000, "tipo": "Automovil"}, {"id": 7, "nombre": "LAVADA SENCILLA + SILLAS", "precio": 50000, "tipo": "Automovil"}, {"id": 8, "nombre": "LAVADA + COJINERIA SIN DESMONTAR", "precio": 130000, "tipo": "Automovil"}, {"id": 9, "nombre": "LAVADA + COJINERIA DESMONTADA", "precio": 250000, "tipo": "Automovil"}, {"id": 10, "nombre": "LAVADA SENCILLA MOTO", "precio": 16000, "tipo": "Motos"}, {"id": 11, "nombre": "GRAFITADO DE CHASIS MOTO", "precio": 10000, "tipo": "Motos"}, {"id": 12, "nombre": "GRAFITADO DE CHASIS CUATRIMOTO", "precio": 20000, "tipo": "Cuatrimoto"}, {"id": 13, "nombre": "LAVADO REMOLQUE DOBLE CUATRIMOTO", "precio": 35000, "tipo": "Cuatrimoto"}, {"id": 14, "nombre": "LAVADO SENCILLA BICICLETA", "precio": 10000, "tipo": "Bicicletas"}, {"id": 15, "nombre": "LAVADA SENCILLA + RINES Y CHASIS", "precio": 35000, "tipo": "Camionetas"}, {"id": 16, "nombre": "LAVADA SENCILLA + MOTOR", "precio": 45000, "tipo": "Camionetas"}, {"id": 17, "nombre": "LAVADA SENCILLA + DESMANCHADA", "precio": 50000, "tipo": "Camionetas"}, {"id": 18, "nombre": "LAVADA SENCILLA + BRILLADA A MANO", "precio": 50000, "tipo": "Camionetas"}, {"id": 19, "nombre": "LAVADA SENCILLA + BRILLADA MAQUINA (60K)", "precio": 60000, "tipo": "Automovil"}, {"id": 20, "nombre": "LAVADA SENCILLA + GRAFITADA", "precio": 50000, "tipo": "Camionetas"}, {"id": 21, "nombre": "LAVADA SENCILLA + SILLAS (MOTO)", "precio": 30000, "tipo": "Motos"}, {"id": 22, "nombre": "LAVADA + COJINERIA SIN DESMONTAR (MOTO)", "precio": 25000, "tipo": "Motos"}, {"id": 23, "nombre": "LAVADA + COJINERIA DESMONTADA (250K)", "precio": 250000, "tipo": "Automovil"}, {"id": 24, "nombre": "LAVADA SENCILLA + BRILLADA MAQUINA", "precio": 130000, "tipo": "Camionetas"}, {"id": 25, "nombre": "LAVADA SENCILLA + SILLAS", "precio": 60000, "tipo": "Camionetas"}, {"id": 26, "nombre": "MOTOR ESPECIAL", "precio": 80000, "tipo": "Automovil"}, {"id": 27, "nombre": "COJINERIA SIN DESMONTE", "precio": 130000, "tipo": "Automovil"}, {"id": 28, "nombre": "SENCILLA + BRILLADA MANO", "precio": 40000, "tipo": "Automovil"}, {"id": 29, "nombre": "LAVADA + DESMANCHADA + BRILLADA A MANO", "precio": 65000, "tipo": "Automovil"}, {"id": 30, "nombre": "LAVADA + BRILLADA + GRAFITADA", "precio": 60000, "tipo": "Automovil"}, {"id": 31, "nombre": "LAVADA + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 80000, "tipo": "Automovil"}, {"id": 32, "nombre": "LAVADA + MOTOR + GRAFITADA", "precio": 60000, "tipo": "Automovil"}, {"id": 33, "nombre": "LAVADA + TECHO + SILLAS", "precio": 100000, "tipo": "Automovil"}, {"id": 34, "nombre": "LAVADA + MOTOR + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 120000, "tipo": "Automovil"}, {"id": 35, "nombre": "SENCILLA TAXI", "precio": 16000, "tipo": "Automovil"}, {"id": 36, "nombre": "ESCOLAR SENCILLA", "precio": 40000, "tipo": "Otros"}, {"id": 37, "nombre": "ADICIONAL (5K)", "precio": 5000, "tipo": "Automovil"}, {"id": 38, "nombre": "PISTOLAZO", "precio": 15000, "tipo": "Automovil"}, {"id": 39, "nombre": "ADICIONAL (10K)", "precio": 10000, "tipo": "Automovil"}, {"id": 40, "nombre": "LAVADO MOTO GRANDE + BRILLADA", "precio": 30000, "tipo": "Motos"}, {"id": 41, "nombre": "LAVADA + COJINERIA SIN DESMONTAR", "precio": 150000, "tipo": "Camionetas"}, {"id": 42, "nombre": "SENCILLA CERCANOS", "precio": 15000, "tipo": "Automovil"}, {"id": 43, "nombre": "SENCILLA AMBULANCIA", "precio": 40000, "tipo": "Automovil"}, {"id": 44, "nombre": "PARQUEDERO", "precio": 16000, "tipo": "Otros"}, {"id": 45, "nombre": "LAVADA + COJINERIA DESMONTADA", "precio": 300000, "tipo": "Camionetas"}, {"id": 46, "nombre": "LAVADA + TECHO", "precio": 70000, "tipo": "Camionetas"}, {"id": 47, "nombre": "DETALLADO FOGUEADO PINTURA", "precio": 250000, "tipo": "Automovil"}, {"id": 48, "nombre": "ADICIONAL (20K)", "precio": 20000, "tipo": "Automovil"}, {"id": 49, "nombre": "DESINFECCION VIDRIOS", "precio": 140000, "tipo": "Camionetas"}, {"id": 50, "nombre": "ASPIRADO + INTERIOR", "precio": 20000, "tipo": "Camionetas"}, {"id": 51, "nombre": "ASPIRADO ADICIONAL", "precio": 15000, "tipo": "Camionetas"}, {"id": 52, "nombre": "LAVADA + DESMANCHADA + BRILLADA A MANO", "precio": 80000, "tipo": "Camionetas"}, {"id": 53, "nombre": "LAVADA + BRILLADA + GRAFITADA", "precio": 70000, "tipo": "Camionetas"}, {"id": 54, "nombre": "LAVADA + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 100000, "tipo": "Camionetas"}, {"id": 55, "nombre": "LAVADA + MOTOR + GRAFITADA", "precio": 70000, "tipo": "Camionetas"}, {"id": 56, "nombre": "LAVADA + TECHO + SILLAS", "precio": 120000, "tipo": "Camionetas"}, {"id": 57, "nombre": "LAVADA + MOTOR + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 160000, "tipo": "Camionetas"}, {"id": 58, "nombre": "LAVADA DE MOTO + DESENGRASANTE + BRILLADA", "precio": 25000, "tipo": "Motos"}, {"id": 59, "nombre": "LAVADA DE MOTO GRANDE + DESENGRASANTE + BRILLADA", "precio": 30000, "tipo": "Motos"}, {"id": 60, "nombre": "LAVADA DE MOTO + DESENGRASANTE + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 35000, "tipo": "Motos"}, {"id": 61, "nombre": "LAVADA DE MOTO GRANDE + DESENGRASANTE + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 40000, "tipo": "Motos"}, {"id": 62, "nombre": "LAVADA + DESENGRASADA", "precio": 20000, "tipo": "Motos"}, {"id": 63, "nombre": "LAVADA SENCILLA", "precio": 22000, "tipo": "Automovil"}, {"id": 64, "nombre": "BRILLADA MANO", "precio": 10000, "tipo": "Automovil"}, {"id": 65, "nombre": "LAVADA + DESENGRASADA (21K)", "precio": 21000, "tipo": "Motos"}, {"id": 66, "nombre": "ADICIONAL (50K)", "precio": 50000, "tipo": "Automovil"}, {"id": 67, "nombre": "ADICIONAL (2K)", "precio": 2000, "tipo": "Otros"}, {"id": 68, "nombre": "MOTOSCARRERAS", "precio": 20000, "tipo": "Otros"}, {"id": 69, "nombre": "MOTOCROS MINI", "precio": 15000, "tipo": "Motos"}, {"id": 70, "nombre": "ADICIONAL (8K)", "precio": 8000, "tipo": "Otros"}, {"id": 71, "nombre": "ADICIONAL (30K)", "precio": 30000, "tipo": "Otros"}, {"id": 72, "nombre": "ADICIONAL (90K)", "precio": 90000, "tipo": "Otros"}];
+const SERVICIOS_ALL = [{"id": 1, "nombre": "LAVADA SENCILLA + RINES Y CHASIS", "precio": 25000, "tipo": "Automovil"}, {"id": 2, "nombre": "LAVADA SENCILLA + MOTOR", "precio": 40000, "tipo": "Automovil"}, {"id": 3, "nombre": "LAVADA SENCILLA + DESMANCHADA", "precio": 45000, "tipo": "Automovil"}, {"id": 4, "nombre": "LAVADA SENCILLA + BRILLADA A MANO", "precio": 40000, "tipo": "Automovil"}, {"id": 5, "nombre": "LAVADA SENCILLA + BRILLADA MAQUINA", "precio": 120000, "tipo": "Automovil"}, {"id": 6, "nombre": "LAVADA SENCILLA + GRAFITADA", "precio": 40000, "tipo": "Automovil"}, {"id": 7, "nombre": "LAVADA SENCILLA + SILLAS", "precio": 50000, "tipo": "Automovil"}, {"id": 8, "nombre": "LAVADA + COJINERIA SIN DESMONTAR", "precio": 130000, "tipo": "Automovil"}, {"id": 9, "nombre": "LAVADA + COJINERIA DESMONTADA", "precio": 250000, "tipo": "Automovil"}, {"id": 10, "nombre": "LAVADA SENCILLA MOTO", "precio": 16000, "tipo": "Motos"}, {"id": 11, "nombre": "GRAFITADO DE CHASIS MOTO", "precio": 10000, "tipo": "Motos"}, {"id": 12, "nombre": "GRAFITADO DE CHASIS CUATRIMOTO", "precio": 20000, "tipo": "Cuatrimoto"}, {"id": 13, "nombre": "LAVADO REMOLQUE DOBLE CUATRIMOTO", "precio": 35000, "tipo": "Cuatrimoto"}, {"id": 14, "nombre": "LAVADO SENCILLA BICICLETA", "precio": 10000, "tipo": "Bicicletas"}, {"id": 15, "nombre": "LAVADA SENCILLA + RINES Y CHASIS", "precio": 35000, "tipo": "Camionetas"}, {"id": 16, "nombre": "LAVADA SENCILLA + MOTOR", "precio": 45000, "tipo": "Camionetas"}, {"id": 17, "nombre": "LAVADA SENCILLA + DESMANCHADA", "precio": 50000, "tipo": "Camionetas"}, {"id": 18, "nombre": "LAVADA SENCILLA + BRILLADA A MANO", "precio": 50000, "tipo": "Camionetas"}, {"id": 19, "nombre": "LAVADA SENCILLA + BRILLADA MAQUINA (60K)", "precio": 60000, "tipo": "Automovil"}, {"id": 20, "nombre": "LAVADA SENCILLA + GRAFITADA", "precio": 50000, "tipo": "Camionetas"}, {"id": 21, "nombre": "LAVADA SENCILLA + SILLAS (MOTO)", "precio": 30000, "tipo": "Motos"}, {"id": 22, "nombre": "LAVADA + COJINERIA SIN DESMONTAR (MOTO)", "precio": 25000, "tipo": "Motos"}, {"id": 23, "nombre": "LAVADA + COJINERIA DESMONTADA (250K)", "precio": 250000, "tipo": "Automovil"}, {"id": 24, "nombre": "LAVADA SENCILLA + BRILLADA MAQUINA", "precio": 130000, "tipo": "Camionetas"}, {"id": 25, "nombre": "LAVADA SENCILLA + SILLAS", "precio": 60000, "tipo": "Camionetas"}, {"id": 26, "nombre": "MOTOR ESPECIAL", "precio": 80000, "tipo": "Automovil"}, {"id": 27, "nombre": "COJINERIA SIN DESMONTE", "precio": 130000, "tipo": "Automovil"}, {"id": 28, "nombre": "SENCILLA + BRILLADA MANO", "precio": 40000, "tipo": "Automovil"}, {"id": 29, "nombre": "LAVADA + DESMANCHADA + BRILLADA A MANO", "precio": 65000, "tipo": "Automovil"}, {"id": 30, "nombre": "LAVADA + BRILLADA + GRAFITADA", "precio": 60000, "tipo": "Automovil"}, {"id": 31, "nombre": "LAVADA + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 80000, "tipo": "Automovil"}, {"id": 32, "nombre": "LAVADA + MOTOR + GRAFITADA", "precio": 60000, "tipo": "Automovil"}, {"id": 33, "nombre": "LAVADA + TECHO + SILLAS", "precio": 100000, "tipo": "Automovil"}, {"id": 34, "nombre": "LAVADA + MOTOR + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 120000, "tipo": "Automovil"}, {"id": 35, "nombre": "SENCILLA TAXI", "precio": 16000, "tipo": "Automovil"}, {"id": 36, "nombre": "ESCOLAR SENCILLA", "precio": 40000, "tipo": "Otros"}, {"id": 37, "nombre": "ADICIONAL (5K)", "precio": 5000, "tipo": "Automovil"}, {"id": 38, "nombre": "PISTOLAZO", "precio": 15000, "tipo": "Automovil"}, {"id": 39, "nombre": "ADICIONAL (10K)", "precio": 10000, "tipo": "Automovil"}, {"id": 40, "nombre": "LAVADO MOTO GRANDE + BRILLADA", "precio": 30000, "tipo": "Motos"}, {"id": 41, "nombre": "LAVADA + COJINERIA SIN DESMONTAR", "precio": 150000, "tipo": "Camionetas"}, {"id": 42, "nombre": "SENCILLA CERCANOS", "precio": 15000, "tipo": "Automovil"}, {"id": 43, "nombre": "SENCILLA AMBULANCIA", "precio": 40000, "tipo": "Automovil"}, {"id": 44, "nombre": "PARQUEDERO", "precio": 16000, "tipo": "Otros"}, {"id": 45, "nombre": "LAVADA + COJINERIA DESMONTADA", "precio": 300000, "tipo": "Camionetas"}, {"id": 46, "nombre": "LAVADA + TECHO", "precio": 70000, "tipo": "Camionetas"}, {"id": 47, "nombre": "DETALLADO FOGUEADO PINTURA", "precio": 250000, "tipo": "Automovil"}, {"id": 48, "nombre": "ADICIONAL (20K)", "precio": 20000, "tipo": "Automovil"}, {"id": 49, "nombre": "DESINFECCION VIDRIOS", "precio": 140000, "tipo": "Camionetas"}, {"id": 50, "nombre": "ASPIRADO + INTERIOR", "precio": 20000, "tipo": "Camionetas"}, {"id": 51, "nombre": "ASPIRADO ADICIONAL", "precio": 15000, "tipo": "Camionetas"}, {"id": 52, "nombre": "LAVADA + DESMANCHADA + BRILLADA A MANO", "precio": 80000, "tipo": "Camionetas"}, {"id": 53, "nombre": "LAVADA + BRILLADA + GRAFITADA", "precio": 70000, "tipo": "Camionetas"}, {"id": 54, "nombre": "LAVADA + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 100000, "tipo": "Camionetas"}, {"id": 55, "nombre": "LAVADA + MOTOR + GRAFITADA", "precio": 70000, "tipo": "Camionetas"}, {"id": 56, "nombre": "LAVADA + TECHO + SILLAS", "precio": 120000, "tipo": "Camionetas"}, {"id": 57, "nombre": "LAVADA + MOTOR + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 160000, "tipo": "Camionetas"}, {"id": 58, "nombre": "LAVADA DE MOTO + DESENGRASANTE + BRILLADA", "precio": 25000, "tipo": "Motos"}, {"id": 59, "nombre": "LAVADA DE MOTO GRANDE + DESENGRASANTE + BRILLADA", "precio": 30000, "tipo": "Motos"}, {"id": 60, "nombre": "LAVADA DE MOTO + DESENGRASANTE + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 35000, "tipo": "Motos"}, {"id": 61, "nombre": "LAVADA DE MOTO GRANDE + DESENGRASANTE + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 40000, "tipo": "Motos"}, {"id": 62, "nombre": "LAVADA + DESENGRASADA", "precio": 20000, "tipo": "Motos"}, {"id": 63, "nombre": "LAVADA SENCILLA", "precio": 22000, "tipo": "Automovil"}, {"id": 64, "nombre": "BRILLADA MANO", "precio": 10000, "tipo": "Automovil"}, {"id": 65, "nombre": "LAVADA + DESENGRASADA (21K)", "precio": 21000, "tipo": "Motos"}, {"id": 66, "nombre": "ADICIONAL (50K)", "precio": 50000, "tipo": "Automovil"}, {"id": 67, "nombre": "ADICIONAL (2K)", "precio": 2000, "tipo": "Otros"}, {"id": 68, "nombre": "MOTOSCARRERAS", "precio": 20000, "tipo": "Otros"}, {"id": 69, "nombre": "MOTOCROS MINI", "precio": 15000, "tipo": "Motos"}, {"id": 70, "nombre": "ADICIONAL (8K)", "precio": 8000, "tipo": "Otros"}, {"id": 71, "nombre": "ADICIONAL (30K)", "precio": 30000, "tipo": "Otros"}, {"id": 72, "nombre": "ADICIONAL (90K)", "precio": 90000, "tipo": "Otros"}];
 let ordenActual = null;
 let payMode = 'efectivo';
 let gPayMode = 'efectivo';
@@ -652,7 +721,7 @@ function go(s, el){
 async function initApp(){
   try {
     conceseros = await api('conceseros?activo=eq.true&order=nombre');
-    servicios  = await api('servicios?activo=eq.true&order=nombre');
+    // servicios cargados localmente desde Excel
     loadOrdenes();
     checkCumpleanos();
     if(currentUser.rol!=='cajero') loadDashboardMeses();
@@ -688,8 +757,12 @@ function renderOrdenes(ordenes){
           <span style="color:var(--muted);font-size:11px">${fmtTime(o.hora_entrada)}</span>
           <span style="font-weight:700;font-size:14px">$${fmt(o.total)}</span>
           <span class="badge ${o.estado==='abierta'?'ba':'bg'}">${o.estado==='abierta'?'Abierta':'Cerrada'}</span>
-          ${o.estado==='abierta'?`<button class="btn btn-p" style="padding:4px 10px;font-size:10px" onclick="abrirCerrarOrden(${o.id})">Cerrar</button>`:''}
+          ${o.estado==='abierta'?`
+            <button class="btn btn-p" style="padding:4px 10px;font-size:10px" onclick="abrirCerrarOrden(${o.id})">💰 Cobrar</button>
+            <button class="btn btn-g" style="padding:4px 10px;font-size:10px" onclick="abrirEditarOrden(${o.id})">✏️ Editar</button>
+          `:''}
           <button class="btn btn-g" style="padding:4px 10px;font-size:10px" onclick="reimprimirOrden(${o.id})">🖨️</button>
+          ${currentUser?.rol==='dueno'?`<button class="btn btn-r" style="padding:4px 10px;font-size:10px" onclick="confirmarBorrarOrden(${o.id},${o.numero_orden})">🗑️</button>`:''}
         </div>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:4px" id="svc-${o.id}">Cargando servicio...</div>
@@ -740,19 +813,53 @@ function abrirModalOrden(){
   document.getElementById('ord-cliente-tel').value='';
   document.getElementById('chk-cliente').checked=false;
   document.getElementById('cliente-fields').style.display='none';
-  payMode='efectivo';
-  document.getElementById('pay-ef').classList.add('on-ef');
-  document.getElementById('pay-qr').classList.remove('on-qr');
-  document.getElementById('pay-ef').classList.remove('on-qr');
-  document.getElementById('pay-qr').classList.remove('on-ef');
+  selectedSvc = null;
+  document.getElementById('svc-selected-info').style.display='none';
   document.getElementById('modal-orden').style.display='flex';
 }
 
 let selectedSvc = null;
+let tipoActivo = 'Todos';
+
+function renderServicios(svcs){
+  const lista = document.getElementById('servicios-lista');
+  if(!lista) return;
+  if(!svcs.length){
+    lista.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px">Sin resultados</div>';
+    return;
+  }
+  lista.innerHTML = svcs.map(s=>`
+    <div class="svc-item${selectedSvc?.id===s.id?' sel':''}" onclick="selSvc(this,${s.id},\`${s.nombre.replace(/`/g,"'")}\`,${s.precio})">
+      <span style="font-size:12px">${s.nombre}</span>
+      <span style="font-weight:700;color:var(--gold);white-space:nowrap;margin-left:8px">$${fmt(s.precio)}</span>
+    </div>`).join('');
+}
+
+function filtrarTipo(tipo, btn){
+  tipoActivo = tipo;
+  document.querySelectorAll('.tipo-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  filtrarServicios();
+}
+
+function filtrarServicios(){
+  const q = (document.getElementById('svc-search')?.value||'').toUpperCase().trim();
+  let filtered = SERVICIOS_ALL;
+  if(tipoActivo !== 'Todos') filtered = filtered.filter(s=>s.tipo===tipoActivo);
+  if(q) filtered = filtered.filter(s=>s.nombre.toUpperCase().includes(q));
+  renderServicios(filtered);
+}
+
 function selSvc(el, id, nombre, precio){
   document.querySelectorAll('.svc-item').forEach(e=>e.classList.remove('sel'));
   el.classList.add('sel');
   selectedSvc = {id,nombre,precio};
+  const info = document.getElementById('svc-selected-info');
+  const txt  = document.getElementById('svc-selected-text');
+  if(info && txt){
+    txt.textContent = nombre + ' — $' + fmt(precio);
+    info.style.display='block';
+  }
 }
 
 function selPay(btn, type){
@@ -796,7 +903,7 @@ async function guardarOrden(){
       cliente_nombre: clienteNombre,
       cliente_cc: clienteCc,
       cliente_tel: clienteTel,
-      forma_pago: payMode,
+      forma_pago: 'pendiente',
       estado: 'abierta',
       total: selectedSvc.precio,
       observaciones: document.getElementById('ord-obs').value
@@ -813,20 +920,160 @@ async function guardarOrden(){
     });
 
     cerrarModal('modal-orden');
-    showToast('Orden #'+nextNum+' creada');
-    imprimirTicket({
-      numero_orden: nextNum,
-      placa,
-      concesero_nombre: concNombre,
-      cliente_nombre: clienteNombre,
-      cliente_cc: clienteCc,
-      forma_pago: payMode,
-      hora_entrada: new Date().toISOString(),
-      servicios:[{servicio_nombre:selectedSvc.nombre,cantidad:1,subtotal:selectedSvc.precio}],
-      total: selectedSvc.precio
-    });
+    showToast('Orden #'+nextNum+' creada ✅ — Imprimirá al cerrar');
     loadOrdenes();
     selectedSvc=null;
+  } catch(e){ showToast('Error: '+e.message, true); }
+}
+
+
+
+// ── BORRAR ORDEN ──────────────────────────────────────────────────────────────
+let borrarOrdenId = null;
+
+function confirmarBorrarOrden(id, num){
+  if(currentUser?.rol !== 'dueno'){
+    showToast('Solo el dueño puede borrar órdenes', true);
+    return;
+  }
+  borrarOrdenId = id;
+  document.getElementById('borrar-ord-num').textContent = num;
+  document.getElementById('borrar-motivo').value = '';
+  document.getElementById('modal-borrar-orden').style.display = 'flex';
+}
+
+async function ejecutarBorrarOrden(){
+  const motivo = document.getElementById('borrar-motivo').value.trim();
+  if(!motivo){ showToast('Escribe el motivo del borrado', true); return; }
+  try {
+    // Delete services first (cascade)
+    await api(`orden_servicios?orden_id=eq.${borrarOrdenId}`, 'DELETE');
+    // Delete order
+    await api(`ordenes?id=eq.${borrarOrdenId}`, 'DELETE');
+    cerrarModal('modal-borrar-orden');
+    showToast('Orden borrada');
+    loadOrdenes();
+    borrarOrdenId = null;
+  } catch(e){ showToast('Error: '+e.message, true); }
+}
+
+// ── EDITAR ORDEN ──────────────────────────────────────────────────────────────
+let editSelectedSvc = null;
+let editTipoActivo = 'Todos';
+
+async function abrirEditarOrden(id){
+  try {
+    const ordenes = await api(`ordenes?id=eq.${id}`);
+    const o = ordenes[0];
+    const svcs = await api(`orden_servicios?orden_id=eq.${id}`);
+    const svcActual = svcs[0];
+
+    document.getElementById('edit-ord-id').value = id;
+    document.getElementById('edit-ord-num').textContent = o.numero_orden;
+    document.getElementById('edit-ord-placa').value = o.placa;
+
+    // Fill conceseros
+    const sel = document.getElementById('edit-ord-concesero');
+    sel.innerHTML = conceseros.map(c =>
+      `<option value="${c.id}" data-nombre="${c.nombre}" ${c.nombre===o.concesero_nombre?'selected':''}>${c.nombre}</option>`
+    ).join('');
+
+    // Set current service as selected
+    editSelectedSvc = svcActual ? {
+      id: svcActual.id,
+      nombre: svcActual.servicio_nombre,
+      precio: svcActual.valor_unit
+    } : null;
+
+    // Reset filters
+    editTipoActivo = 'Todos';
+    document.querySelectorAll('#edit-tipo-btns .tipo-btn').forEach(b=>b.classList.remove('on'));
+    document.querySelector('#edit-tipo-btns .tipo-btn')?.classList.add('on');
+    document.getElementById('edit-svc-search').value = '';
+
+    if(editSelectedSvc){
+      document.getElementById('edit-svc-selected-info').style.display='block';
+      document.getElementById('edit-svc-selected-text').textContent =
+        editSelectedSvc.nombre + ' — $' + fmt(editSelectedSvc.precio);
+    } else {
+      document.getElementById('edit-svc-selected-info').style.display='none';
+    }
+
+    editRenderServicios(SERVICIOS_ALL);
+    document.getElementById('modal-editar-orden').style.display='flex';
+  } catch(e){ showToast('Error cargando orden', true); }
+}
+
+function editRenderServicios(svcs){
+  const lista = document.getElementById('edit-servicios-lista');
+  if(!lista) return;
+  if(!svcs.length){
+    lista.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px">Sin resultados</div>';
+    return;
+  }
+  lista.innerHTML = svcs.map(s=>`
+    <div class="svc-item${editSelectedSvc?.nombre===s.nombre?' sel':''}"
+         onclick="editSelSvc(this,'${s.nombre.replace(/'/g,"\'")}',${s.precio})">
+      <span style="font-size:12px">${s.nombre}</span>
+      <span style="font-weight:700;color:var(--gold);white-space:nowrap;margin-left:8px">$${fmt(s.precio)}</span>
+    </div>`).join('');
+}
+
+function editFiltrarTipo(tipo, btn){
+  editTipoActivo = tipo;
+  document.querySelectorAll('#edit-tipo-btns .tipo-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  editFiltrarServicios();
+}
+
+function editFiltrarServicios(){
+  const q = (document.getElementById('edit-svc-search')?.value||'').toUpperCase().trim();
+  let filtered = SERVICIOS_ALL;
+  if(editTipoActivo !== 'Todos') filtered = filtered.filter(s=>s.tipo===editTipoActivo);
+  if(q) filtered = filtered.filter(s=>s.nombre.toUpperCase().includes(q));
+  editRenderServicios(filtered);
+}
+
+function editSelSvc(el, nombre, precio){
+  document.querySelectorAll('#edit-servicios-lista .svc-item').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');
+  editSelectedSvc = {nombre, precio};
+  document.getElementById('edit-svc-selected-info').style.display='block';
+  document.getElementById('edit-svc-selected-text').textContent = nombre + ' — $' + fmt(precio);
+}
+
+async function guardarEditarOrden(){
+  const id     = document.getElementById('edit-ord-id').value;
+  const placa  = document.getElementById('edit-ord-placa').value.trim();
+  const concSel = document.getElementById('edit-ord-concesero');
+  const concId  = parseInt(concSel.value);
+  const concNombre = concSel.options[concSel.selectedIndex].dataset.nombre;
+
+  if(!placa){ showToast('Ingresa la placa', true); return; }
+  if(!editSelectedSvc){ showToast('Selecciona un servicio', true); return; }
+
+  try {
+    // Update order
+    await api(`ordenes?id=eq.${id}`, 'PATCH', {
+      placa,
+      concesero_id: concId,
+      concesero_nombre: concNombre,
+      total: editSelectedSvc.precio
+    });
+
+    // Update service — delete old and insert new
+    await api(`orden_servicios?orden_id=eq.${id}`, 'DELETE');
+    await api('orden_servicios', 'POST', {
+      orden_id: parseInt(id),
+      servicio_nombre: editSelectedSvc.nombre,
+      cantidad: 1,
+      valor_unit: editSelectedSvc.precio,
+      subtotal: editSelectedSvc.precio
+    });
+
+    cerrarModal('modal-editar-orden');
+    showToast('Orden actualizada ✅');
+    loadOrdenes();
   } catch(e){ showToast('Error: '+e.message, true); }
 }
 
@@ -837,6 +1084,9 @@ async function abrirCerrarOrden(id){
     const ordenes = await api(`ordenes?id=eq.${id}`);
     const o = ordenes[0];
     ordenCerrarId = id;
+    cerrarPayMode = 'efectivo';
+    document.getElementById('cpay-ef').classList.add('on-ef');
+    document.getElementById('cpay-qr').classList.remove('on-qr');
     document.getElementById('cerrar-num').textContent = o.numero_orden;
     document.getElementById('cerrar-placa').textContent = o.placa;
     document.getElementById('cerrar-concesero').textContent = o.concesero_nombre;
@@ -844,20 +1094,36 @@ async function abrirCerrarOrden(id){
     document.getElementById('modal-cerrar').style.display='flex';
     // Store for reprint
     const svcs = await api(`orden_servicios?orden_id=eq.${id}`);
-    ordenActual = {...o, servicios:svcs};
+    ordenActual = {...o, servicios:svcs, forma_pago: cerrarPayMode};
   } catch(e){ showToast('Error', true); }
 }
 
 async function confirmarCerrar(){
   try {
     await api(`ordenes?id=eq.${ordenCerrarId}`, 'PATCH', {
-      estado:'cerrada', hora_salida:new Date().toISOString()
+      estado:'cerrada',
+      hora_salida: new Date().toISOString(),
+      forma_pago: cerrarPayMode
     });
     cerrarModal('modal-cerrar');
-    showToast('Orden cerrada');
+    showToast('Orden cerrada ✅');
+    // Print ticket
+    if(ordenActual){
+      ordenActual.forma_pago = cerrarPayMode;
+      imprimirTicket(ordenActual);
+    }
     loadOrdenes();
     if(currentUser.rol!=='cajero') loadCierre();
   } catch(e){ showToast('Error cerrando', true); }
+}
+
+let cerrarPayMode = 'efectivo';
+
+function selCerrarPay(btn, type){
+  cerrarPayMode = type;
+  const toggle = document.getElementById('cerrar-pay-toggle');
+  toggle.querySelectorAll('.pt').forEach(b=>{b.classList.remove('on-ef','on-qr');});
+  btn.classList.add(type==='efectivo'?'on-ef':'on-qr');
 }
 
 function reimprimir(){
