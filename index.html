@@ -1097,8 +1097,11 @@ function imprimirTicket(o){
 // ── CIERRE ────────────────────────────────────────────────────────────────────
 async function loadCierre(){
   try{
+    console.log('loadCierre iniciando, fecha:', today());
     const ords=await api('ordenes?fecha=eq.'+today());
+    console.log('ordenes cargadas:', ords.length);
     const gastos=await api('gastos?fecha=eq.'+today());
+    console.log('gastos cargados:', gastos.length);
     const bruto=ords.reduce((s,o)=>s+(o.total||0),0);
     const ef=ords.filter(o=>o.forma_pago==='efectivo').reduce((s,o)=>s+(o.total||0),0);
     const qr=ords.filter(o=>o.forma_pago==='qr').reduce((s,o)=>s+(o.total||0),0);
