@@ -177,6 +177,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <div class="ni hidden" onclick="go('gastos',this)" id="nav-gastos"><span class="ni-ico">📋</span>Gastos</div>
       <div class="nav-sep hidden" id="sep-reportes">Reportes</div>
       <div class="ni hidden" onclick="go('dashboard',this)" id="nav-dashboard"><span class="ni-ico">📊</span>Dashboard</div>
+      <div class="ni hidden" onclick="go('historial',this)" id="nav-historial"><span class="ni-ico">📅</span>Historial</div>
       <div class="nav-sep hidden" id="sep-config">Configuración</div>
       <div class="ni hidden" onclick="go('conceseros',this)" id="nav-conceseros"><span class="ni-ico">👥</span>Conceseros</div>
       <div class="ni hidden" onclick="go('servicios-cfg',this)" id="nav-servicios-cfg"><span class="ni-ico">⚙️</span>Servicios</div>
@@ -312,6 +313,34 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         <div class="card"><div class="card-t"><span class="card-tg">✦ Órdenes recientes</span></div>
           <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Fecha</th><th>Concesero</th><th>Placa</th><th>Pago</th><th>Total</th></tr></thead><tbody id="d-recientes"></tbody></table></div>
         </div>
+      </div>
+
+      <!-- HISTORIAL -->
+      <div id="s-historial" class="screen">
+        <div class="row">
+          <div><div class="page-title">Historial de órdenes</div><div class="page-sub">Busca y edita órdenes de cualquier fecha</div></div>
+        </div>
+        <div class="card">
+          <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr auto;margin-bottom:0">
+            <div class="field" style="margin:0">
+              <label>Buscar por placa</label>
+              <input type="text" id="hist-placa" placeholder="ABC 123" oninput="this.value=this.value.toUpperCase()" style="text-transform:uppercase"/>
+            </div>
+            <div class="field" style="margin:0">
+              <label>Fecha desde</label>
+              <input type="date" id="hist-desde"/>
+            </div>
+            <div class="field" style="margin:0">
+              <label>Fecha hasta</label>
+              <input type="date" id="hist-hasta"/>
+            </div>
+            <div class="field" style="margin:0">
+              <label>&nbsp;</label>
+              <button class="btn btn-p" style="width:100%;padding:9px" onclick="buscarHistorial()">🔍 Buscar</button>
+            </div>
+          </div>
+        </div>
+        <div id="hist-results"></div>
       </div>
 
       <!-- CONCESEROS -->
@@ -651,7 +680,7 @@ function doLogout(){
   document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('sel'));
   document.querySelector('.role-btn')?.classList.add('sel');
   // Reset nav
-  ['nav-cierre','nav-gastos','nav-dashboard','nav-conceseros','nav-servicios-cfg',
+  ['nav-cierre','nav-gastos','nav-dashboard','nav-historial','nav-conceseros','nav-servicios-cfg',
    'sep-reportes','sep-config','bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
     document.getElementById(id)?.classList.add('hidden'));
   go('ordenes',document.getElementById('nav-ordenes'));
@@ -661,7 +690,7 @@ function setupNav(){
   const isOwner=currentUser.rol==='dueno';
   const isCajero=currentUser.rol==='cajero';
   // Reset all first
-  ['nav-cierre','nav-gastos','nav-dashboard','nav-conceseros','nav-servicios-cfg',
+  ['nav-cierre','nav-gastos','nav-dashboard','nav-historial','nav-conceseros','nav-servicios-cfg',
    'sep-reportes','sep-config','bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
     document.getElementById(id)?.classList.add('hidden'));
   // Cajero: ordenes + cierre
@@ -671,7 +700,7 @@ function setupNav(){
   }
   // Dueño: todo
   if(isOwner){
-    ['nav-cierre','nav-gastos','nav-dashboard','nav-conceseros','nav-servicios-cfg',
+    ['nav-cierre','nav-gastos','nav-dashboard','nav-historial','nav-conceseros','nav-servicios-cfg',
      'sep-reportes','sep-config','bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
       document.getElementById(id)?.classList.remove('hidden'));
   }
@@ -690,6 +719,7 @@ function go(s,el){
   if(s==='ordenes') loadOrdenes();
   else if(s==='planilla') loadPlanilla();
   else if(s==='cierre') loadCierre();
+  else if(s==='historial') initHistorial();
   else if(s==='gastos') loadGastos();
   else if(s==='dashboard') loadDashboard();
   else if(s==='conceseros') loadConcsLista();
@@ -1119,9 +1149,9 @@ function imprimirTicket(o){
   let svcsRows = '';
   for(const s of svcsArr){
     svcsRows += '<tr>'
-      +'<td style="padding:2px 4px;font-size:11px">'+( s.servicio_nombre||s.nombre||'')+'</td>'
-      +'<td style="padding:2px 4px;text-align:center;font-size:11px">'+(s.cantidad||1)+'</td>'
-      +'<td style="padding:2px 4px;text-align:right;font-size:11px;font-weight:bold">$'+fmt(s.subtotal||s.precio||0)+'</td>'
+      +'<td style="padding:2px 0;font-size:12px">'+( s.servicio_nombre||s.nombre||'')+'</td>'
+      +'<td style="padding:2px 0;text-align:center;font-size:12px">'+(s.cantidad||1)+'</td>'
+      +'<td style="padding:2px 0;text-align:right;font-size:12px;font-weight:bold">'+fmt(s.subtotal||s.precio||0)+'</td>'
       +'</tr>';
   }
   const esGen = !o.cliente_nombre || o.cliente_nombre==='CONSUMIDOR FINAL';
@@ -1129,60 +1159,65 @@ function imprimirTicket(o){
   const nombre = esGen ? 'CONSUMIDOR FINAL' : o.cliente_nombre;
   const tel    = (!esGen && o.cliente_tel) ? o.cliente_tel : '';
   const fecha  = o.hora_entrada ? new Date(o.hora_entrada).toLocaleDateString('es-CO') : '';
-  const hora   = o.hora_entrada ? new Date(o.hora_entrada).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit', hour12:true}) : '';
+  const hora   = o.hora_entrada ? new Date(o.hora_entrada).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',hour12:true}) : '';
 
   const ticket = ''
-    +'<div style="text-align:center;margin-bottom:6px">'
-      +'<div style="font-size:14px;font-weight:900;letter-spacing:1px">LAVA AUTOS FULL CAR</div>'
-      +'<div style="font-size:11px;font-weight:700">DAVID MATEO ARIAS CASTRO</div>'
-      +'<div style="font-size:11px">N-T: 700.076.959-3</div>'
-      +'<div style="font-size:11px">CRA 20 No 57-47 baja Leonora</div>'
-      +'<div style="font-size:11px">TEL: 3108749404</div>'
-    +'</div>'
-    +'<div style="text-align:center;font-size:13px;font-weight:900;margin-bottom:2px">ORDEN DE SERVICIO:</div>'
-    +'<div style="text-align:center;font-size:18px;font-weight:900;margin-bottom:6px">'+o.numero_orden+'</div>'
-    +'<hr style="border:none;border-top:1px solid #000;margin:4px 0"/>'
-    +'<table style="width:100%;font-size:11px;border-collapse:collapse;margin-bottom:4px">'
-      +'<tr><td style="padding:1px 0"><b>Fecha:</b></td><td style="text-align:right;padding:1px 0">'+fecha+'</td></tr>'
-      +'<tr><td style="padding:1px 0"><b>Hora:</b></td><td style="text-align:right;padding:1px 0">'+hora+'</td></tr>'
-      +'<tr><td style="padding:1px 0"><b>Placa:</b></td><td style="text-align:right;padding:1px 0;font-weight:900;font-size:13px">'+o.placa+'</td></tr>'
-      +'<tr><td style="padding:1px 0"><b>Concesero:</b></td><td style="text-align:right;padding:1px 0">'+( o.concesero_nombre||'')+'</td></tr>'
+    // ── Encabezado ──────────────────────────────────────────────
+    +'<p style="text-align:center;font-size:14px;font-weight:bold;margin:0">LAVA AUTOS FULL CAR</p>'
+    +'<p style="text-align:center;font-size:12px;font-weight:bold;margin:0">DAVID MATEO ARIAS CASTRO</p>'
+    +'<p style="text-align:center;font-size:11px;margin:0">N-T: 700.076.959-3</p>'
+    +'<p style="text-align:center;font-size:11px;margin:0">CRA 20 No 57-47 baja Leonora</p>'
+    +'<p style="text-align:center;font-size:11px;margin:0 0 4px 0">TEL: 3108749404</p>'
+    // ── Orden ───────────────────────────────────────────────────
+    +'<p style="text-align:center;font-size:13px;font-weight:bold;margin:0">ORDEN DE SERVICIO:</p>'
+    +'<p style="text-align:center;font-size:20px;font-weight:bold;margin:0 0 4px 0">'+o.numero_orden+'</p>'
+    +'<hr style="border:none;border-top:1px solid #000;margin:3px 0"/>'
+    // ── Datos ───────────────────────────────────────────────────
+    +'<table style="width:100%;border-collapse:collapse">'
+      +'<tr><td style="font-size:12px;padding:1px 0"><b>Fecha:</b></td><td style="font-size:12px;text-align:right;padding:1px 0">'+fecha+'</td></tr>'
+      +'<tr><td style="font-size:12px;padding:1px 0"><b>Hora:</b></td><td style="font-size:12px;text-align:right;padding:1px 0">'+hora+'</td></tr>'
+      +'<tr><td style="font-size:12px;padding:1px 0"><b>Placa:</b></td><td style="font-size:14px;text-align:right;padding:1px 0;font-weight:bold">'+o.placa+'</td></tr>'
+      +'<tr><td style="font-size:12px;padding:1px 0"><b>Concesero:</b></td><td style="font-size:12px;text-align:right;padding:1px 0">'+( o.concesero_nombre||'')+'</td></tr>'
     +'</table>'
-    +'<div style="font-size:11px;margin-bottom:2px"><b>C.c o Nit:</b></div>'
-    +'<div style="font-size:11px;margin-bottom:2px">'+cc+'</div>'
-    +'<div style="font-size:11px;margin-bottom:2px"><b>Senor(es):</b></div>'
-    +'<div style="font-size:11px;margin-bottom:4px">'+nombre+'</div>'
-    +(tel?'<div style="font-size:11px;margin-bottom:4px"><b>Tel:</b> '+tel+'</div>':'')
-    +'<hr style="border:none;border-top:1px solid #000;margin:4px 0"/>'
-    +'<table style="width:100%;border-collapse:collapse;margin-bottom:4px">'
-      +'<tr>'
-        +'<th style="text-align:left;padding:2px 4px;font-size:11px;border-bottom:1px solid #000">Descripcion</th>'
-        +'<th style="text-align:center;padding:2px 4px;font-size:11px;border-bottom:1px solid #000">Cant</th>'
-        +'<th style="text-align:right;padding:2px 4px;font-size:11px;border-bottom:1px solid #000">Subtotal</th>'
+    +'<hr style="border:none;border-top:1px solid #000;margin:3px 0"/>'
+    // ── Cliente ─────────────────────────────────────────────────
+    +'<p style="font-size:12px;font-weight:bold;margin:1px 0">C.c o Nit:</p>'
+    +'<p style="font-size:12px;margin:1px 0">'+cc+'</p>'
+    +'<p style="font-size:12px;font-weight:bold;margin:1px 0">Senor(es):</p>'
+    +'<p style="font-size:12px;margin:1px 0 4px 0">'+nombre+'</p>'
+    +(tel?'<p style="font-size:12px;margin:1px 0"><b>Tel:</b> '+tel+'</p>':'')
+    // ── Servicios ───────────────────────────────────────────────
+    +'<table style="width:100%;border-collapse:collapse">'
+      +'<tr style="border-bottom:1px solid #000">'
+        +'<td style="font-size:12px;font-weight:bold;padding:2px 0">Descripcion</td>'
+        +'<td style="font-size:12px;font-weight:bold;text-align:center;padding:2px 0">Cant</td>'
+        +'<td style="font-size:12px;font-weight:bold;text-align:right;padding:2px 0">Subtotal</td>'
       +'</tr>'
       + svcsRows
     +'</table>'
-    +'<hr style="border:none;border-top:1px solid #000;margin:4px 0"/>'
-    +'<table style="width:100%;border-collapse:collapse;margin-bottom:6px">'
+    +'<hr style="border:none;border-top:1px solid #000;margin:3px 0"/>'
+    // ── Total ───────────────────────────────────────────────────
+    +'<table style="width:100%;border-collapse:collapse;margin-bottom:4px">'
       +'<tr>'
-        +'<td style="font-size:13px;font-weight:900;padding:2px 0">TOTAL ==></td>'
-        +'<td style="text-align:right;font-size:13px;font-weight:900;padding:2px 0">$'+fmt(o.total)+'</td>'
+        +'<td style="font-size:14px;font-weight:bold;padding:2px 0">TOTAL ==></td>'
+        +'<td style="font-size:14px;font-weight:bold;text-align:right;padding:2px 0">$'+fmt(o.total)+'</td>'
       +'</tr>'
     +'</table>'
-    +'<div style="text-align:center;font-size:11px;margin-bottom:4px">Gracias por su visita</div>'
-    +'<div style="font-size:10px;text-align:justify;margin-bottom:4px">'
+    // ── Mensaje ─────────────────────────────────────────────────
+    +'<p style="text-align:center;font-size:11px;margin:2px 0">Gracias por su visita</p>'
+    +'<p style="font-size:10px;margin:3px 0">'
       +'Senor usuario, solicitamos respetuosamente revisar su vehiculo antes de ser retirado de la empresa, '
       +'no se aceptan reclamos posteriores despues de salir de este sitio. No se responde por objetos dejados '
       +'en su vehiculo a menos que sean dejados en custodia del administrador. Si el valor de lo cobrado es '
       +'diferente al valor de la orden de servicio, su lavado sera gratis. La entrega del vehiculo sera con '
       +'la respectiva orden de servicio.'
-    +'</div>'
-    +'<div style="font-size:10px;text-align:center">'
+    +'</p>'
+    +'<p style="font-size:10px;text-align:center;margin:2px 0">'
       +'(PARA AVERIGUAR POR EL PROCESO DE SU VEHICULO, COMUNIQUESE AL 3108749404) - PARA QUEJAS Y RECLAMOS 3108359883'
-    +'</div>';
+    +'</p>';
 
   const pa = document.getElementById('print-area');
-  pa.innerHTML = '<div style="width:56mm;font-family:Courier,monospace;color:#000;background:#fff;padding:3mm 2mm">' + ticket + '</div>';
+  pa.innerHTML = '<div style="width:56mm;font-family:Courier,monospace;color:#000;background:#fff;padding:2mm">' + ticket + '</div>';
   pa.style.display = 'block';
   setTimeout(function(){
     window.print();
@@ -1739,6 +1774,81 @@ async function confirmarLiquidar(){
     showToast('💵 '+liqData.nombre+' liquidado ✅');
     loadCierre(); // Refresh to show liquidado badge
   }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+// ── HISTORIAL ────────────────────────────────────────────────────────────────
+function initHistorial(){
+  // Set default dates: last 7 days
+  const hoy = today();
+  const hace7 = new Date(Date.now()-7*24*60*60*1000).toISOString().slice(0,10);
+  document.getElementById('hist-desde').value = hace7;
+  document.getElementById('hist-hasta').value = hoy;
+  document.getElementById('hist-placa').value = '';
+  document.getElementById('hist-results').innerHTML = '';
+}
+
+async function buscarHistorial(){
+  const placa  = document.getElementById('hist-placa').value.trim();
+  const desde  = document.getElementById('hist-desde').value;
+  const hasta  = document.getElementById('hist-hasta').value;
+  const res    = document.getElementById('hist-results');
+
+  if(!placa && !desde){
+    showToast('Ingresa al menos una placa o fecha',true);
+    return;
+  }
+
+  res.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted)">Buscando...</div>';
+
+  try{
+    let query = 'ordenes?order=id.desc&limit=100';
+    if(placa)  query += '&placa=eq.'+placa;
+    if(desde)  query += '&fecha=gte.'+desde;
+    if(hasta)  query += '&fecha=lte.'+hasta;
+    if(!desde && !hasta && !placa) query += '&fecha=eq.'+today();
+
+    const ords = await api(query);
+
+    if(!ords.length){
+      res.innerHTML = '<div class="card"><div style="text-align:center;padding:30px;color:var(--muted)">📋 No se encontraron órdenes.</div></div>';
+      return;
+    }
+
+    let rows = '';
+    for(const o of ords){
+      const esGen = !o.cliente_nombre || o.cliente_nombre==='CONSUMIDOR FINAL';
+      rows += '<tr>'
+        +'<td style="font-family:monospace;color:var(--muted)">#'+o.numero_orden+'</td>'
+        +'<td style="color:var(--muted);font-size:11px">'+o.fecha+'</td>'
+        +'<td style="font-weight:700;color:var(--gold)">'+o.placa+'</td>'
+        +'<td style="font-size:11px">'+( o.concesero_nombre||'')+'</td>'
+        +'<td style="font-size:11px">'+(esGen?'<span style="color:var(--muted)">Genérico</span>':o.cliente_nombre)+'</td>'
+        +'<td><span class="badge '+(o.estado==='cerrada'?'bg':'ba')+'">'+o.estado+'</span></td>'
+        +'<td style="font-weight:700">$'+fmt(o.total)+'</td>'
+        +'<td style="display:flex;gap:4px">'
+          +'<button class="btn btn-p" style="padding:3px 8px;font-size:10px" onclick="abrirEditarOrd('+o.id+')">✏️ Editar</button>'
+          +'<button class="btn btn-g" style="padding:3px 8px;font-size:10px" onclick="reimprimirHist('+o.id+')">🖨️</button>'
+        +'</td>'
+        +'</tr>';
+    }
+
+    res.innerHTML = '<div class="card">'
+      +'<div style="font-size:11px;color:var(--muted);margin-bottom:8px">'+ords.length+' órdenes encontradas</div>'
+      +'<div class="tbl-wrap"><table>'
+        +'<thead><tr><th>#</th><th>Fecha</th><th>Placa</th><th>Concesero</th><th>Cliente</th><th>Estado</th><th>Total</th><th>Acciones</th></tr></thead>'
+        +'<tbody>'+rows+'</tbody>'
+      +'</table></div>'
+      +'</div>';
+
+  }catch(e){ showToast('Error: '+e.message,true); }
+}
+
+async function reimprimirHist(id){
+  try{
+    const ords = await api('ordenes?id=eq.'+id);
+    const svcs = await api('orden_servicios?orden_id=eq.'+id);
+    imprimirTicket({...ords[0], servicios:svcs});
+  }catch(e){ showToast('Error',true); }
 }
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────
