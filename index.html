@@ -6,23 +6,20 @@
 <title>Lava Autos Full Car — Sistema</title>
 <style>
 :root{
-  --navy:#1B3A5C;--navy-d:#0F2337;--navy-l:#234B75;--navy-ll:#2D5F8A;
+  --navy:#1B3A5C;--navy-d:#0F2337;--navy-l:#234B75;
   --gold:#C9A84C;--gold-l:#E8C96A;--gold-p:rgba(201,168,76,.15);--gold-b:rgba(201,168,76,.3);
   --text:#F0EDE6;--muted:#8BA3BB;--border:rgba(255,255,255,.1);
   --green:#10B981;--red:#EF4444;--purple:#8B5CF6;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--navy-d);color:var(--text);font-family:'Segoe UI',sans-serif;font-size:13px}
-
-/* LOGIN */
-#login-screen{position:fixed;inset:0;background:var(--navy-d);display:flex;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:0}
-.login-box{background:var(--navy);border:1px solid var(--gold-b);border-radius:16px;padding:36px 32px;width:340px;text-align:center}
+#login-screen{position:fixed;inset:0;background:var(--navy-d);display:flex;align-items:center;justify-content:center;z-index:1000}
+.login-box{background:var(--navy);border:1px solid var(--gold-b);border-radius:16px;padding:36px 32px;width:320px;text-align:center}
 .login-logo{font-size:48px;margin-bottom:8px}
 .login-title{font-size:22px;font-weight:700;color:var(--gold);font-family:'Georgia',serif;margin-bottom:4px}
-.login-sub{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:28px}
-.login-roles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px}
+.login-sub{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:24px}
+.login-roles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
 .role-btn{padding:14px 8px;border-radius:10px;border:2px solid var(--border);background:rgba(255,255,255,.03);cursor:pointer;transition:all .2s;text-align:center}
-.role-btn:hover{border-color:var(--gold-b);background:var(--gold-p)}
 .role-btn.sel{border-color:var(--gold);background:var(--gold-p)}
 .role-icon{font-size:22px;margin-bottom:4px}
 .role-name{font-size:11px;font-weight:700;color:var(--text)}
@@ -30,54 +27,30 @@ html,body{height:100%;background:var(--navy-d);color:var(--text);font-family:'Se
 .pin-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
 .pin-input{width:100%;background:var(--navy-d);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:18px;text-align:center;letter-spacing:6px;outline:none;font-family:monospace}
 .pin-input:focus{border-color:var(--gold)}
-.btn-login{width:100%;margin-top:14px;padding:12px;background:var(--gold);color:var(--navy-d);border:none;border-radius:8px;font-weight:800;font-size:14px;cursor:pointer;font-family:'Segoe UI',sans-serif}
-.btn-login:hover{background:var(--gold-l)}
+.btn-login{width:100%;margin-top:14px;padding:12px;background:var(--gold);color:var(--navy-d);border:none;border-radius:8px;font-weight:800;font-size:14px;cursor:pointer}
 .login-err{color:#FCA5A5;font-size:11px;margin-top:8px;min-height:16px}
-
-/* APP */
 #app{display:none;height:100vh;flex-direction:column}
 #app.visible{display:flex}
-
-/* TOPBAR */
 .topbar{background:var(--navy);border-bottom:1px solid var(--gold-b);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.tb-left{display:flex;align-items:center;gap:10px}
-.tb-logo{font-size:22px}
 .tb-name{font-size:14px;font-weight:700;color:var(--gold);font-family:'Georgia',serif}
 .tb-sub{font-size:8px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase}
-.tb-right{display:flex;align-items:center;gap:8px}
-.tb-user{font-size:11px;color:var(--muted)}
-.tb-date{font-size:11px;color:var(--muted);font-family:monospace}
-.btn-logout{padding:5px 12px;background:rgba(239,68,68,.1);color:#FCA5A5;border:1px solid rgba(239,68,68,.2);border-radius:6px;font-size:11px;cursor:pointer;font-family:'Segoe UI',sans-serif}
-/* BIRTHDAY */
-.bday-banner{background:linear-gradient(135deg,rgba(201,168,76,.2),rgba(232,201,106,.1));border:1px solid var(--gold-b);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:10px;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,.3)}50%{box-shadow:0 0 0 6px rgba(201,168,76,0)}}
-.bday-icon{font-size:28px}
-.bday-text{flex:1}
-.bday-name{font-size:14px;font-weight:800;color:var(--gold);font-family:'Georgia',serif}
-.bday-sub{font-size:11px;color:var(--muted);margin-top:2px}
-.bday-badge{background:var(--gold);color:var(--navy-d);padding:4px 10px;border-radius:20px;font-size:10px;font-weight:800}
-
-/* MAIN LAYOUT */
+.btn-logout{padding:5px 12px;background:rgba(239,68,68,.1);color:#FCA5A5;border:1px solid rgba(239,68,68,.2);border-radius:6px;font-size:11px;cursor:pointer}
 .main{display:flex;flex:1;overflow:hidden}
 .sidebar{width:180px;background:var(--navy);border-right:1px solid var(--border);padding:10px 0;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
 .nav-sep{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;padding:10px 14px 3px}
 .ni{padding:9px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;font-size:11px;color:var(--muted);border-left:3px solid transparent;transition:all .15s;user-select:none}
 .ni.on{color:var(--text);background:var(--gold-p);border-left-color:var(--gold)}
 .ni:hover:not(.on){background:rgba(255,255,255,.04);color:var(--text)}
-.ni-ico{font-size:14px;width:16px;text-align:center}
 .ni.hidden{display:none}
-
-/* CONTENT */
+.ni-ico{font-size:14px;width:16px;text-align:center}
 .content{flex:1;padding:18px;overflow-y:auto}
 .screen{display:none}.screen.on{display:block}
-
-/* COMPONENTS */
 .page-title{font-size:17px;font-weight:700;font-family:'Georgia',serif;margin-bottom:4px}
 .page-sub{font-size:10px;color:var(--muted);margin-bottom:16px}
 .row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px}
 .btn{padding:7px 14px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;border:none;font-family:'Segoe UI',sans-serif;transition:all .15s}
 .btn-p{background:var(--gold);color:var(--navy-d)}.btn-p:hover{background:var(--gold-l)}
-.btn-g{background:rgba(255,255,255,.07);color:var(--muted);border:1px solid var(--border)}.btn-g:hover{color:var(--text);background:rgba(255,255,255,.12)}
+.btn-g{background:rgba(255,255,255,.07);color:var(--muted);border:1px solid var(--border)}
 .btn-r{background:rgba(239,68,68,.12);color:#FCA5A5;border:1px solid rgba(239,68,68,.2)}
 .btn-gr{background:rgba(16,185,129,.12);color:#6EE7B7;border:1px solid rgba(16,185,129,.2)}
 .kpis{display:grid;gap:8px;margin-bottom:14px}
@@ -99,93 +72,54 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 .bqr{background:rgba(139,92,246,.15);color:#C4B5FD}
 .field{margin-bottom:8px}
 .field label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:3px}
-.field input,.field select,.field textarea{width:100%;background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;font-family:'Segoe UI',sans-serif;outline:none;transition:border .15s}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold)}
+.field input,.field select,.field textarea{width:100%;background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;font-family:'Segoe UI',sans-serif;outline:none}
+.field input:focus,.field select:focus{border-color:var(--gold)}
 .form-grid{display:grid;gap:8px}
 .pay-toggle{display:flex;gap:6px}
-.pt{padding:7px 14px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;border:2px solid transparent;font-family:'Segoe UI',sans-serif;transition:all .15s}
+.pt{padding:8px 16px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid transparent;font-family:'Segoe UI',sans-serif;transition:all .15s;flex:1;text-align:center}
 .pt-ef{background:rgba(16,185,129,.08);color:#6EE7B7;border-color:rgba(16,185,129,.25)}
 .pt-qr{background:rgba(139,92,246,.08);color:#C4B5FD;border-color:rgba(139,92,246,.25)}
 .pt.on-ef{background:var(--green);color:#111;border-color:var(--green)}
 .pt.on-qr{background:var(--purple);color:#fff;border-color:var(--purple)}
 .divider{height:1px;background:var(--border);margin:10px 0}
-.toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;animation:slideIn .3s ease;pointer-events:none}
-.toast-ok{background:#10B981;color:#111}
-.toast-err{background:#EF4444;color:#fff}
-@keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
-.loading{text-align:center;padding:40px;color:var(--muted)}
-.spin{display:inline-block;width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:8px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.empty{text-align:center;padding:40px;color:var(--muted)}
-.empty-ico{font-size:32px;margin-bottom:8px}
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:500}
-.modal{background:var(--navy);border-radius:14px;padding:24px;width:90%;max-width:480px;max-height:90vh;overflow-y:auto;border:1px solid var(--border)}
-.modal-title{font-size:15px;font-weight:700;font-family:'Georgia',serif;color:var(--gold);margin-bottom:16px}
-.svc-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);margin-bottom:6px;cursor:pointer;transition:all .15s}
-.svc-item:hover{border-color:var(--gold-b);background:var(--gold-p)}
-.svc-item.sel{border-color:var(--gold);background:var(--gold-p)}
 .tipo-btn{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-family:'Segoe UI',sans-serif;transition:all .15s}
 .tipo-btn.on{background:var(--gold-p);border-color:var(--gold-b);color:var(--gold)}
-.orden-list-item{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;transition:all .15s}
-.orden-list-item.abierta{border-left:3px solid var(--gold)}
-.orden-list-item.cerrada{border-left:3px solid var(--green)}
+.svc-item{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:7px;background:rgba(255,255,255,.03);border:1px solid var(--border);margin-bottom:5px;cursor:pointer;transition:all .15s}
+.svc-item:hover{border-color:var(--gold-b);background:var(--gold-p)}
+.orden-item{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.orden-item.abierta{border-left:3px solid var(--gold)}
+.orden-item.cerrada{border-left:3px solid var(--green)}
 .cierre-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}
-.cierre-val{font-family:'Georgia',serif;font-weight:700;font-size:14px}
-/* ── RESPONSIVE ────────────────────────────────────────────── */
-@media(max-width:900px){
-  .sidebar{width:52px}
-  .sidebar .nav-sep,.sidebar .ni span:not(.ni-ico),.sidebar .user-box div{display:none}
-  .sidebar .ni{justify-content:center;padding:12px 0}
-  .sidebar .user-box{justify-content:center;padding:10px 0}
-  .kpis{grid-template-columns:1fr 1fr!important}
-}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:500;padding:12px}
+.modal{background:var(--navy);border-radius:14px;padding:22px;width:100%;max-width:500px;max-height:92vh;overflow-y:auto;border:1px solid var(--border)}
+.modal-title{font-size:15px;font-weight:700;font-family:'Georgia',serif;color:var(--gold);margin-bottom:16px}
+.toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;animation:fadeIn .3s ease;pointer-events:none}
+.toast-ok{background:#10B981;color:#111}
+.toast-err{background:#EF4444;color:#fff}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.bday-banner{background:var(--gold-p);border:1px solid var(--gold-b);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
 @media(max-width:600px){
-  html,body{font-size:14px}
-  .topbar{padding:10px 12px}
-  .tb-date{display:none}
   .sidebar{display:none}
-  .content{padding:12px;padding-bottom:72px}
+  .content{padding:12px;padding-bottom:70px}
   .bottom-nav{display:flex!important}
   .kpis{grid-template-columns:1fr 1fr!important}
   .form-grid{grid-template-columns:1fr!important}
-  table{font-size:11px}
-  th,td{padding:6px 8px}
-  .kpi-v{font-size:15px}
-  .page-title{font-size:15px}
-  .modal{width:96%;padding:16px;max-height:95vh}
-  .login-box{width:94%;padding:24px 20px}
-  .bday-banner{flex-wrap:wrap}
-  .hide-mobile{display:none!important}
-  .row{flex-direction:column;align-items:flex-start}
-  .row > div:last-child{width:100%;justify-content:flex-end}
-  .summary-grid{grid-template-columns:1fr 1fr}
+  .modal{padding:16px;max-height:95vh}
 }
-.bottom-nav{
-  display:none;position:fixed;bottom:0;left:0;right:0;
-  background:var(--navy);border-top:1px solid var(--gold-b);
-  z-index:200;padding:4px 0 env(safe-area-inset-bottom,4px);
-}
-.bn-items{display:flex;justify-content:space-around;align-items:center}
-.bn-item{display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 8px;cursor:pointer;border-radius:8px;transition:all .15s;min-width:48px}
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--navy);border-top:1px solid var(--gold-b);z-index:200;padding:4px 0}
+.bn-items{display:flex;justify-content:space-around}
+.bn-item{display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 8px;cursor:pointer;min-width:48px}
 .bn-item.on .bn-ico,.bn-item.on .bn-label{color:var(--gold)}
-.bn-ico{font-size:20px;line-height:1;color:var(--muted)}
+.bn-ico{font-size:20px;color:var(--muted)}
 .bn-label{font-size:9px;color:var(--muted);font-weight:600}
 .bn-item.hidden{display:none!important}
-
-/* Print ticket */
 @media print{
+  @page{size:58mm auto;margin:0}
+  html,body{width:58mm;margin:0;padding:0}
   body *{visibility:hidden}
   #print-area,#print-area *{visibility:visible}
-  #print-area{position:fixed;left:0;top:0;width:58mm;font-family:'Courier New',monospace;font-size:10px;color:#000;background:#fff}
+  #print-area{position:absolute;left:0;top:0;width:58mm;font-family:'Courier New',monospace;font-size:9px;color:#000;background:#fff}
 }
-#print-area{display:none}
-.ticket-preview{background:#fff;color:#1a1a1a;width:220px;padding:14px 12px;border-radius:4px;font-family:'Courier New',monospace;font-size:10px;box-shadow:0 4px 20px rgba(0,0,0,.4);margin:0 auto}
-.tk-center{text-align:center}
-.tk-line{border:none;border-top:1px dashed #ccc;margin:5px 0}
-.tk-row{display:flex;justify-content:space-between;margin-bottom:2px;font-size:9px}
-.tk-bold{font-weight:900}
-.tk-total{display:flex;justify-content:space-between;font-size:12px;font-weight:900;border-top:1px solid #333;padding-top:4px;margin:3px 0}
-.tk-small{font-size:8px;color:#555;text-align:center;margin-top:3px}
 </style>
 </head>
 <body>
@@ -197,206 +131,146 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
     <div class="login-title">LAVA AUTOS</div>
     <div class="login-sub">Full Car · by AMJ Motors</div>
     <div class="login-roles">
-      <div class="role-btn sel" onclick="selRole('dueno',this)" data-role="dueno">
-        <div class="role-icon">👑</div>
-        <div class="role-name">Dueño</div>
-        <div class="role-desc">Acceso total</div>
-      </div>
-      <div class="role-btn" onclick="selRole('socio',this)" data-role="socio">
-        <div class="role-icon">🤝</div>
-        <div class="role-name">Socio</div>
-        <div class="role-desc">Reportes</div>
-      </div>
-      <div class="role-btn" onclick="selRole('cajero',this)" data-role="cajero">
-        <div class="role-icon">🖥️</div>
-        <div class="role-name">Cajero</div>
-        <div class="role-desc">Órdenes</div>
-      </div>
+      <div class="role-btn sel" onclick="selRole('dueno',this)"><div class="role-icon">👑</div><div class="role-name">Dueño</div><div class="role-desc">Acceso total</div></div>
+      <div class="role-btn" onclick="selRole('cajero',this)"><div class="role-icon">🖥️</div><div class="role-name">Cajero</div><div class="role-desc">Órdenes</div></div>
     </div>
     <div class="pin-label">PIN de acceso</div>
     <input class="pin-input" type="password" maxlength="6" id="pin-input" placeholder="••••" onkeydown="if(event.key==='Enter')doLogin()"/>
     <button class="btn-login" onclick="doLogin()">Ingresar</button>
     <div class="login-err" id="login-err"></div>
-    <div style="font-size:9px;color:var(--muted);margin-top:12px">Dueño: 1234 · Socio: 5678 · Cajero: 0000</div>
   </div>
 </div>
 
 <!-- APP -->
 <div id="app">
-  <!-- Topbar -->
   <div class="topbar">
-    <div class="tb-left">
-      <div class="tb-logo">🚗</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:22px">🚗</span>
       <div><div class="tb-name">LAVA AUTOS FULL CAR</div><div class="tb-sub">by AMJ Motors</div></div>
     </div>
-    <div class="tb-right">
-      <div class="tb-date" id="tb-date"></div>
-      <div class="tb-user" id="tb-user"></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:11px;color:var(--muted)" id="tb-date"></span>
+      <span style="font-size:11px;color:var(--muted)" id="tb-user"></span>
       <button class="btn-logout" onclick="doLogout()">Salir</button>
     </div>
   </div>
-
   <div class="main">
-    <!-- Sidebar -->
     <div class="sidebar">
       <div class="nav-sep">Operación</div>
       <div class="ni on" onclick="go('ordenes',this)" id="nav-ordenes"><span class="ni-ico">🧾</span>Órdenes del día</div>
       <div class="ni hidden" onclick="go('cierre',this)" id="nav-cierre"><span class="ni-ico">💰</span>Cierre del día</div>
       <div class="ni hidden" onclick="go('gastos',this)" id="nav-gastos"><span class="ni-ico">📋</span>Gastos</div>
-      <div class="nav-sep hidden owner-only">Reportes</div>
+      <div class="nav-sep hidden" id="sep-reportes">Reportes</div>
       <div class="ni hidden" onclick="go('dashboard',this)" id="nav-dashboard"><span class="ni-ico">📊</span>Dashboard</div>
-      <div class="nav-sep hidden owner-only">Config</div>
+      <div class="nav-sep hidden" id="sep-config">Configuración</div>
       <div class="ni hidden" onclick="go('conceseros',this)" id="nav-conceseros"><span class="ni-ico">👥</span>Conceseros</div>
       <div class="ni hidden" onclick="go('servicios-cfg',this)" id="nav-servicios-cfg"><span class="ni-ico">⚙️</span>Servicios</div>
     </div>
-
-    <!-- Content -->
     <div class="content">
 
-      <!-- ══ ÓRDENES ══ -->
+      <!-- ORDENES -->
       <div id="s-ordenes" class="screen on">
         <div id="bday-banner" style="display:none" class="bday-banner">
-          <div class="bday-icon">🎂</div>
-          <div class="bday-text">
-            <div class="bday-name" id="bday-nombre"></div>
-            <div class="bday-sub" id="bday-sub"></div>
-          </div>
-          <div class="bday-badge">🎁 DÍA AL 100%</div>
+          <span style="font-size:28px">🎂</span>
+          <div><div style="font-weight:800;color:var(--gold)" id="bday-nombre"></div><div style="font-size:11px;color:var(--muted)" id="bday-sub"></div></div>
+          <span style="margin-left:auto" class="badge ba">🎁 DÍA AL 100%</span>
         </div>
         <div class="row">
           <div><div class="page-title">Órdenes del día</div><div class="page-sub" id="ordenes-fecha"></div></div>
-          <div style="display:flex;gap:6px">
-            <span class="badge bg" id="badge-estado">● Abierto</span>
-            <button class="btn btn-p" onclick="abrirModalOrden()">+ Nueva orden</button>
-          </div>
+          <button class="btn btn-p" onclick="abrirModalOrden()">+ Nueva orden</button>
         </div>
-        <div class="kpis" style="grid-template-columns:repeat(4,1fr)" id="kpis-ordenes">
-          <div class="kpi"><div class="kpi-l">Ventas del día</div><div class="kpi-v" style="color:var(--gold)" id="kpi-ventas">$0</div><div class="kpi-s" id="kpi-pago-split">💵 $0 · 📲 $0</div></div>
-          <div class="kpi" style="border-left-color:var(--green)"><div class="kpi-l">Órdenes</div><div class="kpi-v" style="color:#6EE7B7" id="kpi-ordenes-count">0</div><div class="kpi-s" id="kpi-estados">0 cerradas · 0 abiertas</div></div>
-          <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">Vehículos</div><div class="kpi-v" style="color:#C4B5FD" id="kpi-vehiculos">0</div></div>
-          <div class="kpi"><div class="kpi-l">Conceseros activos</div><div class="kpi-v" style="color:var(--gold)" id="kpi-conceseros-activos">0</div></div>
+        <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+          <div class="kpi"><div class="kpi-l">Ventas del día</div><div class="kpi-v" style="color:var(--gold)" id="kpi-ventas">$0</div><div class="kpi-s" id="kpi-split">💵 $0 · 📲 $0</div></div>
+          <div class="kpi" style="border-left-color:var(--green)"><div class="kpi-l">Órdenes</div><div class="kpi-v" style="color:#6EE7B7" id="kpi-count">0</div><div class="kpi-s" id="kpi-estados">0 cerradas · 0 abiertas</div></div>
+          <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">Vehículos</div><div class="kpi-v" style="color:#C4B5FD" id="kpi-veh">0</div></div>
+          <div class="kpi"><div class="kpi-l">Conceseros activos</div><div class="kpi-v" style="color:var(--gold)" id="kpi-conc">0</div></div>
         </div>
         <div class="card">
-          <div class="card-t"><span class="card-tg">✦ Órdenes de hoy</span><div><span class="badge ba" id="badge-abiertas">0 abiertas</span></div></div>
-          <div id="ordenes-list"><div class="loading"><span class="spin"></span>Cargando...</div></div>
+          <div class="card-t"><span class="card-tg">✦ Órdenes de hoy</span><span class="badge ba" id="badge-abiertas">0 abiertas</span></div>
+          <div id="ordenes-list"><div style="text-align:center;padding:30px;color:var(--muted)">Cargando...</div></div>
         </div>
       </div>
 
-      <!-- ══ CIERRE ══ -->
+      <!-- CIERRE -->
       <div id="s-cierre" class="screen">
         <div class="row">
           <div><div class="page-title">Cierre del día</div><div class="page-sub" id="cierre-fecha"></div></div>
-          <div style="display:flex;gap:6px">
-            <button class="btn btn-g" onclick="imprimirResumen()">📄 Exportar</button>
-          </div>
+          <button class="btn btn-g" onclick="window.print()">📄 Imprimir</button>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-          <div class="card" style="background:rgba(16,185,129,.07);border-color:rgba(16,185,129,.2)">
-            <div style="font-size:9px;color:#6EE7B7;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:5px">💵 Total efectivo</div>
-            <div style="font-size:22px;font-weight:700;font-family:'Georgia',serif;color:#6EE7B7" id="cierre-efectivo">$0</div>
-          </div>
-          <div class="card" style="background:rgba(139,92,246,.07);border-color:rgba(139,92,246,.2)">
-            <div style="font-size:9px;color:#C4B5FD;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:5px">📲 Total QR</div>
-            <div style="font-size:22px;font-weight:700;font-family:'Georgia',serif;color:#C4B5FD" id="cierre-qr">$0</div>
-          </div>
-          <div class="card" style="background:rgba(239,68,68,.07);border-color:rgba(239,68,68,.2)">
-            <div style="font-size:9px;color:#FCA5A5;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:5px">📋 Gastos del día</div>
-            <div style="font-size:22px;font-weight:700;font-family:'Georgia',serif;color:#FCA5A5" id="cierre-gastos">$0</div>
-          </div>
-          <div class="card" style="background:var(--gold-p);border-color:var(--gold-b)">
-            <div style="font-size:9px;color:var(--gold);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:5px">✦ Tu ganancia neta</div>
-            <div style="font-size:22px;font-weight:700;font-family:'Georgia',serif;color:var(--gold)" id="cierre-neta">$0</div>
-          </div>
+          <div class="card" style="background:rgba(16,185,129,.07);border-color:rgba(16,185,129,.2)"><div style="font-size:9px;color:#6EE7B7;text-transform:uppercase;font-weight:700;margin-bottom:5px">💵 Efectivo</div><div style="font-size:22px;font-weight:700;font-family:'Georgia',serif;color:#6EE7B7" id="c-ef">$0</div></div>
+          <div class="card" style="background:rgba(139,92,246,.07);border-color:rgba(139,92,246,.2)"><div style="font-size:9px;color:#C4B5FD;text-transform:uppercase;font-weight:700;margin-bottom:5px">📲 QR</div><div style="font-size:22px;font-weight:700;font-family:'Georgia',serif;color:#C4B5FD" id="c-qr">$0</div></div>
+          <div class="card" style="background:rgba(239,68,68,.07);border-color:rgba(239,68,68,.2)"><div style="font-size:9px;color:#FCA5A5;text-transform:uppercase;font-weight:700;margin-bottom:5px">📋 Gastos</div><div style="font-size:22px;font-weight:700;font-family:'Georgia',serif;color:#FCA5A5" id="c-gastos">$0</div></div>
+          <div class="card" style="background:var(--gold-p);border-color:var(--gold-b)"><div style="font-size:9px;color:var(--gold);text-transform:uppercase;font-weight:700;margin-bottom:5px">✦ Ganancia neta</div><div style="font-size:22px;font-weight:700;font-family:'Georgia',serif;color:var(--gold)" id="c-neta">$0</div></div>
         </div>
         <div class="card">
           <div class="card-t"><span class="card-tg">✦ Desglose</span></div>
-          <div class="cierre-row"><span style="color:var(--muted)">Total ventas brutas</span><span class="cierre-val" id="dc-bruto">$0</span></div>
-          <div class="cierre-row"><span style="color:var(--muted)">— Tu parte (50%)</span><span class="cierre-val" style="color:var(--gold)" id="dc-parte">$0</span></div>
-          <div class="cierre-row"><span style="color:var(--muted)">— Gastos del día</span><span class="cierre-val" style="color:#FCA5A5" id="dc-gastos">$0</span></div>
-          <div class="cierre-row" style="border:none"><span style="font-weight:700">= Ganancia neta</span><span class="cierre-val" style="color:#6EE7B7;font-size:18px" id="dc-neta">$0</span></div>
+          <div class="cierre-row"><span style="color:var(--muted)">Total ventas brutas</span><span style="font-weight:700;font-family:'Georgia',serif" id="dc-bruto">$0</span></div>
+          <div class="cierre-row"><span style="color:var(--muted)">— Tu parte (50%)</span><span style="font-weight:700;color:var(--gold);font-family:'Georgia',serif" id="dc-parte">$0</span></div>
+          <div class="cierre-row"><span style="color:var(--muted)">— Gastos del día</span><span style="font-weight:700;color:#FCA5A5;font-family:'Georgia',serif" id="dc-gastos">$0</span></div>
+          <div class="cierre-row" style="border:none"><span style="font-weight:700">= Ganancia neta</span><span style="font-size:18px;font-weight:700;color:#6EE7B7;font-family:'Georgia',serif" id="dc-neta">$0</span></div>
           <div class="divider"></div>
-          <div class="cierre-row"><span style="color:var(--muted)">De esa ganancia: efectivo</span><span class="cierre-val" style="color:#6EE7B7" id="dc-ef-neta">$0</span></div>
-          <div class="cierre-row" style="border:none"><span style="color:var(--muted)">De esa ganancia: QR</span><span class="cierre-val" style="color:#C4B5FD" id="dc-qr-neta">$0</span></div>
+          <div class="cierre-row"><span style="color:var(--muted)">Ganancia en efectivo</span><span style="font-weight:700;color:#6EE7B7;font-family:'Georgia',serif" id="dc-ef-neta">$0</span></div>
+          <div class="cierre-row" style="border:none"><span style="color:var(--muted)">Ganancia en QR</span><span style="font-weight:700;color:#C4B5FD;font-family:'Georgia',serif" id="dc-qr-neta">$0</span></div>
         </div>
         <div class="card">
           <div class="card-t"><span>Pago a conceseros</span></div>
-          <div class="tbl-wrap"><table>
-            <thead><tr><th>Concesero</th><th>Generó</th><th>Le toca (50%)</th><th>Estado</th><th></th></tr></thead>
-            <tbody id="cierre-conceseros"></tbody>
-          </table></div>
+          <div class="tbl-wrap"><table><thead><tr><th>Concesero</th><th>Generó</th><th>Le toca (50%)</th></tr></thead><tbody id="cierre-concs"></tbody></table></div>
         </div>
       </div>
 
-      <!-- ══ GASTOS ══ -->
+      <!-- GASTOS -->
       <div id="s-gastos" class="screen">
         <div class="row">
-          <div><div class="page-title">Gastos</div><div class="page-sub">Registro de egresos del lavadero</div></div>
+          <div><div class="page-title">Gastos</div><div class="page-sub">Egresos del lavadero</div></div>
           <button class="btn btn-p" onclick="abrirModalGasto()">+ Registrar gasto</button>
         </div>
         <div class="kpis" style="grid-template-columns:1fr 1fr 1fr">
-          <div class="kpi" style="border-left-color:#EF4444"><div class="kpi-l">Gastos del mes</div><div class="kpi-v" style="color:#FCA5A5;font-size:15px" id="kpi-gastos-mes">$0</div></div>
-          <div class="kpi" style="border-left-color:#F97316"><div class="kpi-l">Gastos de hoy</div><div class="kpi-v" style="color:#FB923C;font-size:15px" id="kpi-gastos-hoy">$0</div></div>
-          <div class="kpi"><div class="kpi-l">Mayor categoría</div><div class="kpi-v" style="color:var(--gold);font-size:13px" id="kpi-cat-mayor">—</div></div>
+          <div class="kpi" style="border-left-color:#EF4444"><div class="kpi-l">Gastos del mes</div><div class="kpi-v" style="color:#FCA5A5;font-size:15px" id="kg-mes">$0</div></div>
+          <div class="kpi" style="border-left-color:#F97316"><div class="kpi-l">Gastos de hoy</div><div class="kpi-v" style="color:#FB923C;font-size:15px" id="kg-hoy">$0</div></div>
+          <div class="kpi"><div class="kpi-l">Mayor categoría</div><div class="kpi-v" style="color:var(--gold);font-size:13px" id="kg-cat">—</div></div>
         </div>
         <div class="card">
-          <div class="card-t"><span>Gastos registrados</span></div>
-          <div class="tbl-wrap"><table>
-            <thead><tr><th>Fecha</th><th>Categoría</th><th>Descripción</th><th>Pago</th><th>Valor</th><th></th></tr></thead>
-            <tbody id="gastos-list"></tbody>
-          </table></div>
+          <div class="tbl-wrap"><table><thead><tr><th>Fecha</th><th>Categoría</th><th>Descripción</th><th>Pago</th><th>Valor</th><th></th></tr></thead><tbody id="gastos-list"></tbody></table></div>
         </div>
       </div>
 
-      <!-- ══ DASHBOARD ══ -->
+      <!-- DASHBOARD -->
       <div id="s-dashboard" class="screen">
         <div class="row">
           <div><div class="page-title">Dashboard</div><div class="page-sub">Análisis en tiempo real</div></div>
-          <div style="display:flex;gap:5px" id="mes-btns"></div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap" id="mes-btns"></div>
         </div>
         <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
           <div class="kpi"><div class="kpi-l">Ingresos del mes</div><div class="kpi-v" style="color:var(--gold)" id="d-total">$0</div></div>
-          <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">Tu ganancia (50%)</div><div class="kpi-v" style="color:#6EE7B7" id="d-ganancia">$0</div></div>
-          <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">Vehículos</div><div class="kpi-v" style="color:#C4B5FD" id="d-vehiculos">0</div></div>
+          <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">Tu ganancia</div><div class="kpi-v" style="color:#6EE7B7" id="d-gan">$0</div></div>
+          <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">Vehículos</div><div class="kpi-v" style="color:#C4B5FD" id="d-veh">0</div></div>
           <div class="kpi"><div class="kpi-l">Días trabajados</div><div class="kpi-v" style="color:var(--gold)" id="d-dias">0</div></div>
         </div>
-        <div class="card">
-          <div class="card-t"><span class="card-tg">✦ Top conceseros del mes</span></div>
-          <div id="d-conceseros"></div>
-        </div>
-        <div class="card">
-          <div class="card-t"><span class="card-tg">✦ Órdenes recientes</span></div>
-          <div class="tbl-wrap"><table>
-            <thead><tr><th>#</th><th>Fecha</th><th>Concesero</th><th>Placa</th><th>Servicio</th><th>Pago</th><th>Total</th></tr></thead>
-            <tbody id="d-ordenes-recientes"></tbody>
-          </table></div>
+        <div class="card"><div class="card-t"><span class="card-tg">✦ Top conceseros</span></div><div id="d-concs"></div></div>
+        <div class="card"><div class="card-t"><span class="card-tg">✦ Órdenes recientes</span></div>
+          <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Fecha</th><th>Concesero</th><th>Placa</th><th>Pago</th><th>Total</th></tr></thead><tbody id="d-recientes"></tbody></table></div>
         </div>
       </div>
 
-      <!-- ══ CONCESEROS ══ -->
+      <!-- CONCESEROS -->
       <div id="s-conceseros" class="screen">
-        <div class="row">
-          <div><div class="page-title">Conceseros</div><div class="page-sub">Gestión del equipo</div></div>
-          <button class="btn btn-p" onclick="abrirModalConcesero()">+ Agregar</button>
-        </div>
-        <div class="card">
-          <div class="tbl-wrap"><table>
-            <thead><tr><th>Nombre</th><th>Cumpleaños</th><th>Estado</th><th>Acciones</th></tr></thead>
-            <tbody id="conceseros-list"></tbody>
-          </table></div>
-        </div>
+        <div class="row"><div><div class="page-title">Conceseros</div></div><button class="btn btn-p" onclick="abrirModalConcesero()">+ Agregar</button></div>
+        <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Nombre</th><th>Cumpleaños</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="concs-list"></tbody></table></div></div>
       </div>
 
-      <!-- ══ SERVICIOS CONFIG ══ -->
+      <!-- SERVICIOS CFG -->
       <div id="s-servicios-cfg" class="screen">
-        <div class="row">
-          <div><div class="page-title">Servicios y precios</div><div class="page-sub">Catálogo de servicios</div></div>
-          <button class="btn btn-p" onclick="abrirModalServicio()">+ Agregar</button>
-        </div>
+        <div class="row"><div><div class="page-title">Servicios y precios</div></div><button class="btn btn-p" onclick="abrirModalServicio(null)">+ Agregar</button></div>
         <div class="card">
-          <div class="tbl-wrap"><table>
-            <thead><tr><th>Nombre</th><th>Precio</th><th>Tipo</th><th>Estado</th><th></th></tr></thead>
-            <tbody id="servicios-cfg-list"></tbody>
-          </table></div>
+          <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+            <input type="text" id="svc-cfg-search" placeholder="🔍 Buscar..." oninput="filtrarServiciosCfg()" style="flex:1;background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;min-width:140px"/>
+            <select id="svc-cfg-tipo" onchange="filtrarServiciosCfg()" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none">
+              <option value="">Todos</option><option value="Automovil">🚗 Automóvil</option><option value="Camionetas">🚙 Camioneta</option><option value="Motos">🏍️ Moto</option><option value="Cuatrimoto">🏎️ Cuatrimoto</option><option value="Bicicletas">🚲 Bicicleta</option><option value="Otros">📦 Otros</option>
+            </select>
+          </div>
+          <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Nombre</th><th>Precio</th><th>Tipo</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="svcs-cfg-list"></tbody></table></div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px" id="svc-cfg-count"></div>
         </div>
       </div>
 
@@ -404,192 +278,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
   </div>
 </div>
 
-<!-- MODALES -->
-<!-- Modal nueva orden -->
-<div id="modal-orden" class="modal-bg" style="display:none">
-<div class="modal">
-  <div class="modal-title">🧾 Nueva orden de servicio</div>
-  <div class="form-grid" style="grid-template-columns:1fr 1fr">
-    <div class="field"><label>Concesero</label><select id="ord-concesero"></select></div>
-    <div class="field"><label>Placa</label><input type="text" id="ord-placa" placeholder="ABC 123" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"/></div>
-  </div>
-  <div class="field"><label>Tipo de vehículo</label>
-    <div style="display:flex;gap:5px;flex-wrap:wrap" id="tipo-btns">
-      <button class="tipo-btn on" onclick="filtrarTipo('Todos',this)">🚘 Todos</button>
-      <button class="tipo-btn" onclick="filtrarTipo('Automovil',this)">🚗 Automóvil</button>
-      <button class="tipo-btn" onclick="filtrarTipo('Camionetas',this)">🚙 Camioneta</button>
-      <button class="tipo-btn" onclick="filtrarTipo('Motos',this)">🏍️ Moto</button>
-      <button class="tipo-btn" onclick="filtrarTipo('Cuatrimoto',this)">🏎️ Cuatrimoto</button>
-      <button class="tipo-btn" onclick="filtrarTipo('Bicicletas',this)">🚲 Bicicleta</button>
-      <button class="tipo-btn" onclick="filtrarTipo('Otros',this)">📦 Otros</button>
-    </div>
-  </div>
-  <div class="field"><label>Buscar servicio</label>
-    <input type="text" id="svc-search" placeholder="Ej: brillada, rines, moto..." oninput="filtrarServicios()" style="margin-bottom:6px"/>
-    <div id="servicios-lista" style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:7px;padding:6px;background:var(--navy-d)"></div>
-    <div id="svc-selected-info" style="margin-top:6px;padding:8px 10px;background:var(--gold-p);border:1px solid var(--gold-b);border-radius:7px;font-size:12px;display:none">
-      ✅ <span id="svc-selected-text"></span>
-    </div>
-  </div>
-  <div class="divider"></div>
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer" onclick="toggleCliente()">
-    <input type="checkbox" id="chk-cliente" style="width:16px;height:16px;accent-color:var(--gold)"/>
-    <span style="font-size:12px;color:var(--muted)">¿Agregar datos del cliente?</span>
-  </div>
-  <div id="cliente-fields" style="display:none">
-    <div class="form-grid" style="grid-template-columns:1fr 1fr">
-      <div class="field"><label>Nombre</label><input type="text" id="ord-cliente-nombre" placeholder="Nombre cliente"/></div>
-      <div class="field"><label>CC / NIT</label><input type="text" id="ord-cliente-cc" placeholder="000000000"/></div>
-    </div>
-    <div class="field"><label>Teléfono (opcional)</label><input type="text" id="ord-cliente-tel" placeholder="+57 300 000 0000"/></div>
-  </div>
-  <div class="field"><label>Observaciones (opcional)</label><textarea id="ord-obs" rows="2" placeholder="Notas adicionales..."></textarea></div>
-  <div style="display:flex;gap:8px;margin-top:4px">
-    <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarOrden()">🖨️ Crear e imprimir</button>
-    <button class="btn btn-g" onclick="cerrarModal('modal-orden')">Cancelar</button>
-  </div>
-</div>
-</div>
-
-
-
-<!-- Modal borrar orden -->
-<div id="modal-borrar-orden" class="modal-bg" style="display:none">
-<div class="modal">
-  <div class="modal-title" style="color:#FCA5A5">🗑️ Borrar orden</div>
-  <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:14px;margin-bottom:16px">
-    <div style="font-size:13px;margin-bottom:6px">¿Seguro que quieres borrar la <strong>Orden #<span id="borrar-ord-num"></span></strong>?</div>
-    <div style="font-size:11px;color:#FCA5A5">⚠️ Esta acción no se puede deshacer. La orden y sus servicios se eliminarán permanentemente.</div>
-  </div>
-  <div class="field"><label>Motivo del borrado (obligatorio)</label>
-    <input type="text" id="borrar-motivo" placeholder="Ej: Error al registrar, orden duplicada..."/>
-  </div>
-  <div style="display:flex;gap:8px;margin-top:8px">
-    <button class="btn btn-r" style="flex:1;padding:10px;font-size:13px" onclick="ejecutarBorrarOrden()">🗑️ Sí, borrar</button>
-    <button class="btn btn-g" style="flex:1;padding:10px" onclick="cerrarModal('modal-borrar-orden')">Cancelar</button>
-  </div>
-</div>
-</div>
-<!-- Modal editar orden -->
-<div id="modal-editar-orden" class="modal-bg" style="display:none">
-<div class="modal">
-  <div class="modal-title">✏️ Editar orden #<span id="edit-ord-num"></span></div>
-  <input type="hidden" id="edit-ord-id"/>
-  <div class="form-grid" style="grid-template-columns:1fr 1fr">
-    <div class="field"><label>Concesero</label><select id="edit-ord-concesero"></select></div>
-    <div class="field"><label>Placa</label><input type="text" id="edit-ord-placa" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"/></div>
-  </div>
-  <div class="field"><label>Tipo de vehículo</label>
-    <div style="display:flex;gap:5px;flex-wrap:wrap" id="edit-tipo-btns">
-      <button class="tipo-btn on" onclick="editFiltrarTipo('Todos',this)">🚘 Todos</button>
-      <button class="tipo-btn" onclick="editFiltrarTipo('Automovil',this)">🚗 Automóvil</button>
-      <button class="tipo-btn" onclick="editFiltrarTipo('Camionetas',this)">🚙 Camioneta</button>
-      <button class="tipo-btn" onclick="editFiltrarTipo('Motos',this)">🏍️ Moto</button>
-      <button class="tipo-btn" onclick="editFiltrarTipo('Cuatrimoto',this)">🏎️ Cuatrimoto</button>
-      <button class="tipo-btn" onclick="editFiltrarTipo('Bicicletas',this)">🚲 Bicicleta</button>
-      <button class="tipo-btn" onclick="editFiltrarTipo('Otros',this)">📦 Otros</button>
-    </div>
-  </div>
-  <div class="field"><label>Buscar / cambiar servicio</label>
-    <input type="text" id="edit-svc-search" placeholder="Buscar servicio..." oninput="editFiltrarServicios()"/>
-    <div id="edit-servicios-lista" style="max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:7px;padding:6px;background:var(--navy-d);margin-top:6px"></div>
-    <div id="edit-svc-selected-info" style="margin-top:6px;padding:8px 10px;background:var(--gold-p);border:1px solid var(--gold-b);border-radius:7px;font-size:12px;display:none">
-      ✅ <span id="edit-svc-selected-text"></span>
-    </div>
-  </div>
-  <div style="display:flex;gap:8px;margin-top:8px">
-    <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarEditarOrden()">💾 Guardar cambios</button>
-    <button class="btn btn-g" onclick="cerrarModal('modal-editar-orden')">Cancelar</button>
-  </div>
-</div>
-</div>
-<!-- Modal cerrar orden -->
-<div id="modal-cerrar" class="modal-bg" style="display:none">
-<div class="modal">
-  <div class="modal-title">💰 Cerrar orden #<span id="cerrar-num"></span></div>
-  <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px">
-    <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--muted)">Placa:</span><span style="font-weight:700;color:var(--gold)" id="cerrar-placa"></span></div>
-    <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--muted)">Concesero:</span><span id="cerrar-concesero"></span></div>
-    <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Total:</span><span style="font-weight:700;font-size:18px;color:var(--gold)" id="cerrar-total"></span></div>
-  </div>
-  <div class="field"><label>¿Cómo pagó el cliente?</label>
-    <div class="pay-toggle" id="cerrar-pay-toggle">
-      <button class="pt pt-ef on-ef" onclick="selCerrarPay(this,'efectivo')" id="cpay-ef" style="flex:1;padding:12px;font-size:13px">💵 Efectivo</button>
-      <button class="pt pt-qr" onclick="selCerrarPay(this,'qr')" id="cpay-qr" style="flex:1;padding:12px;font-size:13px">📲 QR</button>
-    </div>
-  </div>
-  <div style="display:flex;gap:8px;margin-top:8px">
-    <button class="btn btn-gr" style="flex:1;padding:10px" onclick="confirmarCerrar()">🖨️ Cerrar e imprimir</button>
-    <button class="btn btn-g" onclick="cerrarModal('modal-cerrar')">Cancelar</button>
-  </div>
-</div>
-</div>
-
-<!-- Modal gasto -->
-<div id="modal-gasto" class="modal-bg" style="display:none">
-<div class="modal">
-  <div class="modal-title">📋 Registrar gasto</div>
-  <div class="form-grid" style="grid-template-columns:1fr 1fr">
-    <div class="field"><label>Categoría</label>
-      <select id="gasto-cat">
-        <option>🧴 Productos de limpieza</option>
-        <option>💧 Agua / servicios públicos</option>
-        <option>🔧 Mantenimiento y reparaciones</option>
-        <option>👕 Dotación del personal</option>
-        <option>🏠 Arriendo / local</option>
-        <option>📦 Insumos varios</option>
-        <option>💰 Nómina</option>
-        <option>🚗 Combustible</option>
-        <option>📋 Otros gastos</option>
-      </select>
-    </div>
-    <div class="field"><label>Valor</label><input type="number" id="gasto-valor" placeholder="0"/></div>
-  </div>
-  <div class="field"><label>Descripción</label><input type="text" id="gasto-desc" placeholder="Ej: Shampoo para autos x10"/></div>
-  <div class="field"><label>Forma de pago</label>
-    <div class="pay-toggle">
-      <button class="pt pt-ef on-ef" onclick="selPay(this,'ef')" id="gpay-ef">💵 Efectivo</button>
-      <button class="pt pt-qr" onclick="selPay(this,'qr')" id="gpay-qr">📲 QR</button>
-    </div>
-  </div>
-  <div style="display:flex;gap:8px;margin-top:12px">
-    <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarGasto()">💾 Guardar gasto</button>
-    <button class="btn btn-g" onclick="cerrarModal('modal-gasto')">Cancelar</button>
-  </div>
-</div>
-</div>
-
-<!-- Modal concesero -->
-<div id="modal-concesero" class="modal-bg" style="display:none">
-<div class="modal">
-  <div class="modal-title">👥 Concesero</div>
-  <div class="field"><label>Nombre completo</label><input type="text" id="conc-nombre" placeholder="NOMBRE APELLIDO" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"/></div>
-  <div class="field"><label>Fecha de nacimiento 🎂</label><input type="date" id="conc-nacimiento"/></div>
-  <div style="font-size:10px;color:var(--muted);margin-bottom:10px">El día de su cumpleaños el sistema lo alertará y sus ventas quedarán al 100%.</div>
-  <div style="display:flex;gap:8px;margin-top:4px">
-    <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarConcesero()">💾 Guardar</button>
-    <button class="btn btn-g" onclick="cerrarModal('modal-concesero')">Cancelar</button>
-  </div>
-</div>
-</div>
-
-<!-- Modal editar concesero (cumpleaños) -->
-<div id="modal-editar-conc" class="modal-bg" style="display:none">
-<div class="modal">
-  <div class="modal-title">✏️ Editar concesero</div>
-  <input type="hidden" id="edit-conc-id"/>
-  <div class="field"><label>Nombre</label><input type="text" id="edit-conc-nombre" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"/></div>
-  <div class="field"><label>Fecha de nacimiento 🎂</label><input type="date" id="edit-conc-nacimiento"/></div>
-  <div style="font-size:10px;color:var(--muted);margin-bottom:10px">El día de su cumpleaños el sistema lo alertará y sus ventas quedarán al 100%.</div>
-  <div style="display:flex;gap:8px;margin-top:4px">
-    <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarEditarConcesero()">💾 Guardar</button>
-    <button class="btn btn-g" onclick="cerrarModal('modal-editar-conc')">Cancelar</button>
-  </div>
-</div>
-</div>
-
-
-<!-- BOTTOM NAV (mobile) -->
+<!-- BOTTOM NAV -->
 <div class="bottom-nav" id="bottom-nav">
   <div class="bn-items">
     <div class="bn-item on" onclick="goMobile('ordenes',this)" id="bn-ordenes"><div class="bn-ico">🧾</div><div class="bn-label">Órdenes</div></div>
@@ -599,903 +288,1003 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
     <div class="bn-item hidden" onclick="goMobile('conceseros',this)" id="bn-conceseros"><div class="bn-ico">👥</div><div class="bn-label">Equipo</div></div>
   </div>
 </div>
-<!-- PRINT AREA -->
-<div id="print-area"></div>
+
+<!-- MODALES -->
+<!-- Nueva Orden -->
+<div id="modal-orden" class="modal-bg" style="display:none">
+<div class="modal">
+  <div class="modal-title">🧾 Nueva orden de servicio</div>
+  <div class="form-grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label>Concesero</label><select id="ord-conc"></select></div>
+    <div class="field"><label>Placa</label><input type="text" id="ord-placa" placeholder="ABC 123" oninput="this.value=this.value.toUpperCase()"/></div>
+  </div>
+  <div class="field"><label>Tipo de vehículo</label>
+    <div style="display:flex;gap:5px;flex-wrap:wrap" id="tipo-btns">
+      <button class="tipo-btn on" onclick="filtrarTipo('Todos',this)">🚘 Todos</button>
+      <button class="tipo-btn" onclick="filtrarTipo('Automovil',this)">🚗 Auto</button>
+      <button class="tipo-btn" onclick="filtrarTipo('Camionetas',this)">🚙 Camioneta</button>
+      <button class="tipo-btn" onclick="filtrarTipo('Motos',this)">🏍️ Moto</button>
+      <button class="tipo-btn" onclick="filtrarTipo('Cuatrimoto',this)">🏎️ Cuatrimoto</button>
+      <button class="tipo-btn" onclick="filtrarTipo('Bicicletas',this)">🚲 Bici</button>
+      <button class="tipo-btn" onclick="filtrarTipo('Otros',this)">📦 Otros</button>
+    </div>
+  </div>
+  <div class="field"><label>Buscar y agregar servicios</label>
+    <input type="text" id="svc-search" placeholder="Ej: brillada, rines, moto..." oninput="filtrarServicios()" style="margin-bottom:6px"/>
+    <div id="svc-lista" style="max-height:150px;overflow-y:auto;border:1px solid var(--border);border-radius:7px;padding:6px;background:var(--navy-d)"></div>
+  </div>
+  <div class="field">
+    <label>Servicios agregados <span id="svcs-cnt" style="color:var(--gold)"></span></label>
+    <div id="svcs-agregados" style="min-height:36px;border:1px solid var(--border);border-radius:7px;padding:6px;background:var(--navy-d)">
+      <div style="color:var(--muted);font-size:11px;text-align:center;padding:6px">Toca un servicio para agregarlo</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:6px;padding:8px 10px;background:var(--gold-p);border:1px solid var(--gold-b);border-radius:7px">
+      <span style="font-weight:700;font-size:13px">Total:</span>
+      <span style="font-weight:800;color:var(--gold);font-size:15px" id="svcs-total">$0</span>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer" onclick="toggleCliente()">
+    <input type="checkbox" id="chk-cliente" style="width:16px;height:16px;accent-color:var(--gold)"/>
+    <span style="font-size:12px;color:var(--muted)">¿Agregar datos del cliente?</span>
+  </div>
+  <div id="cliente-fields" style="display:none">
+    <div class="form-grid" style="grid-template-columns:1fr 1fr">
+      <div class="field"><label>Nombre</label><input type="text" id="ord-cli-nombre" placeholder="Nombre cliente"/></div>
+      <div class="field"><label>CC / NIT</label><input type="text" id="ord-cli-cc" placeholder="000000000"/></div>
+    </div>
+    <div class="field"><label>Teléfono (opcional)</label><input type="text" id="ord-cli-tel" placeholder="+57 300 000 0000"/></div>
+  </div>
+  <div class="field"><label>Observaciones (opcional)</label><textarea id="ord-obs" rows="2" placeholder="Notas..."></textarea></div>
+  <div style="display:flex;gap:8px;margin-top:4px">
+    <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarOrden()">✅ Crear orden</button>
+    <button class="btn btn-g" onclick="cerrarModal('modal-orden')">Cancelar</button>
+  </div>
+</div>
+</div>
+
+<!-- Cobrar / Cerrar Orden -->
+<div id="modal-cobrar" class="modal-bg" style="display:none">
+<div class="modal">
+  <div class="modal-title">💰 Cobrar orden #<span id="cobrar-num"></span></div>
+  <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--muted)">Placa:</span><span style="font-weight:700;color:var(--gold)" id="cobrar-placa"></span></div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--muted)">Concesero:</span><span id="cobrar-conc"></span></div>
+    <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Total:</span><span style="font-weight:700;font-size:18px;color:var(--gold)" id="cobrar-total"></span></div>
+  </div>
+  <div class="field"><label>¿Cómo pagó el cliente?</label>
+    <div class="pay-toggle">
+      <button class="pt pt-ef on-ef" onclick="selCobrarPay(this,'efectivo')" id="cobrar-ef">💵 Efectivo</button>
+      <button class="pt pt-qr" onclick="selCobrarPay(this,'qr')" id="cobrar-qr">📲 QR</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button class="btn btn-gr" style="flex:1;padding:10px" onclick="confirmarCobrar()">🖨️ Cobrar e imprimir</button>
+    <button class="btn btn-g" onclick="cerrarModal('modal-cobrar')">Cancelar</button>
+  </div>
+</div>
+</div>
+
+<!-- Editar Orden -->
+<div id="modal-editar-ord" class="modal-bg" style="display:none">
+<div class="modal">
+  <div class="modal-title">✏️ Editar orden #<span id="edit-ord-num"></span></div>
+  <input type="hidden" id="edit-ord-id"/>
+  <div class="form-grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label>Concesero</label><select id="edit-ord-conc"></select></div>
+    <div class="field"><label>Placa</label><input type="text" id="edit-ord-placa" oninput="this.value=this.value.toUpperCase()"/></div>
+  </div>
+  <div class="field"><label>Tipo de vehículo</label>
+    <div style="display:flex;gap:5px;flex-wrap:wrap" id="edit-tipo-btns">
+      <button class="tipo-btn on" onclick="editFiltrarTipo('Todos',this)">🚘 Todos</button>
+      <button class="tipo-btn" onclick="editFiltrarTipo('Automovil',this)">🚗 Auto</button>
+      <button class="tipo-btn" onclick="editFiltrarTipo('Camionetas',this)">🚙 Camioneta</button>
+      <button class="tipo-btn" onclick="editFiltrarTipo('Motos',this)">🏍️ Moto</button>
+      <button class="tipo-btn" onclick="editFiltrarTipo('Cuatrimoto',this)">🏎️ Cuatrimoto</button>
+      <button class="tipo-btn" onclick="editFiltrarTipo('Bicicletas',this)">🚲 Bici</button>
+      <button class="tipo-btn" onclick="editFiltrarTipo('Otros',this)">📦 Otros</button>
+    </div>
+  </div>
+  <div class="field"><label>Servicios</label>
+    <input type="text" id="edit-svc-search" placeholder="Buscar servicio..." oninput="editFiltrarServicios()" style="margin-bottom:6px"/>
+    <div id="edit-svc-lista" style="max-height:140px;overflow-y:auto;border:1px solid var(--border);border-radius:7px;padding:6px;background:var(--navy-d)"></div>
+  </div>
+  <div class="field">
+    <label>Servicios actuales <span id="edit-svcs-cnt" style="color:var(--gold)"></span></label>
+    <div id="edit-svcs-agregados" style="min-height:36px;border:1px solid var(--border);border-radius:7px;padding:6px;background:var(--navy-d)"></div>
+    <div style="display:flex;justify-content:space-between;margin-top:6px;padding:8px 10px;background:var(--gold-p);border:1px solid var(--gold-b);border-radius:7px">
+      <span style="font-weight:700">Total:</span>
+      <span style="font-weight:800;color:var(--gold)" id="edit-svcs-total">$0</span>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:8px">
+    <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarEditarOrden()">💾 Guardar</button>
+    <button class="btn btn-g" onclick="cerrarModal('modal-editar-ord')">Cancelar</button>
+  </div>
+</div>
+</div>
+
+<!-- Borrar Orden -->
+<div id="modal-borrar-ord" class="modal-bg" style="display:none">
+<div class="modal">
+  <div class="modal-title" style="color:#FCA5A5">🗑️ Borrar orden #<span id="borrar-num"></span></div>
+  <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:14px;margin-bottom:14px">
+    <div style="font-size:13px;margin-bottom:6px">Esta acción no se puede deshacer.</div>
+  </div>
+  <div class="field"><label>Motivo del borrado</label><input type="text" id="borrar-motivo" placeholder="Ej: Error al registrar, orden duplicada..."/></div>
+  <div style="display:flex;gap:8px;margin-top:8px">
+    <button class="btn btn-r" style="flex:1;padding:10px" onclick="ejecutarBorrarOrden()">🗑️ Sí, borrar</button>
+    <button class="btn btn-g" style="flex:1;padding:10px" onclick="cerrarModal('modal-borrar-ord')">Cancelar</button>
+  </div>
+</div>
+</div>
+
+<!-- Gasto -->
+<div id="modal-gasto" class="modal-bg" style="display:none">
+<div class="modal">
+  <div class="modal-title">📋 Registrar gasto</div>
+  <div class="form-grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label>Categoría</label>
+      <select id="gasto-cat">
+        <option>🧴 Productos de limpieza</option><option>💧 Agua / servicios públicos</option>
+        <option>🔧 Mantenimiento y reparaciones</option><option>👕 Dotación del personal</option>
+        <option>🏠 Arriendo / local</option><option>📦 Insumos varios</option>
+        <option>💰 Nómina</option><option>🚗 Combustible</option><option>📋 Otros gastos</option>
+      </select>
+    </div>
+    <div class="field"><label>Valor</label><input type="number" id="gasto-valor" placeholder="0"/></div>
+  </div>
+  <div class="field"><label>Descripción</label><input type="text" id="gasto-desc" placeholder="Ej: Shampoo x10"/></div>
+  <div class="field"><label>Forma de pago</label>
+    <div class="pay-toggle">
+      <button class="pt pt-ef on-ef" onclick="selGastoPay(this,'efectivo')" id="g-ef">💵 Efectivo</button>
+      <button class="pt pt-qr" onclick="selGastoPay(this,'qr')" id="g-qr">📲 QR</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarGasto()">💾 Guardar</button>
+    <button class="btn btn-g" onclick="cerrarModal('modal-gasto')">Cancelar</button>
+  </div>
+</div>
+</div>
+
+<!-- Concesero -->
+<div id="modal-conc" class="modal-bg" style="display:none">
+<div class="modal">
+  <div class="modal-title" id="conc-modal-title">👥 Concesero</div>
+  <input type="hidden" id="conc-edit-id"/>
+  <div class="field"><label>Nombre completo</label><input type="text" id="conc-nombre" placeholder="NOMBRE APELLIDO" oninput="this.value=this.value.toUpperCase()"/></div>
+  <div class="field"><label>Fecha de nacimiento 🎂</label><input type="date" id="conc-nacimiento"/></div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarConcesero()">💾 Guardar</button>
+    <button class="btn btn-g" onclick="cerrarModal('modal-conc')">Cancelar</button>
+  </div>
+</div>
+</div>
+
+<!-- Servicio -->
+<div id="modal-svc" class="modal-bg" style="display:none">
+<div class="modal">
+  <div class="modal-title" id="svc-modal-title">➕ Servicio</div>
+  <input type="hidden" id="svc-edit-id"/>
+  <div class="field"><label>Nombre del servicio</label><input type="text" id="svc-nombre" placeholder="LAVADA SENCILLA + RINES..." oninput="this.value=this.value.toUpperCase()"/></div>
+  <div class="form-grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label>Precio</label><input type="number" id="svc-precio" placeholder="0" min="0" step="1000"/></div>
+    <div class="field"><label>Tipo</label>
+      <select id="svc-tipo">
+        <option value="Automovil">🚗 Automóvil</option><option value="Camionetas">🚙 Camioneta</option>
+        <option value="Motos">🏍️ Moto</option><option value="Cuatrimoto">🏎️ Cuatrimoto</option>
+        <option value="Bicicletas">🚲 Bicicleta</option><option value="Otros">📦 Otros</option>
+      </select>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarServicio()">💾 Guardar</button>
+    <button class="btn btn-g" onclick="cerrarModal('modal-svc')">Cancelar</button>
+  </div>
+</div>
+</div>
+
+<div id="print-area" style="display:none"></div>
 
 <script>
-const SB_URL = "https://asyhamrhnphyfcffrisx.supabase.co";
-const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzeWhhbXJobnBoeWZjZmZyaXN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNjM3ODksImV4cCI6MjA5ODYzOTc4OX0.nGDAW9oBAPqv2KyVFE6W6S1nCWxrXb7hvFknHadc54g";
-const H = {"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json","Prefer":"return=representation"};
+const SB_URL='https://asyhamrhnphyfcffrisx.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzeWhhbXJobnBoeWZjZmZyaXN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNjM3ODksImV4cCI6MjA5ODYzOTc4OX0.nGDAW9oBAPqv2KyVFE6W6S1nCWxrXb7hvFknHadc54g';
+const H={"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json","Prefer":"return=representation"};
+const SERVICIOS_ALL=[{"id": 1, "nombre": "LAVADA SENCILLA + RINES Y CHASIS", "precio": 25000, "tipo": "Automovil"}, {"id": 2, "nombre": "LAVADA SENCILLA + MOTOR", "precio": 40000, "tipo": "Automovil"}, {"id": 3, "nombre": "LAVADA SENCILLA + DESMANCHADA", "precio": 45000, "tipo": "Automovil"}, {"id": 4, "nombre": "LAVADA SENCILLA + BRILLADA A MANO", "precio": 40000, "tipo": "Automovil"}, {"id": 5, "nombre": "LAVADA SENCILLA + BRILLADA MAQUINA", "precio": 120000, "tipo": "Automovil"}, {"id": 6, "nombre": "LAVADA SENCILLA + GRAFITADA", "precio": 40000, "tipo": "Automovil"}, {"id": 7, "nombre": "LAVADA SENCILLA + SILLAS", "precio": 50000, "tipo": "Automovil"}, {"id": 8, "nombre": "LAVADA + COJINERIA SIN DESMONTAR", "precio": 130000, "tipo": "Automovil"}, {"id": 9, "nombre": "LAVADA + COJINERIA DESMONTADA", "precio": 250000, "tipo": "Automovil"}, {"id": 10, "nombre": "LAVADA SENCILLA MOTO", "precio": 16000, "tipo": "Motos"}, {"id": 11, "nombre": "GRAFITADO DE CHASIS MOTO", "precio": 10000, "tipo": "Motos"}, {"id": 12, "nombre": "GRAFITADO DE CHASIS CUATRIMOTO", "precio": 20000, "tipo": "Cuatrimoto"}, {"id": 13, "nombre": "LAVADO REMOLQUE DOBLE CUATRIMOTO", "precio": 35000, "tipo": "Cuatrimoto"}, {"id": 14, "nombre": "LAVADO SENCILLA BICICLETA", "precio": 10000, "tipo": "Bicicletas"}, {"id": 15, "nombre": "LAVADA SENCILLA + RINES Y CHASIS", "precio": 35000, "tipo": "Camionetas"}, {"id": 16, "nombre": "LAVADA SENCILLA + MOTOR", "precio": 45000, "tipo": "Camionetas"}, {"id": 17, "nombre": "LAVADA SENCILLA + DESMANCHADA", "precio": 50000, "tipo": "Camionetas"}, {"id": 18, "nombre": "LAVADA SENCILLA + BRILLADA A MANO", "precio": 50000, "tipo": "Camionetas"}, {"id": 19, "nombre": "LAVADA SENCILLA + BRILLADA MAQUINA (60K)", "precio": 60000, "tipo": "Automovil"}, {"id": 20, "nombre": "LAVADA SENCILLA + GRAFITADA", "precio": 50000, "tipo": "Camionetas"}, {"id": 21, "nombre": "LAVADA SENCILLA + SILLAS (MOTO)", "precio": 30000, "tipo": "Motos"}, {"id": 22, "nombre": "LAVADA + COJINERIA SIN DESMONTAR (MOTO)", "precio": 25000, "tipo": "Motos"}, {"id": 23, "nombre": "LAVADA + COJINERIA DESMONTADA (250K)", "precio": 250000, "tipo": "Automovil"}, {"id": 24, "nombre": "LAVADA SENCILLA + BRILLADA MAQUINA", "precio": 130000, "tipo": "Camionetas"}, {"id": 25, "nombre": "LAVADA SENCILLA + SILLAS", "precio": 60000, "tipo": "Camionetas"}, {"id": 26, "nombre": "MOTOR ESPECIAL", "precio": 80000, "tipo": "Automovil"}, {"id": 27, "nombre": "COJINERIA SIN DESMONTE", "precio": 130000, "tipo": "Automovil"}, {"id": 28, "nombre": "SENCILLA + BRILLADA MANO", "precio": 40000, "tipo": "Automovil"}, {"id": 29, "nombre": "LAVADA + DESMANCHADA + BRILLADA A MANO", "precio": 65000, "tipo": "Automovil"}, {"id": 30, "nombre": "LAVADA + BRILLADA + GRAFITADA", "precio": 60000, "tipo": "Automovil"}, {"id": 31, "nombre": "LAVADA + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 80000, "tipo": "Automovil"}, {"id": 32, "nombre": "LAVADA + MOTOR + GRAFITADA", "precio": 60000, "tipo": "Automovil"}, {"id": 33, "nombre": "LAVADA + TECHO + SILLAS", "precio": 100000, "tipo": "Automovil"}, {"id": 34, "nombre": "LAVADA + MOTOR + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 120000, "tipo": "Automovil"}, {"id": 35, "nombre": "SENCILLA TAXI", "precio": 16000, "tipo": "Automovil"}, {"id": 36, "nombre": "ESCOLAR SENCILLA", "precio": 40000, "tipo": "Otros"}, {"id": 37, "nombre": "ADICIONAL (5K)", "precio": 5000, "tipo": "Automovil"}, {"id": 38, "nombre": "PISTOLAZO", "precio": 15000, "tipo": "Automovil"}, {"id": 39, "nombre": "ADICIONAL (10K)", "precio": 10000, "tipo": "Automovil"}, {"id": 40, "nombre": "LAVADO MOTO GRANDE + BRILLADA", "precio": 30000, "tipo": "Motos"}, {"id": 41, "nombre": "LAVADA + COJINERIA SIN DESMONTAR", "precio": 150000, "tipo": "Camionetas"}, {"id": 42, "nombre": "SENCILLA CERCANOS", "precio": 15000, "tipo": "Automovil"}, {"id": 43, "nombre": "SENCILLA AMBULANCIA", "precio": 40000, "tipo": "Automovil"}, {"id": 44, "nombre": "PARQUEDERO", "precio": 16000, "tipo": "Otros"}, {"id": 45, "nombre": "LAVADA + COJINERIA DESMONTADA", "precio": 300000, "tipo": "Camionetas"}, {"id": 46, "nombre": "LAVADA + TECHO", "precio": 70000, "tipo": "Camionetas"}, {"id": 47, "nombre": "DETALLADO FOGUEADO PINTURA", "precio": 250000, "tipo": "Automovil"}, {"id": 48, "nombre": "ADICIONAL (20K)", "precio": 20000, "tipo": "Automovil"}, {"id": 49, "nombre": "DESINFECCION VIDRIOS", "precio": 140000, "tipo": "Camionetas"}, {"id": 50, "nombre": "ASPIRADO + INTERIOR", "precio": 20000, "tipo": "Camionetas"}, {"id": 51, "nombre": "ASPIRADO ADICIONAL", "precio": 15000, "tipo": "Camionetas"}, {"id": 52, "nombre": "LAVADA + DESMANCHADA + BRILLADA A MANO", "precio": 80000, "tipo": "Camionetas"}, {"id": 53, "nombre": "LAVADA + BRILLADA + GRAFITADA", "precio": 70000, "tipo": "Camionetas"}, {"id": 54, "nombre": "LAVADA + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 100000, "tipo": "Camionetas"}, {"id": 55, "nombre": "LAVADA + MOTOR + GRAFITADA", "precio": 70000, "tipo": "Camionetas"}, {"id": 56, "nombre": "LAVADA + TECHO + SILLAS", "precio": 120000, "tipo": "Camionetas"}, {"id": 57, "nombre": "LAVADA + MOTOR + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 160000, "tipo": "Camionetas"}, {"id": 58, "nombre": "LAVADA DE MOTO + DESENGRASANTE + BRILLADA", "precio": 25000, "tipo": "Motos"}, {"id": 59, "nombre": "LAVADA DE MOTO GRANDE + DESENGRASANTE + BRILLADA", "precio": 30000, "tipo": "Motos"}, {"id": 60, "nombre": "LAVADA DE MOTO + DESENGRASANTE + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 35000, "tipo": "Motos"}, {"id": 61, "nombre": "LAVADA DE MOTO GRANDE + DESENGRASANTE + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 40000, "tipo": "Motos"}, {"id": 62, "nombre": "LAVADA + DESENGRASADA", "precio": 20000, "tipo": "Motos"}, {"id": 63, "nombre": "LAVADA SENCILLA", "precio": 22000, "tipo": "Automovil"}, {"id": 64, "nombre": "BRILLADA MANO", "precio": 10000, "tipo": "Automovil"}, {"id": 65, "nombre": "LAVADA + DESENGRASADA (21K)", "precio": 21000, "tipo": "Motos"}, {"id": 66, "nombre": "ADICIONAL (50K)", "precio": 50000, "tipo": "Automovil"}, {"id": 67, "nombre": "ADICIONAL (2K)", "precio": 2000, "tipo": "Otros"}, {"id": 68, "nombre": "MOTOSCARRERAS", "precio": 20000, "tipo": "Otros"}, {"id": 69, "nombre": "MOTOCROS MINI", "precio": 15000, "tipo": "Motos"}, {"id": 70, "nombre": "ADICIONAL (8K)", "precio": 8000, "tipo": "Otros"}, {"id": 71, "nombre": "ADICIONAL (30K)", "precio": 30000, "tipo": "Otros"}, {"id": 72, "nombre": "ADICIONAL (90K)", "precio": 90000, "tipo": "Otros"}];
 
 // State
-let currentUser = null;
-let conceseros = [];
-let servicios = [{"id": 1, "nombre": "LAVADA SENCILLA + RINES Y CHASIS", "precio": 25000, "tipo": "Automovil"}, {"id": 2, "nombre": "LAVADA SENCILLA + MOTOR", "precio": 40000, "tipo": "Automovil"}, {"id": 3, "nombre": "LAVADA SENCILLA + DESMANCHADA", "precio": 45000, "tipo": "Automovil"}, {"id": 4, "nombre": "LAVADA SENCILLA + BRILLADA A MANO", "precio": 40000, "tipo": "Automovil"}, {"id": 5, "nombre": "LAVADA SENCILLA + BRILLADA MAQUINA", "precio": 120000, "tipo": "Automovil"}, {"id": 6, "nombre": "LAVADA SENCILLA + GRAFITADA", "precio": 40000, "tipo": "Automovil"}, {"id": 7, "nombre": "LAVADA SENCILLA + SILLAS", "precio": 50000, "tipo": "Automovil"}, {"id": 8, "nombre": "LAVADA + COJINERIA SIN DESMONTAR", "precio": 130000, "tipo": "Automovil"}, {"id": 9, "nombre": "LAVADA + COJINERIA DESMONTADA", "precio": 250000, "tipo": "Automovil"}, {"id": 10, "nombre": "LAVADA SENCILLA MOTO", "precio": 16000, "tipo": "Motos"}, {"id": 11, "nombre": "GRAFITADO DE CHASIS MOTO", "precio": 10000, "tipo": "Motos"}, {"id": 12, "nombre": "GRAFITADO DE CHASIS CUATRIMOTO", "precio": 20000, "tipo": "Cuatrimoto"}, {"id": 13, "nombre": "LAVADO REMOLQUE DOBLE CUATRIMOTO", "precio": 35000, "tipo": "Cuatrimoto"}, {"id": 14, "nombre": "LAVADO SENCILLA BICICLETA", "precio": 10000, "tipo": "Bicicletas"}, {"id": 15, "nombre": "LAVADA SENCILLA + RINES Y CHASIS", "precio": 35000, "tipo": "Camionetas"}, {"id": 16, "nombre": "LAVADA SENCILLA + MOTOR", "precio": 45000, "tipo": "Camionetas"}, {"id": 17, "nombre": "LAVADA SENCILLA + DESMANCHADA", "precio": 50000, "tipo": "Camionetas"}, {"id": 18, "nombre": "LAVADA SENCILLA + BRILLADA A MANO", "precio": 50000, "tipo": "Camionetas"}, {"id": 19, "nombre": "LAVADA SENCILLA + BRILLADA MAQUINA (60K)", "precio": 60000, "tipo": "Automovil"}, {"id": 20, "nombre": "LAVADA SENCILLA + GRAFITADA", "precio": 50000, "tipo": "Camionetas"}, {"id": 21, "nombre": "LAVADA SENCILLA + SILLAS (MOTO)", "precio": 30000, "tipo": "Motos"}, {"id": 22, "nombre": "LAVADA + COJINERIA SIN DESMONTAR (MOTO)", "precio": 25000, "tipo": "Motos"}, {"id": 23, "nombre": "LAVADA + COJINERIA DESMONTADA (250K)", "precio": 250000, "tipo": "Automovil"}, {"id": 24, "nombre": "LAVADA SENCILLA + BRILLADA MAQUINA", "precio": 130000, "tipo": "Camionetas"}, {"id": 25, "nombre": "LAVADA SENCILLA + SILLAS", "precio": 60000, "tipo": "Camionetas"}, {"id": 26, "nombre": "MOTOR ESPECIAL", "precio": 80000, "tipo": "Automovil"}, {"id": 27, "nombre": "COJINERIA SIN DESMONTE", "precio": 130000, "tipo": "Automovil"}, {"id": 28, "nombre": "SENCILLA + BRILLADA MANO", "precio": 40000, "tipo": "Automovil"}, {"id": 29, "nombre": "LAVADA + DESMANCHADA + BRILLADA A MANO", "precio": 65000, "tipo": "Automovil"}, {"id": 30, "nombre": "LAVADA + BRILLADA + GRAFITADA", "precio": 60000, "tipo": "Automovil"}, {"id": 31, "nombre": "LAVADA + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 80000, "tipo": "Automovil"}, {"id": 32, "nombre": "LAVADA + MOTOR + GRAFITADA", "precio": 60000, "tipo": "Automovil"}, {"id": 33, "nombre": "LAVADA + TECHO + SILLAS", "precio": 100000, "tipo": "Automovil"}, {"id": 34, "nombre": "LAVADA + MOTOR + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 120000, "tipo": "Automovil"}, {"id": 35, "nombre": "SENCILLA TAXI", "precio": 16000, "tipo": "Automovil"}, {"id": 36, "nombre": "ESCOLAR SENCILLA", "precio": 40000, "tipo": "Otros"}, {"id": 37, "nombre": "ADICIONAL (5K)", "precio": 5000, "tipo": "Automovil"}, {"id": 38, "nombre": "PISTOLAZO", "precio": 15000, "tipo": "Automovil"}, {"id": 39, "nombre": "ADICIONAL (10K)", "precio": 10000, "tipo": "Automovil"}, {"id": 40, "nombre": "LAVADO MOTO GRANDE + BRILLADA", "precio": 30000, "tipo": "Motos"}, {"id": 41, "nombre": "LAVADA + COJINERIA SIN DESMONTAR", "precio": 150000, "tipo": "Camionetas"}, {"id": 42, "nombre": "SENCILLA CERCANOS", "precio": 15000, "tipo": "Automovil"}, {"id": 43, "nombre": "SENCILLA AMBULANCIA", "precio": 40000, "tipo": "Automovil"}, {"id": 44, "nombre": "PARQUEDERO", "precio": 16000, "tipo": "Otros"}, {"id": 45, "nombre": "LAVADA + COJINERIA DESMONTADA", "precio": 300000, "tipo": "Camionetas"}, {"id": 46, "nombre": "LAVADA + TECHO", "precio": 70000, "tipo": "Camionetas"}, {"id": 47, "nombre": "DETALLADO FOGUEADO PINTURA", "precio": 250000, "tipo": "Automovil"}, {"id": 48, "nombre": "ADICIONAL (20K)", "precio": 20000, "tipo": "Automovil"}, {"id": 49, "nombre": "DESINFECCION VIDRIOS", "precio": 140000, "tipo": "Camionetas"}, {"id": 50, "nombre": "ASPIRADO + INTERIOR", "precio": 20000, "tipo": "Camionetas"}, {"id": 51, "nombre": "ASPIRADO ADICIONAL", "precio": 15000, "tipo": "Camionetas"}, {"id": 52, "nombre": "LAVADA + DESMANCHADA + BRILLADA A MANO", "precio": 80000, "tipo": "Camionetas"}, {"id": 53, "nombre": "LAVADA + BRILLADA + GRAFITADA", "precio": 70000, "tipo": "Camionetas"}, {"id": 54, "nombre": "LAVADA + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 100000, "tipo": "Camionetas"}, {"id": 55, "nombre": "LAVADA + MOTOR + GRAFITADA", "precio": 70000, "tipo": "Camionetas"}, {"id": 56, "nombre": "LAVADA + TECHO + SILLAS", "precio": 120000, "tipo": "Camionetas"}, {"id": 57, "nombre": "LAVADA + MOTOR + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 160000, "tipo": "Camionetas"}, {"id": 58, "nombre": "LAVADA DE MOTO + DESENGRASANTE + BRILLADA", "precio": 25000, "tipo": "Motos"}, {"id": 59, "nombre": "LAVADA DE MOTO GRANDE + DESENGRASANTE + BRILLADA", "precio": 30000, "tipo": "Motos"}, {"id": 60, "nombre": "LAVADA DE MOTO + DESENGRASANTE + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 35000, "tipo": "Motos"}, {"id": 61, "nombre": "LAVADA DE MOTO GRANDE + DESENGRASANTE + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 40000, "tipo": "Motos"}, {"id": 62, "nombre": "LAVADA + DESENGRASADA", "precio": 20000, "tipo": "Motos"}, {"id": 63, "nombre": "LAVADA SENCILLA", "precio": 22000, "tipo": "Automovil"}, {"id": 64, "nombre": "BRILLADA MANO", "precio": 10000, "tipo": "Automovil"}, {"id": 65, "nombre": "LAVADA + DESENGRASADA (21K)", "precio": 21000, "tipo": "Motos"}, {"id": 66, "nombre": "ADICIONAL (50K)", "precio": 50000, "tipo": "Automovil"}, {"id": 67, "nombre": "ADICIONAL (2K)", "precio": 2000, "tipo": "Otros"}, {"id": 68, "nombre": "MOTOSCARRERAS", "precio": 20000, "tipo": "Otros"}, {"id": 69, "nombre": "MOTOCROS MINI", "precio": 15000, "tipo": "Motos"}, {"id": 70, "nombre": "ADICIONAL (8K)", "precio": 8000, "tipo": "Otros"}, {"id": 71, "nombre": "ADICIONAL (30K)", "precio": 30000, "tipo": "Otros"}, {"id": 72, "nombre": "ADICIONAL (90K)", "precio": 90000, "tipo": "Otros"}];
-const SERVICIOS_ALL = [{"id": 1, "nombre": "LAVADA SENCILLA + RINES Y CHASIS", "precio": 25000, "tipo": "Automovil"}, {"id": 2, "nombre": "LAVADA SENCILLA + MOTOR", "precio": 40000, "tipo": "Automovil"}, {"id": 3, "nombre": "LAVADA SENCILLA + DESMANCHADA", "precio": 45000, "tipo": "Automovil"}, {"id": 4, "nombre": "LAVADA SENCILLA + BRILLADA A MANO", "precio": 40000, "tipo": "Automovil"}, {"id": 5, "nombre": "LAVADA SENCILLA + BRILLADA MAQUINA", "precio": 120000, "tipo": "Automovil"}, {"id": 6, "nombre": "LAVADA SENCILLA + GRAFITADA", "precio": 40000, "tipo": "Automovil"}, {"id": 7, "nombre": "LAVADA SENCILLA + SILLAS", "precio": 50000, "tipo": "Automovil"}, {"id": 8, "nombre": "LAVADA + COJINERIA SIN DESMONTAR", "precio": 130000, "tipo": "Automovil"}, {"id": 9, "nombre": "LAVADA + COJINERIA DESMONTADA", "precio": 250000, "tipo": "Automovil"}, {"id": 10, "nombre": "LAVADA SENCILLA MOTO", "precio": 16000, "tipo": "Motos"}, {"id": 11, "nombre": "GRAFITADO DE CHASIS MOTO", "precio": 10000, "tipo": "Motos"}, {"id": 12, "nombre": "GRAFITADO DE CHASIS CUATRIMOTO", "precio": 20000, "tipo": "Cuatrimoto"}, {"id": 13, "nombre": "LAVADO REMOLQUE DOBLE CUATRIMOTO", "precio": 35000, "tipo": "Cuatrimoto"}, {"id": 14, "nombre": "LAVADO SENCILLA BICICLETA", "precio": 10000, "tipo": "Bicicletas"}, {"id": 15, "nombre": "LAVADA SENCILLA + RINES Y CHASIS", "precio": 35000, "tipo": "Camionetas"}, {"id": 16, "nombre": "LAVADA SENCILLA + MOTOR", "precio": 45000, "tipo": "Camionetas"}, {"id": 17, "nombre": "LAVADA SENCILLA + DESMANCHADA", "precio": 50000, "tipo": "Camionetas"}, {"id": 18, "nombre": "LAVADA SENCILLA + BRILLADA A MANO", "precio": 50000, "tipo": "Camionetas"}, {"id": 19, "nombre": "LAVADA SENCILLA + BRILLADA MAQUINA (60K)", "precio": 60000, "tipo": "Automovil"}, {"id": 20, "nombre": "LAVADA SENCILLA + GRAFITADA", "precio": 50000, "tipo": "Camionetas"}, {"id": 21, "nombre": "LAVADA SENCILLA + SILLAS (MOTO)", "precio": 30000, "tipo": "Motos"}, {"id": 22, "nombre": "LAVADA + COJINERIA SIN DESMONTAR (MOTO)", "precio": 25000, "tipo": "Motos"}, {"id": 23, "nombre": "LAVADA + COJINERIA DESMONTADA (250K)", "precio": 250000, "tipo": "Automovil"}, {"id": 24, "nombre": "LAVADA SENCILLA + BRILLADA MAQUINA", "precio": 130000, "tipo": "Camionetas"}, {"id": 25, "nombre": "LAVADA SENCILLA + SILLAS", "precio": 60000, "tipo": "Camionetas"}, {"id": 26, "nombre": "MOTOR ESPECIAL", "precio": 80000, "tipo": "Automovil"}, {"id": 27, "nombre": "COJINERIA SIN DESMONTE", "precio": 130000, "tipo": "Automovil"}, {"id": 28, "nombre": "SENCILLA + BRILLADA MANO", "precio": 40000, "tipo": "Automovil"}, {"id": 29, "nombre": "LAVADA + DESMANCHADA + BRILLADA A MANO", "precio": 65000, "tipo": "Automovil"}, {"id": 30, "nombre": "LAVADA + BRILLADA + GRAFITADA", "precio": 60000, "tipo": "Automovil"}, {"id": 31, "nombre": "LAVADA + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 80000, "tipo": "Automovil"}, {"id": 32, "nombre": "LAVADA + MOTOR + GRAFITADA", "precio": 60000, "tipo": "Automovil"}, {"id": 33, "nombre": "LAVADA + TECHO + SILLAS", "precio": 100000, "tipo": "Automovil"}, {"id": 34, "nombre": "LAVADA + MOTOR + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 120000, "tipo": "Automovil"}, {"id": 35, "nombre": "SENCILLA TAXI", "precio": 16000, "tipo": "Automovil"}, {"id": 36, "nombre": "ESCOLAR SENCILLA", "precio": 40000, "tipo": "Otros"}, {"id": 37, "nombre": "ADICIONAL (5K)", "precio": 5000, "tipo": "Automovil"}, {"id": 38, "nombre": "PISTOLAZO", "precio": 15000, "tipo": "Automovil"}, {"id": 39, "nombre": "ADICIONAL (10K)", "precio": 10000, "tipo": "Automovil"}, {"id": 40, "nombre": "LAVADO MOTO GRANDE + BRILLADA", "precio": 30000, "tipo": "Motos"}, {"id": 41, "nombre": "LAVADA + COJINERIA SIN DESMONTAR", "precio": 150000, "tipo": "Camionetas"}, {"id": 42, "nombre": "SENCILLA CERCANOS", "precio": 15000, "tipo": "Automovil"}, {"id": 43, "nombre": "SENCILLA AMBULANCIA", "precio": 40000, "tipo": "Automovil"}, {"id": 44, "nombre": "PARQUEDERO", "precio": 16000, "tipo": "Otros"}, {"id": 45, "nombre": "LAVADA + COJINERIA DESMONTADA", "precio": 300000, "tipo": "Camionetas"}, {"id": 46, "nombre": "LAVADA + TECHO", "precio": 70000, "tipo": "Camionetas"}, {"id": 47, "nombre": "DETALLADO FOGUEADO PINTURA", "precio": 250000, "tipo": "Automovil"}, {"id": 48, "nombre": "ADICIONAL (20K)", "precio": 20000, "tipo": "Automovil"}, {"id": 49, "nombre": "DESINFECCION VIDRIOS", "precio": 140000, "tipo": "Camionetas"}, {"id": 50, "nombre": "ASPIRADO + INTERIOR", "precio": 20000, "tipo": "Camionetas"}, {"id": 51, "nombre": "ASPIRADO ADICIONAL", "precio": 15000, "tipo": "Camionetas"}, {"id": 52, "nombre": "LAVADA + DESMANCHADA + BRILLADA A MANO", "precio": 80000, "tipo": "Camionetas"}, {"id": 53, "nombre": "LAVADA + BRILLADA + GRAFITADA", "precio": 70000, "tipo": "Camionetas"}, {"id": 54, "nombre": "LAVADA + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 100000, "tipo": "Camionetas"}, {"id": 55, "nombre": "LAVADA + MOTOR + GRAFITADA", "precio": 70000, "tipo": "Camionetas"}, {"id": 56, "nombre": "LAVADA + TECHO + SILLAS", "precio": 120000, "tipo": "Camionetas"}, {"id": 57, "nombre": "LAVADA + MOTOR + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 160000, "tipo": "Camionetas"}, {"id": 58, "nombre": "LAVADA DE MOTO + DESENGRASANTE + BRILLADA", "precio": 25000, "tipo": "Motos"}, {"id": 59, "nombre": "LAVADA DE MOTO GRANDE + DESENGRASANTE + BRILLADA", "precio": 30000, "tipo": "Motos"}, {"id": 60, "nombre": "LAVADA DE MOTO + DESENGRASANTE + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 35000, "tipo": "Motos"}, {"id": 61, "nombre": "LAVADA DE MOTO GRANDE + DESENGRASANTE + DESMANCHADA + BRILLADA + GRAFITADA", "precio": 40000, "tipo": "Motos"}, {"id": 62, "nombre": "LAVADA + DESENGRASADA", "precio": 20000, "tipo": "Motos"}, {"id": 63, "nombre": "LAVADA SENCILLA", "precio": 22000, "tipo": "Automovil"}, {"id": 64, "nombre": "BRILLADA MANO", "precio": 10000, "tipo": "Automovil"}, {"id": 65, "nombre": "LAVADA + DESENGRASADA (21K)", "precio": 21000, "tipo": "Motos"}, {"id": 66, "nombre": "ADICIONAL (50K)", "precio": 50000, "tipo": "Automovil"}, {"id": 67, "nombre": "ADICIONAL (2K)", "precio": 2000, "tipo": "Otros"}, {"id": 68, "nombre": "MOTOSCARRERAS", "precio": 20000, "tipo": "Otros"}, {"id": 69, "nombre": "MOTOCROS MINI", "precio": 15000, "tipo": "Motos"}, {"id": 70, "nombre": "ADICIONAL (8K)", "precio": 8000, "tipo": "Otros"}, {"id": 71, "nombre": "ADICIONAL (30K)", "precio": 30000, "tipo": "Otros"}, {"id": 72, "nombre": "ADICIONAL (90K)", "precio": 90000, "tipo": "Otros"}];
-let ordenActual = null;
-let payMode = 'efectivo';
-let gPayMode = 'efectivo';
+let currentUser=null, conceseros=[], servicios=[], selRoleVal='dueno';
+let selectedSvcs=[], editSelectedSvcs=[], tipoActivo='Todos', editTipoActivo='Todos';
+let cobrarOrdenId=null, cobrarPayMode='efectivo', gastoPayMode='efectivo';
+let borrarOrdenId=null, ordenActual=null;
+let serviciosCfgAll=[];
 
 // ── API ──────────────────────────────────────────────────────────────────────
-async function api(path, method='GET', body=null){
-  const opts = {method, headers:H};
-  if(body) opts.body = JSON.stringify(body);
-  const r = await fetch(SB_URL+'/rest/v1/'+path, opts);
-  if(!r.ok){ const e=await r.text(); throw new Error(e); }
+async function api(path,method='GET',body=null){
+  const opts={method,headers:H};
+  if(body) opts.body=JSON.stringify(body);
+  const r=await fetch(SB_URL+'/rest/v1/'+path,opts);
+  if(!r.ok){const e=await r.text();throw new Error(e);}
   if(r.status===204) return null;
   return r.json();
 }
+const fmt=n=>new Intl.NumberFormat('es-CO').format(n||0);
+const today=()=>new Date().toISOString().slice(0,10);
+const fmtTime=ts=>ts?new Date(ts).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}):'';
+const MES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const COLORS=['#C9A84C','#E8C96A','#8BA3BB','#6B7280','#4B5563','#9CA3AF'];
 
 // ── AUTH ─────────────────────────────────────────────────────────────────────
-const PINS = {dueno:'1234', socio:'5678', cajero:'0000'};
-let selRoleVal = 'dueno';
+const PINS={dueno:'1234',cajero:'0000'};
 
-function selRole(role, el){
-  selRoleVal = role;
+function selRole(role,el){
+  selRoleVal=role;
   document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('sel'));
   el.classList.add('sel');
 }
 
 function doLogin(){
-  const pin = document.getElementById('pin-input').value;
-  const err = document.getElementById('login-err');
-  if(PINS[selRoleVal] === pin){
-    currentUser = {rol:selRoleVal, nombre:selRoleVal.charAt(0).toUpperCase()+selRoleVal.slice(1)};
+  const pin=document.getElementById('pin-input').value;
+  const err=document.getElementById('login-err');
+  if(PINS[selRoleVal]===pin){
+    currentUser={rol:selRoleVal,nombre:selRoleVal==='dueno'?'Dueño':'Cajero'};
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app').classList.add('visible');
     setupNav();
     initApp();
   } else {
-    err.textContent = 'PIN incorrecto. Intenta de nuevo.';
+    err.textContent='PIN incorrecto.';
     document.getElementById('pin-input').value='';
   }
 }
 
 function doLogout(){
   currentUser=null;
-  document.getElementById('login-screen').style.display='flex';
   document.getElementById('app').classList.remove('visible');
+  document.getElementById('login-screen').style.display='flex';
   document.getElementById('pin-input').value='';
   document.getElementById('login-err').textContent='';
+  selRoleVal='dueno';
+  document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('sel'));
+  document.querySelector('.role-btn')?.classList.add('sel');
+  // Reset nav
+  ['nav-cierre','nav-gastos','nav-dashboard','nav-conceseros','nav-servicios-cfg',
+   'sep-reportes','sep-config','bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
+    document.getElementById(id)?.classList.add('hidden'));
+  go('ordenes',document.getElementById('nav-ordenes'));
 }
 
 function setupNav(){
-  const isCajero = currentUser.rol==='cajero';
-  const isOwner  = currentUser.rol==='dueno';
-  const isSocio  = currentUser.rol==='socio';
-
-  // Always show ordenes
-  // Cierre and gastos: cajero + dueno
-  if(!isSocio){
-    document.getElementById('nav-cierre').classList.remove('hidden');
-    document.getElementById('nav-gastos').classList.remove('hidden');
-  }
-  // Dashboard: dueno + socio
-  if(!isCajero){
-    document.getElementById('nav-dashboard').classList.remove('hidden');
-    document.querySelectorAll('.owner-only').forEach(el=>el.classList.remove('hidden'));
-  }
-  // Config: only dueno
-  if(isOwner){
-    document.getElementById('nav-conceseros').classList.remove('hidden');
-    document.getElementById('nav-servicios-cfg').classList.remove('hidden');
-  }
-
-  document.getElementById('tb-user').textContent = '👤 '+currentUser.nombre;
-  // Mobile bottom nav
-  if(!isSocio){
+  const isOwner=currentUser.rol==='dueno';
+  const isCajero=currentUser.rol==='cajero';
+  // Reset all first
+  ['nav-cierre','nav-gastos','nav-dashboard','nav-conceseros','nav-servicios-cfg',
+   'sep-reportes','sep-config','bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
+    document.getElementById(id)?.classList.add('hidden'));
+  // Cajero: ordenes + cierre
+  if(isCajero){
+    document.getElementById('nav-cierre')?.classList.remove('hidden');
     document.getElementById('bn-cierre')?.classList.remove('hidden');
-    document.getElementById('bn-gastos')?.classList.remove('hidden');
   }
-  if(!isCajero){
-    document.getElementById('bn-dashboard')?.classList.remove('hidden');
-  }
+  // Dueño: todo
   if(isOwner){
-    document.getElementById('bn-conceseros')?.classList.remove('hidden');
+    ['nav-cierre','nav-gastos','nav-dashboard','nav-conceseros','nav-servicios-cfg',
+     'sep-reportes','sep-config','bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
+      document.getElementById(id)?.classList.remove('hidden'));
   }
-  updateDate();
-}
-
-function updateDate(){
-  const now = new Date();
-  document.getElementById('tb-date').textContent = now.toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
-  document.getElementById('ordenes-fecha').textContent = now.toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  document.getElementById('cierre-fecha').textContent = 'Resumen — '+now.toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('tb-user').textContent=(isOwner?'👑 Dueño':'🖥️ Cajero');
+  document.getElementById('tb-date').textContent=new Date().toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short'});
+  document.getElementById('ordenes-fecha').textContent=new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('cierre-fecha').textContent='Cierre — '+new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
 }
 
 // ── NAV ──────────────────────────────────────────────────────────────────────
-function go(s, el){
+function go(s,el){
   document.querySelectorAll('.screen').forEach(e=>e.classList.remove('on'));
   document.querySelectorAll('.ni').forEach(e=>e.classList.remove('on'));
-  document.getElementById('s-'+s).classList.add('on');
-  el.classList.add('on');
+  document.getElementById('s-'+s)?.classList.add('on');
+  el?.classList.add('on');
   if(s==='ordenes') loadOrdenes();
-  if(s==='cierre') loadCierre();
-  if(s==='gastos') loadGastos();
-  if(s==='dashboard') loadDashboard();
-  if(s==='conceseros') loadConceserosList();
-  if(s==='servicios-cfg') loadServiciosCfg();
+  else if(s==='cierre') loadCierre();
+  else if(s==='gastos') loadGastos();
+  else if(s==='dashboard') loadDashboard();
+  else if(s==='conceseros') loadConcsLista();
+  else if(s==='servicios-cfg') loadSvcsCfg();
+}
+
+function goMobile(s,el){
+  go(s,document.getElementById('nav-'+s));
+  document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
 }
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
 async function initApp(){
-  try {
-    conceseros = await api('conceseros?activo=eq.true&order=nombre');
-    // servicios cargados localmente desde Excel
+  try{
+    conceseros=await api('conceseros?activo=eq.true&order=nombre');
+    const dbSvcs=await api('servicios?activo=eq.true&order=tipo,nombre');
+    servicios=dbSvcs.length>0?dbSvcs:SERVICIOS_ALL;
     loadOrdenes();
-    checkCumpleanos();
-    if(currentUser.rol!=='cajero') loadDashboardMeses();
-  } catch(e){ showToast('Error conectando: '+e.message, true); }
+    checkBday();
+    if(currentUser.rol==='dueno') loadDashMeses();
+  }catch(e){showToast('Error conectando: '+e.message,true);}
 }
-
-const fmt = n => new Intl.NumberFormat('es-CO').format(n||0);
-const today = () => new Date().toISOString().slice(0,10);
-const fmtTime = ts => ts ? new Date(ts).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}) : '';
 
 // ── ÓRDENES ──────────────────────────────────────────────────────────────────
 async function loadOrdenes(){
-  try {
-    const ordenes = await api(`ordenes?fecha=eq.${today()}&order=id.desc`);
-    renderOrdenes(ordenes);
-    updateKpisOrdenes(ordenes);
-  } catch(e){ showToast('Error cargando órdenes', true); }
+  try{
+    const ords=await api('ordenes?fecha=eq.'+today()+'&order=id.desc');
+    renderOrdenes(ords);
+    updateKpis(ords);
+  }catch(e){showToast('Error cargando órdenes',true);}
 }
 
-function renderOrdenes(ordenes){
-  const el = document.getElementById('ordenes-list');
-  if(!ordenes.length){ el.innerHTML='<div class="empty"><div class="empty-ico">🧾</div>No hay órdenes hoy.<br>Crea la primera.</div>'; return; }
-  el.innerHTML = ordenes.map(o=>`
-    <div class="orden-list-item ${o.estado}">
+function renderOrdenes(ords){
+  const el=document.getElementById('ordenes-list');
+  if(!ords.length){el.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted)">📋 Sin órdenes hoy. Crea la primera.</div>';return;}
+  el.innerHTML=ords.map(o=>`
+    <div class="orden-item ${o.estado}">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
         <div style="display:flex;align-items:center;gap:10px">
           <span style="font-family:monospace;color:var(--muted);font-size:11px">#${o.numero_orden}</span>
-          <span style="font-weight:700;color:var(--gold);font-size:14px">${o.placa}</span>
+          <span style="font-weight:700;color:var(--gold);font-size:15px">${o.placa}</span>
           <span style="font-size:12px">${o.concesero_nombre||''}</span>
-          <span class="badge ${o.forma_pago==='qr'?'bqr':'bg'}">${o.forma_pago==='qr'?'📲 QR':'💵 Ef'}</span>
+          ${o.forma_pago==='pendiente'||!o.forma_pago?'<span class="badge ba">⏳ Pendiente</span>':o.forma_pago==='qr'?'<span class="badge bqr">📲 QR</span>':'<span class="badge bg">💵 Ef</span>'}
         </div>
-        <div style="display:flex;align-items:center;gap:8px">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
           <span style="color:var(--muted);font-size:11px">${fmtTime(o.hora_entrada)}</span>
           <span style="font-weight:700;font-size:14px">$${fmt(o.total)}</span>
           <span class="badge ${o.estado==='abierta'?'ba':'bg'}">${o.estado==='abierta'?'Abierta':'Cerrada'}</span>
           ${o.estado==='abierta'?`
-            <button class="btn btn-p" style="padding:4px 10px;font-size:10px" onclick="abrirCerrarOrden(${o.id})">💰 Cobrar</button>
-            <button class="btn btn-g" style="padding:4px 10px;font-size:10px" onclick="abrirEditarOrden(${o.id})">✏️ Editar</button>
+            <button class="btn btn-p" style="padding:4px 10px;font-size:10px" onclick="abrirCobrar(${o.id})">💰 Cobrar</button>
+            <button class="btn btn-g" style="padding:4px 10px;font-size:10px" onclick="abrirEditarOrd(${o.id})">✏️</button>
           `:''}
-          <button class="btn btn-g" style="padding:4px 10px;font-size:10px" onclick="reimprimirOrden(${o.id})">🖨️</button>
-          ${currentUser?.rol==='dueno'?`<button class="btn btn-r" style="padding:4px 10px;font-size:10px" onclick="confirmarBorrarOrden(${o.id},${o.numero_orden})">🗑️</button>`:''}
+          <button class="btn btn-g" style="padding:4px 10px;font-size:10px" onclick="reimprimir(${o.id})">🖨️</button>
+          ${currentUser?.rol==='dueno'?`<button class="btn btn-r" style="padding:4px 10px;font-size:10px" onclick="abrirBorrar(${o.id},${o.numero_orden})">🗑️</button>`:''}
         </div>
       </div>
-      <div style="font-size:11px;color:var(--muted);margin-top:4px" id="svc-${o.id}">Cargando servicio...</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:5px" id="svcs-${o.id}">Cargando...</div>
     </div>`).join('');
-  // Load services for each order
-  ordenes.forEach(async o => {
-    try {
-      const svcs = await api(`orden_servicios?orden_id=eq.${o.id}`);
-      const el2 = document.getElementById('svc-'+o.id);
-      if(el2) el2.textContent = svcs.map(s=>s.servicio_nombre+(s.cantidad>1?` x${s.cantidad}`:'')).join(' · ');
-    } catch{}
+  ords.forEach(async o=>{
+    try{
+      const s=await api('orden_servicios?orden_id=eq.'+o.id);
+      const el2=document.getElementById('svcs-'+o.id);
+      if(el2) el2.textContent=s.map(x=>x.servicio_nombre+(x.cantidad>1?' x'+x.cantidad:'')).join(' · ')||'Sin servicios';
+    }catch{}
   });
 }
 
-function updateKpisOrdenes(ordenes){
-  const total = ordenes.reduce((s,o)=>s+(o.total||0),0);
-  const ef    = ordenes.filter(o=>o.forma_pago==='efectivo').reduce((s,o)=>s+(o.total||0),0);
-  const qr    = ordenes.filter(o=>o.forma_pago==='qr').reduce((s,o)=>s+(o.total||0),0);
-  const abiertas = ordenes.filter(o=>o.estado==='abierta').length;
-  const cerradas = ordenes.filter(o=>o.estado==='cerrada').length;
-  const concsActivos = new Set(ordenes.map(o=>o.concesero_nombre)).size;
-  document.getElementById('kpi-ventas').textContent = '$'+fmt(total);
-  document.getElementById('kpi-pago-split').textContent = `💵 $${fmt(ef)} · 📲 $${fmt(qr)}`;
-  document.getElementById('kpi-ordenes-count').textContent = ordenes.length;
-  document.getElementById('kpi-estados').textContent = `${cerradas} cerradas · ${abiertas} abiertas`;
-  document.getElementById('kpi-vehiculos').textContent = ordenes.length;
-  document.getElementById('kpi-conceseros-activos').textContent = concsActivos;
-  document.getElementById('badge-abiertas').textContent = `${abiertas} abiertas`;
+function updateKpis(ords){
+  const total=ords.reduce((s,o)=>s+(o.total||0),0);
+  const ef=ords.filter(o=>o.forma_pago==='efectivo').reduce((s,o)=>s+(o.total||0),0);
+  const qr=ords.filter(o=>o.forma_pago==='qr').reduce((s,o)=>s+(o.total||0),0);
+  const ab=ords.filter(o=>o.estado==='abierta').length;
+  const ce=ords.filter(o=>o.estado==='cerrada').length;
+  document.getElementById('kpi-ventas').textContent='$'+fmt(total);
+  document.getElementById('kpi-split').textContent='💵 $'+fmt(ef)+' · 📲 $'+fmt(qr);
+  document.getElementById('kpi-count').textContent=ords.length;
+  document.getElementById('kpi-estados').textContent=ce+' cerradas · '+ab+' abiertas';
+  document.getElementById('kpi-veh').textContent=ords.length;
+  document.getElementById('kpi-conc').textContent=new Set(ords.map(o=>o.concesero_nombre)).size;
+  document.getElementById('badge-abiertas').textContent=ab+' abiertas';
 }
 
 // ── NUEVA ORDEN ───────────────────────────────────────────────────────────────
 function abrirModalOrden(){
-  // Fill conceseros
-  const sel = document.getElementById('ord-concesero');
-  sel.innerHTML = conceseros.map(c=>`<option value="${c.id}" data-nombre="${c.nombre}">${c.nombre}</option>`).join('');
-  // Fill servicios
-  const lista = document.getElementById('servicios-lista');
-  lista.innerHTML = servicios.map(s=>`
-    <div class="svc-item" onclick="selSvc(this,${s.id},'${s.nombre.replace(/'/g,"\\'")}',${s.precio})" data-id="${s.id}">
-      <span style="font-size:12px">${s.nombre}</span>
-      <span style="font-weight:700;color:var(--gold)">$${fmt(s.precio)}</span>
-    </div>`).join('');
-  // Reset fields
+  const sel=document.getElementById('ord-conc');
+  sel.innerHTML=conceseros.map(c=>`<option value="${c.id}" data-nombre="${c.nombre}">${c.nombre}</option>`).join('');
   document.getElementById('ord-placa').value='';
   document.getElementById('ord-obs').value='';
-  document.getElementById('ord-cliente-nombre').value='';
-  document.getElementById('ord-cliente-cc').value='';
-  document.getElementById('ord-cliente-tel').value='';
+  document.getElementById('ord-cli-nombre').value='';
+  document.getElementById('ord-cli-cc').value='';
+  document.getElementById('ord-cli-tel').value='';
   document.getElementById('chk-cliente').checked=false;
   document.getElementById('cliente-fields').style.display='none';
-  selectedSvc = null;
-  document.getElementById('svc-selected-info').style.display='none';
+  selectedSvcs=[];
+  tipoActivo='Todos';
+  document.querySelectorAll('#tipo-btns .tipo-btn').forEach(b=>b.classList.remove('on'));
+  document.querySelector('#tipo-btns .tipo-btn')?.classList.add('on');
+  document.getElementById('svc-search').value='';
+  renderSvcsAgregados();
+  renderSvcLista(getSvcs());
   document.getElementById('modal-orden').style.display='flex';
 }
 
-let selectedSvc = null;
-let tipoActivo = 'Todos';
+function getSvcs(){
+  return servicios.length>0
+    ? servicios.map(s=>(({id:s.id,nombre:s.nombre,precio:s.precio,tipo:s.tipo||'Automovil'})))
+    : SERVICIOS_ALL;
+}
 
-function renderServicios(svcs){
-  const lista = document.getElementById('servicios-lista');
-  if(!lista) return;
-  if(!svcs.length){
-    lista.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px">Sin resultados</div>';
-    return;
-  }
-  lista.innerHTML = svcs.map(s=>`
-    <div class="svc-item${selectedSvc?.id===s.id?' sel':''}" onclick="selSvc(this,${s.id},\`${s.nombre.replace(/`/g,"'")}\`,${s.precio})">
-      <span style="font-size:12px">${s.nombre}</span>
-      <span style="font-weight:700;color:var(--gold);white-space:nowrap;margin-left:8px">$${fmt(s.precio)}</span>
+function renderSvcLista(svcs){
+  const el=document.getElementById('svc-lista');
+  if(!el) return;
+  if(!svcs.length){el.innerHTML='<div style="text-align:center;padding:12px;color:var(--muted);font-size:11px">Sin resultados</div>';return;}
+  el.innerHTML=svcs.map(s=>`
+    <div class="svc-item" onclick="agregarSvc(${s.id},'${s.nombre.replace(/'/g,"\'")}',  ${s.precio})">
+      <span style="font-size:11px">${s.nombre}</span>
+      <span style="font-weight:700;color:var(--gold);font-size:11px;white-space:nowrap;margin-left:6px">$${fmt(s.precio)}</span>
     </div>`).join('');
 }
 
-function filtrarTipo(tipo, btn){
-  tipoActivo = tipo;
-  document.querySelectorAll('.tipo-btn').forEach(b=>b.classList.remove('on'));
+function filtrarTipo(tipo,btn){
+  tipoActivo=tipo;
+  document.querySelectorAll('#tipo-btns .tipo-btn').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
   filtrarServicios();
 }
 
 function filtrarServicios(){
-  const q = (document.getElementById('svc-search')?.value||'').toUpperCase().trim();
-  let filtered = SERVICIOS_ALL;
-  if(tipoActivo !== 'Todos') filtered = filtered.filter(s=>s.tipo===tipoActivo);
-  if(q) filtered = filtered.filter(s=>s.nombre.toUpperCase().includes(q));
-  renderServicios(filtered);
+  const q=(document.getElementById('svc-search')?.value||'').toUpperCase().trim();
+  let f=getSvcs();
+  if(tipoActivo!=='Todos') f=f.filter(s=>s.tipo===tipoActivo);
+  if(q) f=f.filter(s=>s.nombre.toUpperCase().includes(q));
+  renderSvcLista(f);
 }
 
-function selSvc(el, id, nombre, precio){
-  document.querySelectorAll('.svc-item').forEach(e=>e.classList.remove('sel'));
-  el.classList.add('sel');
-  selectedSvc = {id,nombre,precio};
-  const info = document.getElementById('svc-selected-info');
-  const txt  = document.getElementById('svc-selected-text');
-  if(info && txt){
-    txt.textContent = nombre + ' — $' + fmt(precio);
-    info.style.display='block';
-  }
+function agregarSvc(id,nombre,precio){
+  selectedSvcs.push({id,nombre,precio});
+  renderSvcsAgregados();
 }
 
-function selPay(btn, type){
-  const par = btn.closest('.pay-toggle');
-  par.querySelectorAll('.pt').forEach(b=>{b.classList.remove('on-ef','on-qr');});
-  btn.classList.add(type==='ef'?'on-ef':'on-qr');
-  if(par.contains(document.getElementById('pay-ef'))){
-    payMode = type==='ef'?'efectivo':'qr';
-  } else {
-    gPayMode = type==='ef'?'efectivo':'qr';
-  }
-}
+function quitarSvc(idx){selectedSvcs.splice(idx,1);renderSvcsAgregados();}
 
-function toggleCliente(){
-  const chk = document.getElementById('chk-cliente');
-  document.getElementById('cliente-fields').style.display = chk.checked?'block':'none';
-}
-
-async function guardarOrden(){
-  const placa = document.getElementById('ord-placa').value.trim();
-  const concSel = document.getElementById('ord-concesero');
-  const concId = parseInt(concSel.value);
-  const concNombre = concSel.options[concSel.selectedIndex].dataset.nombre;
-  if(!placa){ showToast('Ingresa la placa', true); return; }
-  if(!selectedSvc){ showToast('Selecciona un servicio', true); return; }
-  const chkCliente = document.getElementById('chk-cliente').checked;
-  const clienteNombre = chkCliente ? (document.getElementById('ord-cliente-nombre').value||'CONSUMIDOR FINAL') : 'CONSUMIDOR FINAL';
-  const clienteCc     = chkCliente ? (document.getElementById('ord-cliente-cc').value||'222222222222') : '222222222222';
-  const clienteTel    = chkCliente ? document.getElementById('ord-cliente-tel').value : '';
-
-  try {
-    // Get next order number
-    const lastOrden = await api('ordenes?order=numero_orden.desc&limit=1');
-    const nextNum = lastOrden.length ? (lastOrden[0].numero_orden||0)+1 : 1;
-
-    const orden = await api('ordenes', 'POST', {
-      numero_orden: nextNum,
-      placa,
-      concesero_id: concId,
-      concesero_nombre: concNombre,
-      cliente_nombre: clienteNombre,
-      cliente_cc: clienteCc,
-      cliente_tel: clienteTel,
-      forma_pago: 'pendiente',
-      estado: 'abierta',
-      total: selectedSvc.precio,
-      observaciones: document.getElementById('ord-obs').value
-    });
-
-    const ordenId = Array.isArray(orden)?orden[0].id:orden.id;
-
-    await api('orden_servicios', 'POST', {
-      orden_id: ordenId,
-      servicio_nombre: selectedSvc.nombre,
-      cantidad: 1,
-      valor_unit: selectedSvc.precio,
-      subtotal: selectedSvc.precio
-    });
-
-    cerrarModal('modal-orden');
-    showToast('Orden #'+nextNum+' creada ✅ — Imprimirá al cerrar');
-    loadOrdenes();
-    selectedSvc=null;
-  } catch(e){ showToast('Error: '+e.message, true); }
-}
-
-
-
-// ── BORRAR ORDEN ──────────────────────────────────────────────────────────────
-let borrarOrdenId = null;
-
-function confirmarBorrarOrden(id, num){
-  if(currentUser?.rol !== 'dueno'){
-    showToast('Solo el dueño puede borrar órdenes', true);
-    return;
-  }
-  borrarOrdenId = id;
-  document.getElementById('borrar-ord-num').textContent = num;
-  document.getElementById('borrar-motivo').value = '';
-  document.getElementById('modal-borrar-orden').style.display = 'flex';
-}
-
-async function ejecutarBorrarOrden(){
-  const motivo = document.getElementById('borrar-motivo').value.trim();
-  if(!motivo){ showToast('Escribe el motivo del borrado', true); return; }
-  try {
-    // Delete services first (cascade)
-    await api(`orden_servicios?orden_id=eq.${borrarOrdenId}`, 'DELETE');
-    // Delete order
-    await api(`ordenes?id=eq.${borrarOrdenId}`, 'DELETE');
-    cerrarModal('modal-borrar-orden');
-    showToast('Orden borrada');
-    loadOrdenes();
-    borrarOrdenId = null;
-  } catch(e){ showToast('Error: '+e.message, true); }
-}
-
-// ── EDITAR ORDEN ──────────────────────────────────────────────────────────────
-let editSelectedSvc = null;
-let editTipoActivo = 'Todos';
-
-async function abrirEditarOrden(id){
-  try {
-    const ordenes = await api(`ordenes?id=eq.${id}`);
-    const o = ordenes[0];
-    const svcs = await api(`orden_servicios?orden_id=eq.${id}`);
-    const svcActual = svcs[0];
-
-    document.getElementById('edit-ord-id').value = id;
-    document.getElementById('edit-ord-num').textContent = o.numero_orden;
-    document.getElementById('edit-ord-placa').value = o.placa;
-
-    // Fill conceseros
-    const sel = document.getElementById('edit-ord-concesero');
-    sel.innerHTML = conceseros.map(c =>
-      `<option value="${c.id}" data-nombre="${c.nombre}" ${c.nombre===o.concesero_nombre?'selected':''}>${c.nombre}</option>`
-    ).join('');
-
-    // Set current service as selected
-    editSelectedSvc = svcActual ? {
-      id: svcActual.id,
-      nombre: svcActual.servicio_nombre,
-      precio: svcActual.valor_unit
-    } : null;
-
-    // Reset filters
-    editTipoActivo = 'Todos';
-    document.querySelectorAll('#edit-tipo-btns .tipo-btn').forEach(b=>b.classList.remove('on'));
-    document.querySelector('#edit-tipo-btns .tipo-btn')?.classList.add('on');
-    document.getElementById('edit-svc-search').value = '';
-
-    if(editSelectedSvc){
-      document.getElementById('edit-svc-selected-info').style.display='block';
-      document.getElementById('edit-svc-selected-text').textContent =
-        editSelectedSvc.nombre + ' — $' + fmt(editSelectedSvc.precio);
-    } else {
-      document.getElementById('edit-svc-selected-info').style.display='none';
-    }
-
-    editRenderServicios(SERVICIOS_ALL);
-    document.getElementById('modal-editar-orden').style.display='flex';
-  } catch(e){ showToast('Error cargando orden', true); }
-}
-
-function editRenderServicios(svcs){
-  const lista = document.getElementById('edit-servicios-lista');
-  if(!lista) return;
-  if(!svcs.length){
-    lista.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px">Sin resultados</div>';
-    return;
-  }
-  lista.innerHTML = svcs.map(s=>`
-    <div class="svc-item${editSelectedSvc?.nombre===s.nombre?' sel':''}"
-         onclick="editSelSvc(this,'${s.nombre.replace(/'/g,"\'")}',${s.precio})">
-      <span style="font-size:12px">${s.nombre}</span>
-      <span style="font-weight:700;color:var(--gold);white-space:nowrap;margin-left:8px">$${fmt(s.precio)}</span>
+function renderSvcsAgregados(){
+  const el=document.getElementById('svcs-agregados');
+  const total=selectedSvcs.reduce((s,x)=>s+x.precio,0);
+  document.getElementById('svcs-total').textContent='$'+fmt(total);
+  document.getElementById('svcs-cnt').textContent=selectedSvcs.length?'('+selectedSvcs.length+')':'';
+  if(!selectedSvcs.length){el.innerHTML='<div style="color:var(--muted);font-size:11px;text-align:center;padding:6px">Toca un servicio para agregarlo</div>';return;}
+  el.innerHTML=selectedSvcs.map((s,i)=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:rgba(255,255,255,.04);border-radius:6px;margin-bottom:4px">
+      <span style="font-size:11px;flex:1">${s.nombre}</span>
+      <span style="font-weight:700;color:var(--gold);margin:0 8px;font-size:11px">$${fmt(s.precio)}</span>
+      <button onclick="quitarSvc(${i})" style="background:rgba(239,68,68,.2);color:#FCA5A5;border:none;border-radius:5px;padding:2px 7px;cursor:pointer;font-size:11px">✕</button>
     </div>`).join('');
 }
 
-function editFiltrarTipo(tipo, btn){
-  editTipoActivo = tipo;
+function toggleCliente(){
+  const chk=document.getElementById('chk-cliente');
+  setTimeout(()=>document.getElementById('cliente-fields').style.display=chk.checked?'block':'none',10);
+}
+
+async function guardarOrden(){
+  const placa=document.getElementById('ord-placa').value.trim();
+  const concSel=document.getElementById('ord-conc');
+  const concId=parseInt(concSel.value);
+  const concNombre=concSel.options[concSel.selectedIndex]?.dataset.nombre||'';
+  if(!placa){showToast('Ingresa la placa',true);return;}
+  if(!selectedSvcs.length){showToast('Agrega al menos un servicio',true);return;}
+  // Check duplicate plate
+  try{
+    const ex=await api('ordenes?fecha=eq.'+today()+'&placa=eq.'+placa+'&estado=eq.abierta');
+    if(ex.length>0){
+      const ok=confirm('⚠️ La placa '+placa+' ya tiene orden abierta hoy (#'+ex[0].numero_orden+' — '+ex[0].concesero_nombre+').\n\n¿Ingresarla de nuevo?');
+      if(!ok) return;
+    }
+  }catch{}
+  const chk=document.getElementById('chk-cliente').checked;
+  const cliNombre=chk?(document.getElementById('ord-cli-nombre').value||'CONSUMIDOR FINAL'):'CONSUMIDOR FINAL';
+  const cliCc=chk?(document.getElementById('ord-cli-cc').value||'222222222222'):'222222222222';
+  const cliTel=chk?document.getElementById('ord-cli-tel').value:'';
+  const total=selectedSvcs.reduce((s,x)=>s+x.precio,0);
+  try{
+    const last=await api('ordenes?order=numero_orden.desc&limit=1');
+    const nextNum=last.length?(last[0].numero_orden||0)+1:1;
+    const ord=await api('ordenes','POST',{
+      numero_orden:nextNum,placa,concesero_id:concId,concesero_nombre:concNombre,
+      cliente_nombre:cliNombre,cliente_cc:cliCc,cliente_tel:cliTel,
+      forma_pago:'pendiente',estado:'abierta',total,
+      observaciones:document.getElementById('ord-obs').value
+    });
+    const ordId=Array.isArray(ord)?ord[0].id:ord.id;
+    for(const s of selectedSvcs){
+      await api('orden_servicios','POST',{orden_id:ordId,servicio_nombre:s.nombre,cantidad:1,valor_unit:s.precio,subtotal:s.precio});
+    }
+    cerrarModal('modal-orden');
+    showToast('Orden #'+nextNum+' creada ✅');
+    loadOrdenes();
+    selectedSvcs=[];
+  }catch(e){showToast('Error: '+e.message,true);}
+}
+
+// ── COBRAR ────────────────────────────────────────────────────────────────────
+async function abrirCobrar(id){
+  try{
+    const ords=await api('ordenes?id=eq.'+id);
+    const o=ords[0];
+    cobrarOrdenId=id;
+    cobrarPayMode='efectivo';
+    document.getElementById('cobrar-num').textContent=o.numero_orden;
+    document.getElementById('cobrar-placa').textContent=o.placa;
+    document.getElementById('cobrar-conc').textContent=o.concesero_nombre||'';
+    document.getElementById('cobrar-total').textContent='$'+fmt(o.total);
+    document.getElementById('cobrar-ef').classList.add('on-ef');
+    document.getElementById('cobrar-qr').classList.remove('on-qr');
+    const svcs=await api('orden_servicios?orden_id=eq.'+id);
+    ordenActual={...o,servicios:svcs};
+    document.getElementById('modal-cobrar').style.display='flex';
+  }catch(e){showToast('Error',true);}
+}
+
+function selCobrarPay(btn,type){
+  cobrarPayMode=type;
+  document.getElementById('cobrar-ef').classList.remove('on-ef');
+  document.getElementById('cobrar-qr').classList.remove('on-qr');
+  btn.classList.add(type==='efectivo'?'on-ef':'on-qr');
+}
+
+async function confirmarCobrar(){
+  try{
+    await api('ordenes?id=eq.'+cobrarOrdenId,'PATCH',{estado:'cerrada',hora_salida:new Date().toISOString(),forma_pago:cobrarPayMode});
+    if(ordenActual){ordenActual.forma_pago=cobrarPayMode;imprimirTicket(ordenActual);}
+    cerrarModal('modal-cobrar');
+    showToast('Orden cobrada ✅');
+    loadOrdenes();
+  }catch(e){showToast('Error',true);}
+}
+
+async function reimprimir(id){
+  try{
+    const ords=await api('ordenes?id=eq.'+id);
+    const svcs=await api('orden_servicios?orden_id=eq.'+id);
+    imprimirTicket({...ords[0],servicios:svcs});
+  }catch(e){showToast('Error',true);}
+}
+
+// ── EDITAR ORDEN ──────────────────────────────────────────────────────────────
+async function abrirEditarOrd(id){
+  try{
+    const ords=await api('ordenes?id=eq.'+id);
+    const o=ords[0];
+    const svcs=await api('orden_servicios?orden_id=eq.'+id);
+    document.getElementById('edit-ord-id').value=id;
+    document.getElementById('edit-ord-num').textContent=o.numero_orden;
+    document.getElementById('edit-ord-placa').value=o.placa;
+    const sel=document.getElementById('edit-ord-conc');
+    sel.innerHTML=conceseros.map(c=>`<option value="${c.id}" data-nombre="${c.nombre}" ${c.nombre===o.concesero_nombre?'selected':''}>${c.nombre}</option>`).join('');
+    editSelectedSvcs=svcs.map(s=>(({id:s.id,nombre:s.servicio_nombre,precio:s.valor_unit})));
+    editTipoActivo='Todos';
+    document.querySelectorAll('#edit-tipo-btns .tipo-btn').forEach(b=>b.classList.remove('on'));
+    document.querySelector('#edit-tipo-btns .tipo-btn')?.classList.add('on');
+    document.getElementById('edit-svc-search').value='';
+    renderEditSvcs();
+    renderEditSvcLista(getSvcs());
+    document.getElementById('modal-editar-ord').style.display='flex';
+  }catch(e){showToast('Error',true);}
+}
+
+function renderEditSvcLista(svcs){
+  const el=document.getElementById('edit-svc-lista');
+  if(!el) return;
+  el.innerHTML=svcs.map(s=>`
+    <div class="svc-item" onclick="agregarEditSvc(${s.id},'${s.nombre.replace(/'/g,"\'")}',  ${s.precio})">
+      <span style="font-size:11px">${s.nombre}</span>
+      <span style="font-weight:700;color:var(--gold);font-size:11px;white-space:nowrap;margin-left:6px">$${fmt(s.precio)}</span>
+    </div>`).join('');
+}
+
+function editFiltrarTipo(tipo,btn){
+  editTipoActivo=tipo;
   document.querySelectorAll('#edit-tipo-btns .tipo-btn').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
   editFiltrarServicios();
 }
 
 function editFiltrarServicios(){
-  const q = (document.getElementById('edit-svc-search')?.value||'').toUpperCase().trim();
-  let filtered = SERVICIOS_ALL;
-  if(editTipoActivo !== 'Todos') filtered = filtered.filter(s=>s.tipo===editTipoActivo);
-  if(q) filtered = filtered.filter(s=>s.nombre.toUpperCase().includes(q));
-  editRenderServicios(filtered);
+  const q=(document.getElementById('edit-svc-search')?.value||'').toUpperCase().trim();
+  let f=getSvcs();
+  if(editTipoActivo!=='Todos') f=f.filter(s=>s.tipo===editTipoActivo);
+  if(q) f=f.filter(s=>s.nombre.toUpperCase().includes(q));
+  renderEditSvcLista(f);
 }
 
-function editSelSvc(el, nombre, precio){
-  document.querySelectorAll('#edit-servicios-lista .svc-item').forEach(e=>e.classList.remove('sel'));
-  el.classList.add('sel');
-  editSelectedSvc = {nombre, precio};
-  document.getElementById('edit-svc-selected-info').style.display='block';
-  document.getElementById('edit-svc-selected-text').textContent = nombre + ' — $' + fmt(precio);
+function agregarEditSvc(id,nombre,precio){editSelectedSvcs.push({id,nombre,precio});renderEditSvcs();}
+function quitarEditSvc(idx){editSelectedSvcs.splice(idx,1);renderEditSvcs();}
+
+function renderEditSvcs(){
+  const el=document.getElementById('edit-svcs-agregados');
+  const total=editSelectedSvcs.reduce((s,x)=>s+x.precio,0);
+  document.getElementById('edit-svcs-total').textContent='$'+fmt(total);
+  document.getElementById('edit-svcs-cnt').textContent=editSelectedSvcs.length?'('+editSelectedSvcs.length+')':'';
+  if(!editSelectedSvcs.length){el.innerHTML='<div style="color:var(--muted);font-size:11px;text-align:center;padding:6px">Sin servicios</div>';return;}
+  el.innerHTML=editSelectedSvcs.map((s,i)=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:rgba(255,255,255,.04);border-radius:6px;margin-bottom:4px">
+      <span style="font-size:11px;flex:1">${s.nombre}</span>
+      <span style="font-weight:700;color:var(--gold);margin:0 8px;font-size:11px">$${fmt(s.precio)}</span>
+      <button onclick="quitarEditSvc(${i})" style="background:rgba(239,68,68,.2);color:#FCA5A5;border:none;border-radius:5px;padding:2px 7px;cursor:pointer;font-size:11px">✕</button>
+    </div>`).join('');
 }
 
 async function guardarEditarOrden(){
-  const id     = document.getElementById('edit-ord-id').value;
-  const placa  = document.getElementById('edit-ord-placa').value.trim();
-  const concSel = document.getElementById('edit-ord-concesero');
-  const concId  = parseInt(concSel.value);
-  const concNombre = concSel.options[concSel.selectedIndex].dataset.nombre;
-
-  if(!placa){ showToast('Ingresa la placa', true); return; }
-  if(!editSelectedSvc){ showToast('Selecciona un servicio', true); return; }
-
-  try {
-    // Update order
-    await api(`ordenes?id=eq.${id}`, 'PATCH', {
-      placa,
-      concesero_id: concId,
-      concesero_nombre: concNombre,
-      total: editSelectedSvc.precio
-    });
-
-    // Update service — delete old and insert new
-    await api(`orden_servicios?orden_id=eq.${id}`, 'DELETE');
-    await api('orden_servicios', 'POST', {
-      orden_id: parseInt(id),
-      servicio_nombre: editSelectedSvc.nombre,
-      cantidad: 1,
-      valor_unit: editSelectedSvc.precio,
-      subtotal: editSelectedSvc.precio
-    });
-
-    cerrarModal('modal-editar-orden');
+  const id=document.getElementById('edit-ord-id').value;
+  const placa=document.getElementById('edit-ord-placa').value.trim();
+  const concSel=document.getElementById('edit-ord-conc');
+  const concId=parseInt(concSel.value);
+  const concNombre=concSel.options[concSel.selectedIndex]?.dataset.nombre||'';
+  if(!placa){showToast('Ingresa la placa',true);return;}
+  if(!editSelectedSvcs.length){showToast('Agrega al menos un servicio',true);return;}
+  const total=editSelectedSvcs.reduce((s,x)=>s+x.precio,0);
+  try{
+    await api('ordenes?id=eq.'+id,'PATCH',{placa,concesero_id:concId,concesero_nombre:concNombre,total});
+    await api('orden_servicios?orden_id=eq.'+id,'DELETE');
+    for(const s of editSelectedSvcs){
+      await api('orden_servicios','POST',{orden_id:parseInt(id),servicio_nombre:s.nombre,cantidad:1,valor_unit:s.precio,subtotal:s.precio});
+    }
+    cerrarModal('modal-editar-ord');
     showToast('Orden actualizada ✅');
     loadOrdenes();
-  } catch(e){ showToast('Error: '+e.message, true); }
+  }catch(e){showToast('Error: '+e.message,true);}
 }
 
-// ── CERRAR ORDEN ──────────────────────────────────────────────────────────────
-let ordenCerrarId = null;
-async function abrirCerrarOrden(id){
-  try {
-    const ordenes = await api(`ordenes?id=eq.${id}`);
-    const o = ordenes[0];
-    ordenCerrarId = id;
-    cerrarPayMode = 'efectivo';
-    document.getElementById('cpay-ef').classList.add('on-ef');
-    document.getElementById('cpay-qr').classList.remove('on-qr');
-    document.getElementById('cerrar-num').textContent = o.numero_orden;
-    document.getElementById('cerrar-placa').textContent = o.placa;
-    document.getElementById('cerrar-concesero').textContent = o.concesero_nombre;
-    document.getElementById('cerrar-total').textContent = '$'+fmt(o.total);
-    document.getElementById('modal-cerrar').style.display='flex';
-    // Store for reprint
-    const svcs = await api(`orden_servicios?orden_id=eq.${id}`);
-    ordenActual = {...o, servicios:svcs, forma_pago: cerrarPayMode};
-  } catch(e){ showToast('Error', true); }
+// ── BORRAR ORDEN ──────────────────────────────────────────────────────────────
+function abrirBorrar(id,num){
+  if(currentUser?.rol!=='dueno'){showToast('Solo el dueño puede borrar',true);return;}
+  borrarOrdenId=id;
+  document.getElementById('borrar-num').textContent=num;
+  document.getElementById('borrar-motivo').value='';
+  document.getElementById('modal-borrar-ord').style.display='flex';
 }
 
-async function confirmarCerrar(){
-  try {
-    await api(`ordenes?id=eq.${ordenCerrarId}`, 'PATCH', {
-      estado:'cerrada',
-      hora_salida: new Date().toISOString(),
-      forma_pago: cerrarPayMode
-    });
-    cerrarModal('modal-cerrar');
-    showToast('Orden cerrada ✅');
-    // Print ticket
-    if(ordenActual){
-      ordenActual.forma_pago = cerrarPayMode;
-      imprimirTicket(ordenActual);
-    }
+async function ejecutarBorrarOrden(){
+  if(!document.getElementById('borrar-motivo').value.trim()){showToast('Escribe el motivo',true);return;}
+  try{
+    await api('orden_servicios?orden_id=eq.'+borrarOrdenId,'DELETE');
+    await api('ordenes?id=eq.'+borrarOrdenId,'DELETE');
+    cerrarModal('modal-borrar-ord');
+    showToast('Orden borrada');
     loadOrdenes();
-    if(currentUser.rol!=='cajero') loadCierre();
-  } catch(e){ showToast('Error cerrando', true); }
+  }catch(e){showToast('Error',true);}
 }
 
-let cerrarPayMode = 'efectivo';
-
-function selCerrarPay(btn, type){
-  cerrarPayMode = type;
-  const toggle = document.getElementById('cerrar-pay-toggle');
-  toggle.querySelectorAll('.pt').forEach(b=>{b.classList.remove('on-ef','on-qr');});
-  btn.classList.add(type==='efectivo'?'on-ef':'on-qr');
-}
-
-function reimprimir(){
-  if(ordenActual) imprimirTicket(ordenActual);
-}
-async function reimprimirOrden(id){
-  try {
-    const ordenes = await api(`ordenes?id=eq.${id}`);
-    const svcs = await api(`orden_servicios?orden_id=eq.${id}`);
-    imprimirTicket({...ordenes[0], servicios:svcs});
-  } catch(e){ showToast('Error', true); }
-}
-
-// ── TICKET IMPRESIÓN ──────────────────────────────────────────────────────────
+// ── TICKET ────────────────────────────────────────────────────────────────────
 function imprimirTicket(o){
-  const svcs = (o.servicios||[]).map(s=>`
-    <div class="tk-row"><span>${s.servicio_nombre}${s.cantidad>1?' x'+s.cantidad:''}</span><span class="tk-bold">$${fmt(s.subtotal)}</span></div>`).join('');
-  const esGenerico = o.cliente_nombre==='CONSUMIDOR FINAL';
-  const clienteBlock = esGenerico
-    ? '<div style="font-size:9px;text-align:center;color:#555">- - - CONSUMIDOR FINAL - - -</div>'
-    : `<div style="font-size:9px;color:#555">👤 ${o.cliente_nombre}</div>
-       <div style="font-size:9px;color:#555">CC: ${o.cliente_cc}</div>
-       ${o.cliente_tel?`<div style="font-size:9px;color:#555">📱 ${o.cliente_tel}</div>`:''}`;
-
-  const ticket = `
-    <div style="text-align:center;margin-bottom:4px">
-      <div style="font-size:13px;font-weight:900;letter-spacing:1px">LAVA AUTOS FULL CAR</div>
-      <div style="font-size:8px;letter-spacing:2px;color:#555">DAVID MATEO ARIAS CASTRO</div>
-      <div style="font-size:8px;color:#555">NIT: 700.076.959-3</div>
-      <div style="font-size:8px;color:#555">CRA 20 No 57-47 baja Leonora</div>
-      <div style="font-size:8px;color:#555">TEL: 3108749404</div>
-    </div>
-    <hr style="border:none;border-top:1px dashed #ccc;margin:5px 0"/>
-    <div style="text-align:center;font-size:11px;font-weight:900;margin-bottom:3px">ORDEN DE SERVICIO:</div>
-    <div style="text-align:center;font-size:13px;font-weight:900;margin-bottom:4px">${o.numero_orden}</div>
-    <hr style="border:none;border-top:1px dashed #ccc;margin:5px 0"/>
-    <div class="tk-row"><span>Fecha:</span><span>${new Date(o.hora_entrada).toLocaleDateString('es-CO')}</span></div>
-    <div class="tk-row"><span>Hora:</span><span>${fmtTime(o.hora_entrada)}</span></div>
-    <div class="tk-row"><span>Placa:</span><span class="tk-bold">${o.placa}</span></div>
-    <div class="tk-row"><span>Concesero:</span><span>${o.concesero_nombre||''}</span></div>
-    <hr style="border:none;border-top:1px dashed #ccc;margin:5px 0"/>
-    <div style="font-size:9px;margin-bottom:2px;font-weight:700">Descripción &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Cant &nbsp; Subtotal</div>
-    <hr style="border:none;border-top:1px solid #ccc;margin:3px 0"/>
-    ${svcs}
-    <hr style="border:none;border-top:1px solid #333;margin:5px 0"/>
-    <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:900;margin:3px 0">
-      <span>TOTAL ==></span><span>$${fmt(o.total)}</span>
-    </div>
-    <hr style="border:none;border-top:1px dashed #ccc;margin:5px 0"/>
-    ${clienteBlock}
-    <hr style="border:none;border-top:1px dashed #ccc;margin:5px 0"/>
-    <div style="font-size:9px;text-align:center;margin-bottom:4px">Gracias por su visita</div>
-    <div style="font-size:8px;color:#555;text-align:center">Señor usuario, solicitamos respetuosamente revisar su vehículo antes de ser retirado de la empresa, no se aceptan reclamos posteriores después de salir de este sitio. No se responde por objetos dejados en su vehículo a menos que sean dejados en custodia del administrador. Si el valor de lo cobrado es diferente al valor de la orden de servicio, su lavado será gratis. La entrega del vehículo será con la respectiva orden de servicio.</div>
-    <div style="font-size:8px;color:#555;text-align:center;margin-top:4px">(PARA AVERIGUAR POR EL PROCESO DE SU VEHÍCULO, COMUNÍQUESE AL 3108749404) - PARA QUEJAS Y RECLAMOS 3108359883 -</div>`;
-
-  const pa = document.getElementById('print-area');
-  pa.innerHTML = `<div style="width:58mm;font-family:'Courier New',monospace;font-size:9px;color:#000;background:#fff;padding:8px">${ticket}</div>`;
+  const svcsHtml=(o.servicios||[]).map(s=>`<div style="display:flex;justify-content:space-between;margin-bottom:2px"><span>${s.servicio_nombre}${s.cantidad>1?' x'+s.cantidad:''}</span><span style="font-weight:900">$${fmt(s.subtotal)}</span></div>`).join('');
+  const esGen=!o.cliente_nombre||o.cliente_nombre==='CONSUMIDOR FINAL';
+  const ticket=`<div style="text-align:center;margin-bottom:4px">
+    <div style="font-size:12px;font-weight:900;letter-spacing:1px">LAVA AUTOS FULL CAR</div>
+    <div style="font-size:8px;color:#555">DAVID MATEO ARIAS CASTRO</div>
+    <div style="font-size:8px;color:#555">NIT: 700.076.959-3</div>
+    <div style="font-size:8px;color:#555">CRA 20 No 57-47 baja Leonora</div>
+    <div style="font-size:8px;color:#555">TEL: 3108749404</div>
+  </div>
+  <hr style="border:none;border-top:1px dashed #ccc;margin:4px 0"/>
+  <div style="text-align:center;font-size:11px;font-weight:900;margin-bottom:2px">ORDEN DE SERVICIO:</div>
+  <div style="text-align:center;font-size:14px;font-weight:900;margin-bottom:4px">${o.numero_orden}</div>
+  <hr style="border:none;border-top:1px dashed #ccc;margin:4px 0"/>
+  <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:1px"><span>Fecha:</span><span>${new Date(o.hora_entrada).toLocaleDateString('es-CO')}</span></div>
+  <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:1px"><span>Hora:</span><span>${fmtTime(o.hora_entrada)}</span></div>
+  <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:1px"><span>Placa:</span><span style="font-weight:900">${o.placa}</span></div>
+  <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:1px"><span>Concesero:</span><span>${o.concesero_nombre||''}</span></div>
+  <hr style="border:none;border-top:1px dashed #ccc;margin:4px 0"/>
+  <div style="display:flex;justify-content:space-between;font-size:9px;font-weight:700;margin-bottom:3px"><span>Descripción</span><span>Cant&nbsp;&nbsp;Subtotal</span></div>
+  <hr style="border:none;border-top:1px solid #ccc;margin:3px 0"/>
+  ${svcsHtml}
+  <hr style="border:none;border-top:1px solid #333;margin:4px 0"/>
+  <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:900;margin:3px 0"><span>TOTAL ==></span><span>$${fmt(o.total)}</span></div>
+  <hr style="border:none;border-top:1px dashed #ccc;margin:4px 0"/>
+  <div style="font-size:9px;margin-bottom:1px"><strong>C.c ó Nit:</strong> ${esGen?'222222222222':o.cliente_cc||'222222222222'}</div>
+  <div style="font-size:9px;margin-bottom:4px"><strong>Señor(es):</strong> ${esGen?'CONSUMIDOR FINAL':o.cliente_nombre}</div>
+  ${!esGen&&o.cliente_tel?'<div style="font-size:9px;margin-bottom:4px"><strong>Tel:</strong> '+o.cliente_tel+'</div>':''}
+  <hr style="border:none;border-top:1px dashed #ccc;margin:4px 0"/>
+  <div style="font-size:9px;text-align:center;margin-bottom:3px">Gracias por su visita</div>
+  <div style="font-size:8px;color:#555;text-align:center">Señor usuario, solicitamos respetuosamente revisar su vehículo antes de ser retirado de la empresa, no se aceptan reclamos posteriores después de salir de este sitio. No se responde por objetos dejados en su vehículo a menos que sean dejados en custodia del administrador. Si el valor de lo cobrado es diferente al valor de la orden de servicio, su lavado será gratis. La entrega del vehículo será con la respectiva orden de servicio.</div>
+  <div style="font-size:8px;color:#555;text-align:center;margin-top:3px">(PARA AVERIGUAR POR EL PROCESO DE SU VEHÍCULO, COMUNÍQUESE AL 3108749404) - PARA QUEJAS Y RECLAMOS 3108359883</div>`;
+  const pa=document.getElementById('print-area');
+  pa.innerHTML='<div style="width:56mm;font-family:\'Courier New\',monospace;font-size:9px;color:#000;background:#fff;padding:2mm 1mm">'+ticket+'</div>';
   pa.style.display='block';
-  window.print();
-  pa.style.display='none';
+  setTimeout(()=>{window.print();setTimeout(()=>{pa.style.display='none';},500);},300);
 }
 
-// ── CIERRE DEL DÍA ────────────────────────────────────────────────────────────
+// ── CIERRE ────────────────────────────────────────────────────────────────────
 async function loadCierre(){
-  try {
-    const ordenes = await api(`ordenes?fecha=eq.${today()}`);
-    const gastos  = await api(`gastos?fecha=eq.${today()}`);
-    const totalBruto = ordenes.reduce((s,o)=>s+(o.total||0),0);
-    const ef = ordenes.filter(o=>o.forma_pago==='efectivo').reduce((s,o)=>s+(o.total||0),0);
-    const qr = ordenes.filter(o=>o.forma_pago==='qr').reduce((s,o)=>s+(o.total||0),0);
-    const totalGastos = gastos.reduce((s,g)=>s+(g.valor||0),0);
-    const parte = Math.round(totalBruto/2);
-    const neta  = parte - totalGastos;
-    const efGastos = gastos.filter(g=>g.forma_pago==='efectivo').reduce((s,g)=>s+(g.valor||0),0);
-    const qrGastos = gastos.filter(g=>g.forma_pago==='qr').reduce((s,g)=>s+(g.valor||0),0);
-    const efParte = Math.round(ef/2) - efGastos;
-    const qrParte = Math.round(qr/2) - qrGastos;
-
-    document.getElementById('cierre-efectivo').textContent='$'+fmt(ef);
-    document.getElementById('cierre-qr').textContent='$'+fmt(qr);
-    document.getElementById('cierre-gastos').textContent='$'+fmt(totalGastos);
-    document.getElementById('cierre-neta').textContent='$'+fmt(neta);
-    document.getElementById('dc-bruto').textContent='$'+fmt(totalBruto);
+  try{
+    const ords=await api('ordenes?fecha=eq.'+today());
+    const gastos=await api('gastos?fecha=eq.'+today());
+    const bruto=ords.reduce((s,o)=>s+(o.total||0),0);
+    const ef=ords.filter(o=>o.forma_pago==='efectivo').reduce((s,o)=>s+(o.total||0),0);
+    const qr=ords.filter(o=>o.forma_pago==='qr').reduce((s,o)=>s+(o.total||0),0);
+    const tGastos=gastos.reduce((s,g)=>s+(g.valor||0),0);
+    const parte=Math.round(bruto/2);
+    const neta=parte-tGastos;
+    const efG=gastos.filter(g=>g.forma_pago==='efectivo').reduce((s,g)=>s+(g.valor||0),0);
+    const qrG=gastos.filter(g=>g.forma_pago==='qr').reduce((s,g)=>s+(g.valor||0),0);
+    document.getElementById('c-ef').textContent='$'+fmt(ef);
+    document.getElementById('c-qr').textContent='$'+fmt(qr);
+    document.getElementById('c-gastos').textContent='$'+fmt(tGastos);
+    document.getElementById('c-neta').textContent='$'+fmt(neta);
+    document.getElementById('dc-bruto').textContent='$'+fmt(bruto);
     document.getElementById('dc-parte').textContent='$'+fmt(parte);
-    document.getElementById('dc-gastos').textContent='− $'+fmt(totalGastos);
+    document.getElementById('dc-gastos').textContent='− $'+fmt(tGastos);
     document.getElementById('dc-neta').textContent='$'+fmt(neta);
-    document.getElementById('dc-ef-neta').textContent='$'+fmt(efParte);
-    document.getElementById('dc-qr-neta').textContent='$'+fmt(qrParte);
-
-    // Conceseros
-    const concsMap={};
-    for(const o of ordenes){
-      const n=o.concesero_nombre||'Sin asignar';
-      if(!concsMap[n]) concsMap[n]={nombre:n,total:0,pagado:false};
-      concsMap[n].total+=o.total||0;
-    }
-    const sorted=Object.values(concsMap).sort((a,b)=>b.total-a.total);
-    document.getElementById('cierre-conceseros').innerHTML=sorted.map(c=>`
-      <tr>
-        <td style="font-weight:600">${c.nombre}</td>
-        <td>$${fmt(c.total)}</td>
-        <td style="color:var(--gold);font-weight:700">$${fmt(Math.round(c.total/2))}</td>
-        <td><span class="badge ba">Pendiente</span></td>
-        <td><button class="btn btn-gr" style="padding:3px 8px;font-size:10px">Pagar</button></td>
-      </tr>`).join('');
-  } catch(e){ showToast('Error cargando cierre', true); }
+    document.getElementById('dc-ef-neta').textContent='$'+fmt(Math.round(ef/2)-efG);
+    document.getElementById('dc-qr-neta').textContent='$'+fmt(Math.round(qr/2)-qrG);
+    const cm={};
+    ords.forEach(o=>{const n=o.concesero_nombre||'?';if(!cm[n])cm[n]={n,t:0};cm[n].t+=o.total||0;});
+    document.getElementById('cierre-concs').innerHTML=Object.values(cm).sort((a,b)=>b.t-a.t).map(c=>`
+      <tr><td style="font-weight:600">${c.n}</td><td>$${fmt(c.t)}</td><td style="color:var(--gold);font-weight:700">$${fmt(Math.round(c.t/2))}</td></tr>`).join('');
+  }catch(e){showToast('Error cargando cierre',true);}
 }
 
 // ── GASTOS ────────────────────────────────────────────────────────────────────
 async function loadGastos(){
-  try {
-    const mesStart = today().slice(0,7)+'-01';
-    const gastosMes = await api(`gastos?fecha=gte.${mesStart}&order=fecha.desc,id.desc`);
-    const gastosHoy = gastosMes.filter(g=>g.fecha===today());
-    const totalMes = gastosMes.reduce((s,g)=>s+(g.valor||0),0);
-    const totalHoy = gastosHoy.reduce((s,g)=>s+(g.valor||0),0);
-    document.getElementById('kpi-gastos-mes').textContent='$'+fmt(totalMes);
-    document.getElementById('kpi-gastos-hoy').textContent='$'+fmt(totalHoy);
-    // Mayor categoría
-    const catMap={};
-    gastosMes.forEach(g=>{catMap[g.categoria]=(catMap[g.categoria]||0)+g.valor;});
-    const topCat=Object.entries(catMap).sort((a,b)=>b[1]-a[1])[0];
-    document.getElementById('kpi-cat-mayor').textContent=topCat?topCat[0]:'—';
-
-    document.getElementById('gastos-list').innerHTML=gastosMes.length?gastosMes.map(g=>`
+  try{
+    const mesStart=today().slice(0,7)+'-01';
+    const gm=await api('gastos?fecha=gte.'+mesStart+'&order=fecha.desc,id.desc');
+    const gh=gm.filter(g=>g.fecha===today());
+    const tm=gm.reduce((s,g)=>s+(g.valor||0),0);
+    const th=gh.reduce((s,g)=>s+(g.valor||0),0);
+    document.getElementById('kg-mes').textContent='$'+fmt(tm);
+    document.getElementById('kg-hoy').textContent='$'+fmt(th);
+    const cm={};gm.forEach(g=>{cm[g.categoria]=(cm[g.categoria]||0)+g.valor;});
+    const top=Object.entries(cm).sort((a,b)=>b[1]-a[1])[0];
+    document.getElementById('kg-cat').textContent=top?top[0]:'—';
+    document.getElementById('gastos-list').innerHTML=gm.length?gm.map(g=>`
       <tr>
-        <td style="color:var(--muted);font-family:monospace">${g.fecha}</td>
-        <td>${g.categoria}</td>
+        <td style="color:var(--muted);font-family:monospace;font-size:11px">${g.fecha}</td>
+        <td style="font-size:11px">${g.categoria}</td>
         <td>${g.descripcion}</td>
-        <td><span class="badge ${g.forma_pago==='qr'?'bqr':'bg'}">${g.forma_pago==='qr'?'📲 QR':'💵 Ef'}</span></td>
+        <td><span class="badge ${g.forma_pago==='qr'?'bqr':'bg'}">${g.forma_pago==='qr'?'📲':'💵'}</span></td>
         <td style="color:#FCA5A5;font-weight:700">$${fmt(g.valor)}</td>
-        <td><button class="btn btn-r" style="padding:3px 8px;font-size:10px" onclick="borrarGasto(${g.id})">Borrar</button></td>
-      </tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Sin gastos registrados</td></tr>';
-  } catch(e){ showToast('Error', true); }
+        <td><button class="btn btn-r" style="padding:3px 8px;font-size:10px" onclick="borrarGasto(${g.id})">🗑️</button></td>
+      </tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Sin gastos</td></tr>';
+  }catch(e){showToast('Error',true);}
 }
 
 function abrirModalGasto(){
   document.getElementById('gasto-desc').value='';
   document.getElementById('gasto-valor').value='';
-  gPayMode='efectivo';
-  document.getElementById('gpay-ef').classList.add('on-ef');
-  document.getElementById('gpay-qr').classList.remove('on-qr');
+  gastoPayMode='efectivo';
+  document.getElementById('g-ef').classList.add('on-ef');
+  document.getElementById('g-qr').classList.remove('on-qr');
   document.getElementById('modal-gasto').style.display='flex';
 }
 
+function selGastoPay(btn,type){
+  gastoPayMode=type;
+  document.getElementById('g-ef').classList.remove('on-ef');
+  document.getElementById('g-qr').classList.remove('on-qr');
+  btn.classList.add(type==='efectivo'?'on-ef':'on-qr');
+}
+
 async function guardarGasto(){
-  const cat  = document.getElementById('gasto-cat').value;
-  const desc = document.getElementById('gasto-desc').value.trim();
-  const val  = parseInt(document.getElementById('gasto-valor').value);
-  if(!desc || !val){ showToast('Completa todos los campos', true); return; }
-  try {
-    await api('gastos','POST',{categoria:cat,descripcion:desc,valor:val,forma_pago:gPayMode,fecha:today()});
-    cerrarModal('modal-gasto');
-    showToast('Gasto registrado');
-    loadGastos();
-  } catch(e){ showToast('Error: '+e.message, true); }
+  const cat=document.getElementById('gasto-cat').value;
+  const desc=document.getElementById('gasto-desc').value.trim();
+  const val=parseInt(document.getElementById('gasto-valor').value);
+  if(!desc||!val){showToast('Completa todos los campos',true);return;}
+  try{
+    await api('gastos','POST',{categoria:cat,descripcion:desc,valor:val,forma_pago:gastoPayMode,fecha:today()});
+    cerrarModal('modal-gasto');showToast('Gasto registrado ✅');loadGastos();
+  }catch(e){showToast('Error',true);}
 }
 
 async function borrarGasto(id){
   if(!confirm('¿Borrar este gasto?')) return;
-  try { await api(`gastos?id=eq.${id}`,'DELETE'); showToast('Gasto eliminado'); loadGastos(); }
-  catch(e){ showToast('Error', true); }
+  try{await api('gastos?id=eq.'+id,'DELETE');showToast('Gasto eliminado');loadGastos();}catch{showToast('Error',true);}
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────────
-let dashMes = null;
-async function loadDashboardMeses(){
-  try {
-    const ordenes = await api('ordenes?order=fecha.desc&limit=1000');
-    const meses = [...new Set(ordenes.map(o=>o.fecha.slice(0,7)))].sort().reverse();
-    dashMes = meses[0];
-    const MES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+let dashMes=null;
+async function loadDashMeses(){
+  try{
+    const ords=await api('ordenes?order=fecha.desc&limit=1000');
+    const meses=[...new Set(ords.map(o=>o.fecha.slice(0,7)))].sort().reverse();
+    if(!dashMes) dashMes=meses[0];
     document.getElementById('mes-btns').innerHTML=meses.map(m=>{
-      const [y,mo]=m.split('-');
-      return `<button class="btn ${m===dashMes?'btn-p':'btn-g'}" onclick="setDashMes('${m}',this)">${MES[parseInt(mo)-1]} ${y}</button>`;
+      const[y,mo]=m.split('-');
+      return`<button class="btn ${m===dashMes?'btn-p':'btn-g'}" onclick="setDashMes('${m}',this)">${MES[parseInt(mo)-1]} ${y}</button>`;
     }).join('');
-  } catch{}
+    loadDashboard();
+  }catch{}
 }
 
-async function setDashMes(mes, btn){
+async function setDashMes(mes,btn){
   dashMes=mes;
   document.querySelectorAll('#mes-btns .btn').forEach(b=>{b.classList.remove('btn-p');b.classList.add('btn-g');});
-  btn.classList.remove('btn-g'); btn.classList.add('btn-p');
+  btn.classList.remove('btn-g');btn.classList.add('btn-p');
   loadDashboard();
 }
 
 async function loadDashboard(){
-  if(!dashMes) await loadDashboardMeses();
-  try {
-    const mesStart=dashMes+'-01', mesEnd=dashMes+'-31';
-    const ordenes=await api(`ordenes?fecha=gte.${mesStart}&fecha=lte.${mesEnd}&order=id.desc`);
-    const total=ordenes.reduce((s,o)=>s+(o.total||0),0);
-    const dias=new Set(ordenes.map(o=>o.fecha)).size;
+  if(!dashMes) await loadDashMeses();
+  try{
+    const start=dashMes+'-01',end=dashMes+'-31';
+    const ords=await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=id.desc');
+    const total=ords.reduce((s,o)=>s+(o.total||0),0);
+    const dias=new Set(ords.map(o=>o.fecha)).size;
     document.getElementById('d-total').textContent='$'+fmt(total);
-    document.getElementById('d-ganancia').textContent='$'+fmt(Math.round(total/2));
-    document.getElementById('d-vehiculos').textContent=ordenes.length;
+    document.getElementById('d-gan').textContent='$'+fmt(Math.round(total/2));
+    document.getElementById('d-veh').textContent=ords.length;
     document.getElementById('d-dias').textContent=dias;
-
-    // Top conceseros
     const cm={};
-    ordenes.forEach(o=>{const n=o.concesero_nombre||'?';if(!cm[n])cm[n]={nombre:n,total:0,cars:0};cm[n].total+=o.total||0;cm[n].cars++;});
-    const sorted=Object.values(cm).sort((a,b)=>b.total-a.total);
-    const maxT=sorted[0]?.total||1;
-    const COLORS=['#C9A84C','#E8C96A','#8BA3BB','#6B7280','#4B5563'];
-    document.getElementById('d-conceseros').innerHTML=sorted.map((c,i)=>`
+    ords.forEach(o=>{const n=o.concesero_nombre||'?';if(!cm[n])cm[n]={n,t:0,c:0};cm[n].t+=o.total||0;cm[n].c++;});
+    const sorted=Object.values(cm).sort((a,b)=>b.t-a.t);
+    const maxT=sorted[0]?.t||1;
+    document.getElementById('d-concs').innerHTML=sorted.map((c,i)=>`
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <div style="width:22px;height:22px;border-radius:50%;background:${COLORS[i]||'#4B5563'};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#111;flex-shrink:0">${i+1}</div>
         <div style="flex:1">
-          <div style="font-size:12px;font-weight:600">${c.nombre}</div>
-          <div style="font-size:9px;color:var(--muted)">${c.cars} vehículos</div>
-          <div style="height:3px;background:rgba(255,255,255,.07);border-radius:2px;margin-top:2px"><div style="height:3px;border-radius:2px;background:${COLORS[i]||'#4B5563'};width:${Math.round(c.total/maxT*100)}%"></div></div>
+          <div style="font-size:12px;font-weight:600">${c.n}</div>
+          <div style="font-size:9px;color:var(--muted)">${c.c} vehículos</div>
+          <div style="height:3px;background:rgba(255,255,255,.07);border-radius:2px;margin-top:2px"><div style="height:3px;border-radius:2px;background:${COLORS[i]||'#4B5563'};width:${Math.round(c.t/maxT*100)}%"></div></div>
         </div>
-        <div style="text-align:right"><div style="font-weight:700;color:var(--gold)">$${fmt(c.total)}</div><div style="font-size:10px;color:#6EE7B7">$${fmt(Math.round(c.total/2))}</div></div>
+        <div style="text-align:right"><div style="font-weight:700;color:var(--gold);font-size:12px">$${fmt(c.t)}</div><div style="font-size:10px;color:#6EE7B7">$${fmt(Math.round(c.t/2))}</div></div>
       </div>`).join('');
-
-    // Recent orders
-    document.getElementById('d-ordenes-recientes').innerHTML=ordenes.slice(0,10).map(o=>`
+    document.getElementById('d-recientes').innerHTML=ords.slice(0,10).map(o=>`
       <tr>
         <td style="font-family:monospace;color:var(--muted)">${o.numero_orden}</td>
-        <td style="color:var(--muted)">${o.fecha}</td>
-        <td>${o.concesero_nombre||''}</td>
+        <td style="color:var(--muted);font-size:11px">${o.fecha}</td>
+        <td style="font-size:11px">${o.concesero_nombre||''}</td>
         <td style="color:var(--gold);font-weight:700">${o.placa}</td>
-        <td style="font-size:11px;color:var(--muted)">—</td>
         <td><span class="badge ${o.forma_pago==='qr'?'bqr':'bg'}">${o.forma_pago==='qr'?'📲':'💵'}</span></td>
         <td style="font-weight:700">$${fmt(o.total)}</td>
       </tr>`).join('');
-  } catch(e){ showToast('Error dashboard', true); }
+  }catch(e){showToast('Error dashboard',true);}
 }
 
 // ── CONCESEROS ────────────────────────────────────────────────────────────────
-async function loadConceserosList(){
-  try {
-    const list = await api('conceseros?order=nombre');
-    const hoy = new Date();
-    const mesHoy = String(hoy.getMonth()+1).padStart(2,'0');
-    const diaHoy = String(hoy.getDate()).padStart(2,'0');
-
-    document.getElementById('conceseros-list').innerHTML=list.map(c=>{
-      const esCumple = c.fecha_nacimiento &&
-        c.fecha_nacimiento.slice(5) === `${mesHoy}-${diaHoy}`;
-      const bdayStr = c.fecha_nacimiento
-        ? `🎂 ${new Date(c.fecha_nacimiento+'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'long'})}`
-        : '<span style="color:var(--muted)">Sin registrar</span>';
-      return `<tr ${esCumple?'style="background:rgba(201,168,76,.08)"':''}>
+async function loadConcsLista(){
+  try{
+    const list=await api('conceseros?order=nombre');
+    const hoy=new Date();
+    const mes=String(hoy.getMonth()+1).padStart(2,'0');
+    const dia=String(hoy.getDate()).padStart(2,'0');
+    document.getElementById('concs-list').innerHTML=list.map(c=>{
+      const esCumple=c.fecha_nacimiento&&c.fecha_nacimiento.slice(5)===mes+'-'+dia;
+      const bdayStr=c.fecha_nacimiento?'🎂 '+new Date(c.fecha_nacimiento+'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'long'}):'<span style="color:var(--muted)">Sin registrar</span>';
+      return`<tr ${esCumple?'style="background:rgba(201,168,76,.08)"':''}>
         <td style="font-weight:600">${c.nombre}${esCumple?' 🎂':''}</td>
         <td>${bdayStr}</td>
         <td><span class="badge ${c.activo?'bg':'br'}">${c.activo?'● Activo':'Inactivo'}</span></td>
-        <td style="display:flex;gap:6px">
-          <button class="btn btn-p" style="padding:3px 8px;font-size:10px" onclick="abrirEditarConcesero(${c.id},'${c.nombre}','${c.fecha_nacimiento||''}')">✏️ Editar</button>
-          <button class="btn btn-g" style="padding:3px 8px;font-size:10px" onclick="toggleConcesero(${c.id},${c.activo})">${c.activo?'Desactivar':'Activar'}</button>
+        <td style="display:flex;gap:5px">
+          <button class="btn btn-p" style="padding:3px 8px;font-size:10px" onclick="abrirEditConc(${c.id},'${c.nombre}','${c.fecha_nacimiento||''}')">✏️</button>
+          <button class="btn btn-g" style="padding:3px 8px;font-size:10px" onclick="toggleConc(${c.id},${c.activo})">${c.activo?'Desactivar':'Activar'}</button>
         </td>
       </tr>`;
     }).join('');
-  } catch(e){ showToast('Error', true); }
+  }catch(e){showToast('Error',true);}
 }
 
 function abrirModalConcesero(){
+  document.getElementById('conc-edit-id').value='';
+  document.getElementById('conc-modal-title').textContent='👥 Agregar concesero';
   document.getElementById('conc-nombre').value='';
   document.getElementById('conc-nacimiento').value='';
-  document.getElementById('modal-concesero').style.display='flex';
+  document.getElementById('modal-conc').style.display='flex';
 }
 
-function abrirEditarConcesero(id, nombre, nacimiento){
-  document.getElementById('edit-conc-id').value=id;
-  document.getElementById('edit-conc-nombre').value=nombre;
-  document.getElementById('edit-conc-nacimiento').value=nacimiento||'';
-  document.getElementById('modal-editar-conc').style.display='flex';
-}
-
-async function guardarEditarConcesero(){
-  const id = document.getElementById('edit-conc-id').value;
-  const nombre = document.getElementById('edit-conc-nombre').value.trim();
-  const nacimiento = document.getElementById('edit-conc-nacimiento').value;
-  if(!nombre){ showToast('Ingresa el nombre', true); return; }
-  try {
-    await api(`conceseros?id=eq.${id}`,'PATCH',{nombre, fecha_nacimiento: nacimiento||null});
-    conceseros = await api('conceseros?activo=eq.true&order=nombre');
-    cerrarModal('modal-editar-conc');
-    showToast('Concesero actualizado ✅');
-    loadConceserosList();
-  } catch(e){ showToast('Error: '+e.message, true); }
+function abrirEditConc(id,nombre,nac){
+  document.getElementById('conc-edit-id').value=id;
+  document.getElementById('conc-modal-title').textContent='✏️ Editar concesero';
+  document.getElementById('conc-nombre').value=nombre;
+  document.getElementById('conc-nacimiento').value=nac||'';
+  document.getElementById('modal-conc').style.display='flex';
 }
 
 async function guardarConcesero(){
-  const nombre = document.getElementById('conc-nombre').value.trim();
-  const nacimiento = document.getElementById('conc-nacimiento').value;
-  if(!nombre){ showToast('Ingresa el nombre', true); return; }
-  try {
-    await api('conceseros','POST',{nombre, fecha_nacimiento: nacimiento||null});
-    conceseros = await api('conceseros?activo=eq.true&order=nombre');
-    cerrarModal('modal-concesero');
-    showToast('Concesero agregado');
-    loadConceserosList();
-  } catch(e){ showToast('Error: '+e.message, true); }
+  const id=document.getElementById('conc-edit-id').value;
+  const nombre=document.getElementById('conc-nombre').value.trim();
+  const nac=document.getElementById('conc-nacimiento').value;
+  if(!nombre){showToast('Ingresa el nombre',true);return;}
+  try{
+    if(id) await api('conceseros?id=eq.'+id,'PATCH',{nombre,fecha_nacimiento:nac||null});
+    else await api('conceseros','POST',{nombre,fecha_nacimiento:nac||null});
+    conceseros=await api('conceseros?activo=eq.true&order=nombre');
+    cerrarModal('modal-conc');showToast('Guardado ✅');loadConcsLista();
+  }catch(e){showToast('Error',true);}
 }
 
-// ── BIRTHDAY CHECK ────────────────────────────────────────────────────────────
-async function checkCumpleanos(){
-  try {
-    const hoy = new Date();
-    const mes = String(hoy.getMonth()+1).padStart(2,'0');
-    const dia = String(hoy.getDate()).padStart(2,'0');
-    const todos = await api('conceseros?activo=eq.true');
-    const cumpleaneros = todos.filter(c =>
-      c.fecha_nacimiento && c.fecha_nacimiento.slice(5) === `${mes}-${dia}`
-    );
-    const banner = document.getElementById('bday-banner');
-    if(cumpleaneros.length > 0){
-      const nombres = cumpleaneros.map(c=>c.nombre).join(', ');
-      const edad = cumpleaneros.length === 1 && cumpleaneros[0].fecha_nacimiento
-        ? ` · ${hoy.getFullYear() - parseInt(cumpleaneros[0].fecha_nacimiento.slice(0,4))} años` : '';
-      document.getElementById('bday-nombre').textContent =
-        `🎂 ¡Feliz cumpleaños ${nombres}!`;
-      document.getElementById('bday-sub').textContent =
-        `Hoy es su cumpleaños${edad}. El lavadero le regala el día completo — sus ventas van al 100%.`;
+async function toggleConc(id,activo){
+  try{
+    await api('conceseros?id=eq.'+id,'PATCH',{activo:!activo});
+    conceseros=await api('conceseros?activo=eq.true&order=nombre');
+    showToast('Actualizado');loadConcsLista();
+  }catch(e){showToast('Error',true);}
+}
+
+// ── CUMPLEAÑOS ────────────────────────────────────────────────────────────────
+async function checkBday(){
+  try{
+    const hoy=new Date();
+    const mes=String(hoy.getMonth()+1).padStart(2,'0');
+    const dia=String(hoy.getDate()).padStart(2,'0');
+    const all=await api('conceseros?activo=eq.true');
+    const cumples=all.filter(c=>c.fecha_nacimiento&&c.fecha_nacimiento.slice(5)===mes+'-'+dia);
+    const banner=document.getElementById('bday-banner');
+    if(cumples.length){
+      const nombres=cumples.map(c=>c.nombre).join(', ');
+      document.getElementById('bday-nombre').textContent='🎂 ¡Feliz cumpleaños '+nombres+'!';
+      document.getElementById('bday-sub').textContent='Hoy es su cumpleaños. El lavadero le regala el día completo — ventas al 100%.';
       banner.style.display='flex';
-    } else {
-      banner.style.display='none';
-    }
-  } catch(e){}
+    }else banner.style.display='none';
+  }catch{}
 }
 
-async function toggleConcesero(id, activo){
-  try { await api(`conceseros?id=eq.${id}`,'PATCH',{activo:!activo}); conceseros=await api('conceseros?activo=eq.true&order=nombre'); loadConceserosList(); showToast('Actualizado'); }
-  catch(e){ showToast('Error', true); }
+// ── SERVICIOS CFG ─────────────────────────────────────────────────────────────
+async function loadSvcsCfg(){
+  try{
+    serviciosCfgAll=await api('servicios?order=tipo,nombre');
+    renderSvcsCfg(serviciosCfgAll);
+  }catch(e){showToast('Error',true);}
 }
 
-// ── SERVICIOS CONFIG ──────────────────────────────────────────────────────────
-async function loadServiciosCfg(){
-  try {
-    const list=await api('servicios?order=nombre');
-    document.getElementById('servicios-cfg-list').innerHTML=list.map(s=>`
-      <tr>
-        <td style="font-weight:600">${s.nombre}</td>
-        <td style="color:var(--gold);font-weight:700">$${fmt(s.precio)}</td>
-        <td><span class="badge" style="background:rgba(59,130,246,.15);color:#60A5FA">${s.tipo}</span></td>
-        <td><span class="badge ${s.activo?'bg':'br'}">${s.activo?'Activo':'Inactivo'}</span></td>
-        <td><button class="btn btn-g" style="padding:3px 8px;font-size:10px" onclick="toggleServicio(${s.id},${s.activo})">${s.activo?'Desactivar':'Activar'}</button></td>
-      </tr>`).join('');
-  } catch(e){ showToast('Error', true); }
+function renderSvcsCfg(list){
+  const ICONS={Automovil:'🚗',Camionetas:'🚙',Motos:'🏍️',Cuatrimoto:'🏎️',Bicicletas:'🚲',Otros:'📦'};
+  document.getElementById('svcs-cfg-list').innerHTML=list.map(s=>`
+    <tr style="${!s.activo?'opacity:.5':''}">
+      <td style="color:var(--muted);font-size:11px">${s.id}</td>
+      <td style="font-weight:600;font-size:11px">${s.nombre}</td>
+      <td style="color:var(--gold);font-weight:700;white-space:nowrap">$${fmt(s.precio)}</td>
+      <td><span class="badge" style="background:rgba(59,130,246,.15);color:#60A5FA;white-space:nowrap">${ICONS[s.tipo]||'📦'} ${s.tipo}</span></td>
+      <td><span class="badge ${s.activo?'bg':'br'}">${s.activo?'Activo':'Inactivo'}</span></td>
+      <td style="display:flex;gap:4px">
+        <button class="btn btn-p" style="padding:3px 8px;font-size:10px" onclick="abrirModalServicio(${s.id})">✏️</button>
+        <button class="btn btn-g" style="padding:3px 8px;font-size:10px" onclick="toggleSvc(${s.id},${s.activo})">${s.activo?'Des':'Act'}</button>
+      </td>
+    </tr>`).join('');
+  document.getElementById('svc-cfg-count').textContent=list.length+' servicio'+( list.length!==1?'s':'');
 }
 
-function abrirModalServicio(){ showToast('Próximamente', false); }
+function filtrarServiciosCfg(){
+  const q=(document.getElementById('svc-cfg-search')?.value||'').toUpperCase().trim();
+  const tipo=document.getElementById('svc-cfg-tipo')?.value||'';
+  let f=serviciosCfgAll;
+  if(tipo) f=f.filter(s=>s.tipo===tipo);
+  if(q) f=f.filter(s=>s.nombre.toUpperCase().includes(q));
+  renderSvcsCfg(f);
+}
 
-async function toggleServicio(id, activo){
-  try { await api(`servicios?id=eq.${id}`,'PATCH',{activo:!activo}); servicios=await api('servicios?activo=eq.true&order=nombre'); loadServiciosCfg(); showToast('Actualizado'); }
-  catch(e){ showToast('Error', true); }
+function abrirModalServicio(id=null){
+  document.getElementById('svc-edit-id').value=id||'';
+  if(id){
+    const s=serviciosCfgAll.find(x=>x.id===id);
+    if(!s) return;
+    document.getElementById('svc-modal-title').textContent='✏️ Editar servicio';
+    document.getElementById('svc-nombre').value=s.nombre;
+    document.getElementById('svc-precio').value=s.precio;
+    document.getElementById('svc-tipo').value=s.tipo;
+  }else{
+    document.getElementById('svc-modal-title').textContent='➕ Agregar servicio';
+    document.getElementById('svc-nombre').value='';
+    document.getElementById('svc-precio').value='';
+    document.getElementById('svc-tipo').value='Automovil';
+  }
+  document.getElementById('modal-svc').style.display='flex';
+}
+
+async function guardarServicio(){
+  const id=document.getElementById('svc-edit-id').value;
+  const nombre=document.getElementById('svc-nombre').value.trim();
+  const precio=parseInt(document.getElementById('svc-precio').value);
+  const tipo=document.getElementById('svc-tipo').value;
+  if(!nombre){showToast('Ingresa el nombre',true);return;}
+  if(!precio||precio<=0){showToast('Precio inválido',true);return;}
+  try{
+    if(id) await api('servicios?id=eq.'+id,'PATCH',{nombre,precio,tipo});
+    else await api('servicios','POST',{nombre,precio,tipo,activo:true});
+    servicios=await api('servicios?activo=eq.true&order=tipo,nombre');
+    cerrarModal('modal-svc');showToast('Guardado ✅');loadSvcsCfg();
+  }catch(e){showToast('Error: '+e.message,true);}
+}
+
+async function toggleSvc(id,activo){
+  try{
+    await api('servicios?id=eq.'+id,'PATCH',{activo:!activo});
+    servicios=await api('servicios?activo=eq.true&order=tipo,nombre');
+    showToast('Actualizado');loadSvcsCfg();
+  }catch(e){showToast('Error',true);}
 }
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────
-
-function goMobile(s, el){
-  go(s, document.getElementById('nav-'+s));
-  document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on');
-}
-
-function cerrarModal(id){ document.getElementById(id).style.display='none'; }
-document.addEventListener('keydown', e=>{ if(e.key==='Escape') document.querySelectorAll('.modal-bg').forEach(m=>m.style.display='none'); });
-
-function showToast(msg, isErr=false){
+function cerrarModal(id){document.getElementById(id).style.display='none';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape') document.querySelectorAll('.modal-bg').forEach(m=>m.style.display='none');});
+function showToast(msg,isErr=false){
   const t=document.createElement('div');
   t.className='toast '+(isErr?'toast-err':'toast-ok');
-  t.textContent=msg;
-  document.body.appendChild(t);
-  setTimeout(()=>t.remove(), 3000);
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>t.remove(),3000);
 }
-
-function imprimirResumen(){ window.print(); }
-
-// Date ticker
-setInterval(updateDate, 60000);
 </script>
 </body>
 </html>
