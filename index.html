@@ -113,6 +113,20 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 .bn-ico{font-size:20px;color:var(--muted)}
 .bn-label{font-size:9px;color:var(--muted);font-weight:600}
 .bn-item.hidden{display:none!important}
+.planilla-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.planilla-table{border-collapse:collapse;font-size:11px;background:#fff;color:#111;min-width:100%}
+.planilla-table th{background:#1B3A5C;color:#C9A84C;padding:6px 10px;text-align:center;font-size:10px;white-space:nowrap;border:1px solid #ddd}
+.planilla-table td{padding:5px 8px;border:1px solid #ddd;text-align:center;white-space:nowrap}
+.planilla-table .lav-header{background:#1B3A5C;color:#C9A84C;font-weight:800;text-align:center;padding:6px;font-size:11px}
+.planilla-table .placa-cell{font-weight:700;color:#1B3A5C;font-family:monospace}
+.planilla-table .valor-cell{font-weight:700;color:#166534}
+.planilla-table .total-row{background:#FFF8E7;font-weight:800}
+.planilla-table .total-row td{color:#92400E;font-size:12px}
+@media print{
+  #app > .topbar, .sidebar, .bottom-nav, .row .btn, #planilla-container .row{display:none!important}
+  .planilla-wrap{overflow:visible}
+  .planilla-table{font-size:10px}
+}
 @media print{
   @page{size:58mm auto;margin:0}
   html,body{width:58mm;margin:0;padding:0}
@@ -158,6 +172,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
     <div class="sidebar">
       <div class="nav-sep">Operación</div>
       <div class="ni on" onclick="go('ordenes',this)" id="nav-ordenes"><span class="ni-ico">🧾</span>Órdenes del día</div>
+      <div class="ni" onclick="go('planilla',this)" id="nav-planilla"><span class="ni-ico">📋</span>Planilla</div>
       <div class="ni hidden" onclick="go('cierre',this)" id="nav-cierre"><span class="ni-ico">💰</span>Cierre del día</div>
       <div class="ni hidden" onclick="go('gastos',this)" id="nav-gastos"><span class="ni-ico">📋</span>Gastos</div>
       <div class="nav-sep hidden" id="sep-reportes">Reportes</div>
@@ -187,7 +202,33 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         </div>
         <div class="card">
           <div class="card-t"><span class="card-tg">✦ Órdenes de hoy</span><span class="badge ba" id="badge-abiertas">0 abiertas</span></div>
+          <div style="display:flex;gap:8px;margin-bottom:10px">
+            <input type="text" id="placa-search" placeholder="🔍 Buscar por placa..." oninput="filtrarOrdenes()" style="flex:1;background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;text-transform:uppercase" oninput="this.value=this.value.toUpperCase();filtrarOrdenes()"/>
+            <select id="estado-filter" onchange="filtrarOrdenes()" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none">
+              <option value="">Todas</option>
+              <option value="abierta">⏳ Abiertas</option>
+              <option value="cerrada">✅ Cerradas</option>
+            </select>
+          </div>
           <div id="ordenes-list"><div style="text-align:center;padding:30px;color:var(--muted)">Cargando...</div></div>
+        </div>
+        <div class="card" id="conc-resumen-card" style="display:none">
+          <div class="card-t"><span class="card-tg">✦ Resumen por lavador — hoy</span></div>
+          <div id="conc-resumen-list"></div>
+        </div>
+      </div>
+
+      <!-- PLANILLA -->
+      <div id="s-planilla" class="screen">
+        <div class="row">
+          <div><div class="page-title">Planilla del día</div><div class="page-sub" id="planilla-fecha"></div></div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-g" onclick="loadPlanilla()">🔄 Actualizar</button>
+            <button class="btn btn-p" onclick="imprimirPlanilla()">🖨️ Imprimir</button>
+          </div>
+        </div>
+        <div id="planilla-container">
+          <div style="text-align:center;padding:40px;color:var(--muted)">Cargando planilla...</div>
         </div>
       </div>
 
@@ -215,7 +256,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         </div>
         <div class="card">
           <div class="card-t"><span>Pago a conceseros</span></div>
-          <div class="tbl-wrap"><table><thead><tr><th>Concesero</th><th>Generó</th><th>Le toca (50%)</th></tr></thead><tbody id="cierre-concs"></tbody></table></div>
+          <div class="tbl-wrap"><table><thead><tr><th>Concesero</th><th>Generó</th><th>Le toca (50%)</th><th>Estado</th></tr></thead><tbody id="cierre-concs"></tbody></table></div>
         </div>
       </div>
 
@@ -282,6 +323,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 <div class="bottom-nav" id="bottom-nav">
   <div class="bn-items">
     <div class="bn-item on" onclick="goMobile('ordenes',this)" id="bn-ordenes"><div class="bn-ico">🧾</div><div class="bn-label">Órdenes</div></div>
+    <div class="bn-item" onclick="goMobile('planilla',this)" id="bn-planilla"><div class="bn-ico">📋</div><div class="bn-label">Planilla</div></div>
     <div class="bn-item hidden" onclick="goMobile('cierre',this)" id="bn-cierre"><div class="bn-ico">💰</div><div class="bn-label">Cierre</div></div>
     <div class="bn-item hidden" onclick="goMobile('gastos',this)" id="bn-gastos"><div class="bn-ico">📋</div><div class="bn-label">Gastos</div></div>
     <div class="bn-item hidden" onclick="goMobile('dashboard',this)" id="bn-dashboard"><div class="bn-ico">📊</div><div class="bn-label">Dashboard</div></div>
@@ -310,7 +352,10 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
     </div>
   </div>
   <div class="field"><label>Buscar y agregar servicios</label>
-    <input type="text" id="svc-search" placeholder="Ej: brillada, rines, moto..." oninput="filtrarServicios()" style="margin-bottom:6px"/>
+    <div style="display:flex;gap:6px;margin-bottom:6px">
+      <input type="text" id="svc-search" placeholder="🔍 Nombre del servicio..." oninput="filtrarServicios()" style="flex:1;background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none"/>
+      <input type="number" id="svc-precio-filter" placeholder="💰 Precio" oninput="filtrarServicios()" style="width:100px;background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none"/>
+    </div>
     <div id="svc-lista" style="max-height:150px;overflow-y:auto;border:1px solid var(--border);border-radius:7px;padding:6px;background:var(--navy-d)"></div>
   </div>
   <div class="field">
@@ -415,6 +460,31 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
   <div style="display:flex;gap:8px;margin-top:8px">
     <button class="btn btn-r" style="flex:1;padding:10px" onclick="ejecutarBorrarOrden()">🗑️ Sí, borrar</button>
     <button class="btn btn-g" style="flex:1;padding:10px" onclick="cerrarModal('modal-borrar-ord')">Cancelar</button>
+  </div>
+</div>
+</div>
+
+<!-- Liquidar concesero -->
+<div id="modal-liquidar" class="modal-bg" style="display:none">
+<div class="modal">
+  <div class="modal-title">💵 Liquidar concesero</div>
+  <div style="background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:14px;font-weight:700;margin-bottom:10px" id="liq-nombre"></div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px">
+      <span style="color:var(--muted)">Total generado hoy:</span>
+      <span style="font-weight:700" id="liq-total"></span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:15px;border-top:1px solid rgba(16,185,129,.2);padding-top:10px;margin-top:4px">
+      <span style="font-weight:700">💰 A pagarle:</span>
+      <span style="font-weight:800;color:#6EE7B7;font-size:20px" id="liq-pago"></span>
+    </div>
+  </div>
+  <div style="font-size:12px;color:var(--muted);margin-bottom:16px;text-align:center">
+    Al confirmar, el lavador quedará marcado como <strong style="color:#6EE7B7">liquidado</strong> por el día de hoy.
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-gr" style="flex:1;padding:12px;font-size:14px" onclick="confirmarLiquidar()">✅ Confirmar pago</button>
+    <button class="btn btn-g" onclick="cerrarModal('modal-liquidar')">Cancelar</button>
   </div>
 </div>
 </div>
@@ -586,6 +656,7 @@ function go(s,el){
   document.getElementById('s-'+s)?.classList.add('on');
   el?.classList.add('on');
   if(s==='ordenes') loadOrdenes();
+  else if(s==='planilla') loadPlanilla();
   else if(s==='cierre') loadCierre();
   else if(s==='gastos') loadGastos();
   else if(s==='dashboard') loadDashboard();
@@ -612,12 +683,52 @@ async function initApp(){
 }
 
 // ── ÓRDENES ──────────────────────────────────────────────────────────────────
+let allOrdenesHoy=[];
+
 async function loadOrdenes(){
   try{
     const ords=await api('ordenes?fecha=eq.'+today()+'&order=id.desc');
+    allOrdenesHoy=ords;
     renderOrdenes(ords);
     updateKpis(ords);
+    renderResumenConceseros(ords);
   }catch(e){showToast('Error cargando órdenes',true);}
+}
+
+function filtrarOrdenes(){
+  const placa=(document.getElementById('placa-search')?.value||'').toUpperCase().trim();
+  const estado=document.getElementById('estado-filter')?.value||'';
+  let f=allOrdenesHoy;
+  if(placa) f=f.filter(o=>o.placa.toUpperCase().includes(placa));
+  if(estado) f=f.filter(o=>o.estado===estado);
+  renderOrdenes(f);
+}
+
+function renderResumenConceseros(ords){
+  const cm={};
+  ords.forEach(o=>{
+    const n=o.concesero_nombre||'Sin asignar';
+    if(!cm[n]) cm[n]={nombre:n,total:0,carros:0,cerradas:0,abiertas:0};
+    cm[n].total+=o.total||0; cm[n].carros++;
+    if(o.estado==='cerrada') cm[n].cerradas++; else cm[n].abiertas++;
+  });
+  const sorted=Object.values(cm).sort((a,b)=>b.total-a.total);
+  const card=document.getElementById('conc-resumen-card');
+  const list=document.getElementById('conc-resumen-list');
+  if(!sorted.length){if(card)card.style.display='none';return;}
+  if(card)card.style.display='block';
+  const COLORS=['#C9A84C','#E8C96A','#10B981','#3B82F6','#8B5CF6','#F97316','#06B6D4','#EC4899','#84CC16','#6366F1','#14B8A6','#F43F5E'];
+  if(list) list.innerHTML=sorted.map((c,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;padding:9px 12px;background:rgba(255,255,255,.03);border-radius:8px;border-left:3px solid ${COLORS[i%COLORS.length]}">
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:700">${c.nombre}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:1px">${c.carros} vehículos · <span style="color:#6EE7B7">${c.cerradas} cobrados</span> · <span style="color:var(--gold)">${c.abiertas} en proceso</span></div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:800;color:${COLORS[i%COLORS.length]};font-size:14px">$${fmt(c.total)}</div>
+        <div style="font-size:10px;color:#6EE7B7">$${fmt(Math.round(c.total/2))} tu parte</div>
+      </div>
+    </div>`).join('');
 }
 
 function renderOrdenes(ords){
@@ -686,6 +797,7 @@ function abrirModalOrden(){
   document.querySelectorAll('#tipo-btns .tipo-btn').forEach(b=>b.classList.remove('on'));
   document.querySelector('#tipo-btns .tipo-btn')?.classList.add('on');
   document.getElementById('svc-search').value='';
+  if(document.getElementById('svc-precio-filter')) document.getElementById('svc-precio-filter').value='';
   renderSvcsAgregados();
   renderSvcLista(getSvcs());
   document.getElementById('modal-orden').style.display='flex';
@@ -940,14 +1052,17 @@ async function ejecutarBorrarOrden(){
 
 // ── TICKET ────────────────────────────────────────────────────────────────────
 function imprimirTicket(o){
-  const svcsHtml=(o.servicios||[]).map(s=>`<div style="display:flex;justify-content:space-between;margin-bottom:2px"><span>${s.servicio_nombre}${s.cantidad>1?' x'+s.cantidad:''}</span><span style="font-weight:900">$${fmt(s.subtotal)}</span></div>`).join('');
+  const svcsArr=o.servicios||[];
+  const svcsHtml=svcsArr.length
+    ? svcsArr.map(s=>`<tr><td>${s.servicio_nombre||s.nombre||''}${s.cantidad>1?' x'+s.cantidad:''}</td><td style="text-align:right;padding-left:8px">1</td><td style="text-align:right;font-weight:900;padding-left:8px">$${fmt(s.subtotal||s.precio||0)}</td></tr>`).join('')
+    : `<tr><td colspan="3" style="text-align:center">Sin detalle</td></tr>`;
   const esGen=!o.cliente_nombre||o.cliente_nombre==='CONSUMIDOR FINAL';
   const ticket=`<div style="text-align:center;margin-bottom:4px">
-    <div style="font-size:12px;font-weight:900;letter-spacing:1px">LAVA AUTOS FULL CAR</div>
-    <div style="font-size:8px;color:#555">DAVID MATEO ARIAS CASTRO</div>
-    <div style="font-size:8px;color:#555">NIT: 700.076.959-3</div>
-    <div style="font-size:8px;color:#555">CRA 20 No 57-47 baja Leonora</div>
-    <div style="font-size:8px;color:#555">TEL: 3108749404</div>
+    <div style="font-size:13px;font-weight:900;letter-spacing:1px">LAVA AUTOS FULL CAR</div>
+    <div style="font-size:9px;font-weight:700">DAVID MATEO ARIAS CASTRO</div>
+    <div style="font-size:9px">NIT: 700.076.959-3</div>
+    <div style="font-size:9px">CRA 20 No 57-47 baja Leonora</div>
+    <div style="font-size:9px">TEL: 3108749404</div>
   </div>
   <hr style="border:none;border-top:1px dashed #ccc;margin:4px 0"/>
   <div style="text-align:center;font-size:11px;font-weight:900;margin-bottom:2px">ORDEN DE SERVICIO:</div>
@@ -958,9 +1073,11 @@ function imprimirTicket(o){
   <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:1px"><span>Placa:</span><span style="font-weight:900">${o.placa}</span></div>
   <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:1px"><span>Concesero:</span><span>${o.concesero_nombre||''}</span></div>
   <hr style="border:none;border-top:1px dashed #ccc;margin:4px 0"/>
-  <div style="display:flex;justify-content:space-between;font-size:9px;font-weight:700;margin-bottom:3px"><span>Descripción</span><span>Cant&nbsp;&nbsp;Subtotal</span></div>
-  <hr style="border:none;border-top:1px solid #ccc;margin:3px 0"/>
-  ${svcsHtml}
+  <table style="width:100%;font-size:9px;border-collapse:collapse;margin-bottom:3px">
+    <tr><td style="font-weight:700">Descripción</td><td style="text-align:right;font-weight:700">Cant</td><td style="text-align:right;font-weight:700;padding-left:8px">Subtotal</td></tr>
+    <tr><td colspan="3"><hr style="border:none;border-top:1px solid #ccc;margin:2px 0"/></td></tr>
+    ${svcsHtml}
+  </table>
   <hr style="border:none;border-top:1px solid #333;margin:4px 0"/>
   <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:900;margin:3px 0"><span>TOTAL ==></span><span>$${fmt(o.total)}</span></div>
   <hr style="border:none;border-top:1px dashed #ccc;margin:4px 0"/>
@@ -1002,8 +1119,27 @@ async function loadCierre(){
     document.getElementById('dc-qr-neta').textContent='$'+fmt(Math.round(qr/2)-qrG);
     const cm={};
     ords.forEach(o=>{const n=o.concesero_nombre||'?';if(!cm[n])cm[n]={n,t:0};cm[n].t+=o.total||0;});
-    document.getElementById('cierre-concs').innerHTML=Object.values(cm).sort((a,b)=>b.t-a.t).map(c=>`
-      <tr><td style="font-weight:600">${c.n}</td><td>$${fmt(c.t)}</td><td style="color:var(--gold);font-weight:700">$${fmt(Math.round(c.t/2))}</td></tr>`).join('');
+    // Load existing liquidaciones for today
+    let liqs=[];
+    try{ liqs=await api('liquidaciones?fecha=eq.'+today()); }catch{}
+    const liqSet=new Set(liqs.map(l=>l.concesero_nombre));
+
+    const totalConcs=Object.keys(cm).length;
+    document.getElementById('liq-resumen').textContent=liqSet.size+'/'+totalConcs+' liquidados';
+    document.getElementById('cierre-concs').innerHTML=Object.values(cm).sort((a,b)=>b.t-a.t).map(c=>{
+      const yaLiq=liqSet.has(c.n);
+      return `<tr>
+        <td style="font-weight:600">${c.n}</td>
+        <td>$${fmt(c.t)}</td>
+        <td style="color:var(--gold);font-weight:700">$${fmt(Math.round(c.t/2))}</td>
+        <td>
+          ${yaLiq
+            ? '<span class="badge bg">✓ Liquidado</span>'
+            : `<button class="btn btn-gr" style="padding:4px 12px;font-size:11px" onclick="liquidarConcesero('${c.n}',${c.t})">💵 Liquidar</button>`
+          }
+        </td>
+      </tr>`;
+    }).join('');
   }catch(e){showToast('Error cargando cierre',true);}
 }
 
@@ -1274,6 +1410,186 @@ async function toggleSvc(id,activo){
     servicios=await api('servicios?activo=eq.true&order=tipo,nombre');
     showToast('Actualizado');loadSvcsCfg();
   }catch(e){showToast('Error',true);}
+}
+
+// ── PLANILLA ─────────────────────────────────────────────────────────────────
+async function loadPlanilla(){
+  document.getElementById('planilla-fecha').textContent =
+    new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  try{
+    const ords = await api('ordenes?fecha=eq.'+today()+'&order=concesero_nombre,id');
+    // Load services for each order
+    const ordsConSvcs = await Promise.all(ords.map(async o=>{
+      const svcs = await api('orden_servicios?orden_id=eq.'+o.id);
+      return {...o, servicios:svcs};
+    }));
+    renderPlanilla(ordsConSvcs);
+  }catch(e){showToast('Error cargando planilla',true);}
+}
+
+function renderPlanilla(ords){
+  const grupos={};
+  ords.forEach(o=>{
+    const n=o.concesero_nombre||'Sin asignar';
+    if(!grupos[n]) grupos[n]={nombre:n,ordenes:[]};
+    grupos[n].ordenes.push(o);
+  });
+  const lavadores=Object.values(grupos).sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  if(!lavadores.length){
+    document.getElementById('planilla-container').innerHTML=
+      '<div style="text-align:center;padding:40px;color:var(--muted)">📋 Sin órdenes hoy todavía.</div>';
+    return;
+  }
+
+  const cols=4;
+  let html='';
+
+  for(let row=0;row<Math.ceil(lavadores.length/cols);row++){
+    const rowLavs=lavadores.slice(row*cols,(row+1)*cols);
+    const maxOrds=Math.max(...rowLavs.map(l=>l.ordenes.length),1);
+
+    html+='<table class="planilla-table" style="width:100%;margin-bottom:14px"><thead>';
+
+    // Row 1: Lavador names
+    html+='<tr>';
+    for(let c=0;c<cols;c++){
+      const lav=rowLavs[c];
+      if(lav){
+        const total=lav.ordenes.reduce((s,o)=>s+(o.total||0),0);
+        const cerradas=lav.ordenes.filter(o=>o.estado==='cerrada').length;
+        html+='<th colspan="3" class="lav-header">'
+          +'LAVADOR: '+lav.nombre
+          +'<br><span style="font-size:9px;color:#E8C96A">'
+          +lav.ordenes.length+' vehículos · '+cerradas+' cobrados · $'+fmt(total)
+          +'</span></th>';
+      } else {
+        html+='<th colspan="3" class="lav-header" style="background:#0F2337"></th>';
+      }
+    }
+    html+='</tr>';
+
+    // Row 2: Column headers
+    html+='<tr>';
+    for(let c=0;c<cols;c++){
+      html+='<th>PLACA</th><th>SERVICIO</th><th>VALOR</th>';
+    }
+    html+='</tr></thead><tbody>';
+
+    // Data rows
+    for(let i=0;i<maxOrds;i++){
+      html+='<tr>';
+      for(let c=0;c<cols;c++){
+        const lav=rowLavs[c];
+        const ord=lav?.ordenes[i];
+        if(ord){
+          // Get all services for this order
+          const svcs=ord.servicios||[];
+          const svcNombre=svcs.map(s=>s.servicio_nombre).join(' + ')||'—';
+          const hora=ord.hora_entrada?new Date(ord.hora_entrada).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}):'';
+          const cobrado=ord.estado==='cerrada';
+          html+='<td class="placa-cell" style="'+(cobrado?'background:#f0fdf4':'')+'">'
+            +ord.placa
+            +'<br><span style="font-size:8px;color:#888">'+hora+'</span>'
+            +'</td>'
+            +'<td style="font-size:9px;text-align:left;max-width:80px;'+(cobrado?'background:#f0fdf4':'')+'">'
+            +svcNombre
+            +'</td>'
+            +'<td class="valor-cell" style="'+(cobrado?'background:#f0fdf4':'')+'">'
+            +'$'+fmt(ord.total)
+            +'<br><span style="font-size:8px;color:'+(cobrado?'#166534':'#b45309')+'">'+( cobrado?'✓':'⏳')+'</span>'
+            +'</td>';
+        } else if(lav){
+          html+='<td></td><td></td><td></td>';
+        } else {
+          html+='<td style="background:#f9f9f9"></td><td style="background:#f9f9f9"></td><td style="background:#f9f9f9"></td>';
+        }
+      }
+      html+='</tr>';
+    }
+
+    // Total row
+    html+='<tr class="total-row">';
+    for(let c=0;c<cols;c++){
+      const lav=rowLavs[c];
+      if(lav){
+        const total=lav.ordenes.reduce((s,o)=>s+(o.total||0),0);
+        html+='<td colspan="2" style="text-align:right">TOTAL ==></td><td>$'+fmt(total)+'</td>';
+      } else {
+        html+='<td></td><td></td><td></td>';
+      }
+    }
+    html+='</tr></tbody></table>';
+  }
+
+  // Summary totals
+  const grandTotal=ords.reduce((s,o)=>s+(o.total||0),0);
+  const totalVehs=ords.length;
+  html+='<div style="background:var(--navy);border:1px solid var(--gold-b);border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">'
+    +'<span style="color:var(--muted);font-size:12px">'+totalVehs+' vehículos · '+lavadores.length+' lavadores</span>'
+    +'<div style="text-align:right">'
+    +'<div style="font-size:12px;color:var(--muted)">TOTAL DÍA</div>'
+    +'<div style="font-size:22px;font-weight:800;color:var(--gold);font-family:monospace">$'+fmt(grandTotal)+'</div>'
+    +'<div style="font-size:11px;color:#6EE7B7">Tu parte: $'+fmt(Math.round(grandTotal/2))+'</div>'
+    +'</div>'
+    +'</div>';
+
+  document.getElementById('planilla-container').innerHTML='<div class="planilla-wrap" id="planilla-print">'+html+'</div>';
+}
+
+function imprimirPlanilla(){
+  const content=document.getElementById('planilla-print')?.innerHTML||'';
+  const fecha=new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase();
+  const w=window.open('','_blank','width=1100,height=700');
+  w.document.write('<!DOCTYPE html><html><head>'
+    +'<title>Planilla '+fecha+'</title>'
+    +'<style>'
+    +'body{font-family:Arial,sans-serif;padding:8px;font-size:10px}'
+    +'h2{text-align:center;margin-bottom:6px;font-size:13px;font-family:"Courier New",monospace}'
+    +'table{border-collapse:collapse;width:100%;margin-bottom:10px}'
+    +'.lav-header{background:#1B3A5C;color:#C9A84C;padding:5px 6px;text-align:center;font-size:10px;border:1px solid #999}'
+    +'th{background:#1B3A5C;color:#C9A84C;padding:4px 6px;text-align:center;font-size:9px;border:1px solid #999}'
+    +'td{padding:3px 5px;border:1px solid #ccc;text-align:center;font-size:9px}'
+    +'.placa-cell{font-weight:700;color:#1B3A5C;font-family:"Courier New",monospace}'
+    +'.valor-cell{font-weight:700;color:#166534}'
+    +'.total-row td{background:#FFF8E7;font-weight:800;color:#92400E}'
+    +'@page{size:A4 landscape;margin:6mm}'
+    +'</style>'
+    +'</head><body>'
+    +'<h2>AMJ MOTORS &mdash; REGISTRO DIARIO DE SERVICIOS &mdash; '+fecha+'</h2>'
+    +content
+    +'<script>window.onload=function(){window.print();}<\/script>'
+    +'</body></html>');
+  w.document.close();
+}
+
+// ── LIQUIDACIONES ────────────────────────────────────────────────────────────
+let liqData = {nombre:'', total:0, pago:0};
+
+function liquidarConcesero(btn){
+  const td=btn.closest('td');
+  const nombre=td.dataset.nombre;
+  const total=parseInt(td.dataset.total);
+  const pago=parseInt(td.dataset.pago);
+  liqData = {nombre, total, pago};
+  document.getElementById('liq-nombre').textContent = '👤 '+nombre;
+  document.getElementById('liq-total').textContent = '$'+fmt(total);
+  document.getElementById('liq-pago').textContent = '$'+fmt(pago);
+  document.getElementById('modal-liquidar').style.display='flex';
+}
+
+async function confirmarLiquidar(){
+  try{
+    await api('liquidaciones','POST',{
+      fecha: today(),
+      concesero_nombre: liqData.nombre,
+      total_generado: liqData.total,
+      pago_concesero: liqData.pago,
+      estado: 'liquidado'
+    });
+    cerrarModal('modal-liquidar');
+    showToast('💵 '+liqData.nombre+' liquidado ✅');
+    loadCierre(); // Refresh to show liquidado badge
+  }catch(e){ showToast('Error: '+e.message, true); }
 }
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────
