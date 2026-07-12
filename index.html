@@ -1102,6 +1102,7 @@ async function loadCierre(){
     console.log('ordenes cargadas:', ords.length);
     const gastos=await api('gastos?fecha=eq.'+today());
     console.log('gastos cargados:', gastos.length);
+    console.log('calculando totales...');
     const bruto=ords.reduce((s,o)=>s+(o.total||0),0);
     const ef=ords.filter(o=>o.forma_pago==='efectivo').reduce((s,o)=>s+(o.total||0),0);
     const qr=ords.filter(o=>o.forma_pago==='qr').reduce((s,o)=>s+(o.total||0),0);
@@ -1110,16 +1111,18 @@ async function loadCierre(){
     const neta=parte-tGastos;
     const efG=gastos.filter(g=>g.forma_pago==='efectivo').reduce((s,g)=>s+(g.valor||0),0);
     const qrG=gastos.filter(g=>g.forma_pago==='qr').reduce((s,g)=>s+(g.valor||0),0);
-    document.getElementById('c-ef').textContent='$'+fmt(ef);
-    document.getElementById('c-qr').textContent='$'+fmt(qr);
-    document.getElementById('c-gastos').textContent='$'+fmt(tGastos);
-    document.getElementById('c-neta').textContent='$'+fmt(neta);
-    document.getElementById('dc-bruto').textContent='$'+fmt(bruto);
-    document.getElementById('dc-parte').textContent='$'+fmt(parte);
-    document.getElementById('dc-gastos').textContent='− $'+fmt(tGastos);
-    document.getElementById('dc-neta').textContent='$'+fmt(neta);
-    document.getElementById('dc-ef-neta').textContent='$'+fmt(Math.round(ef/2)-efG);
-    document.getElementById('dc-qr-neta').textContent='$'+fmt(Math.round(qr/2)-qrG);
+    const setEl=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;else console.warn('elemento no encontrado:',id);};
+    setEl('c-ef','$'+fmt(ef));
+    setEl('c-qr','$'+fmt(qr));
+    setEl('c-gastos','$'+fmt(tGastos));
+    setEl('c-neta','$'+fmt(neta));
+    setEl('dc-bruto','$'+fmt(bruto));
+    setEl('dc-parte','$'+fmt(parte));
+    setEl('dc-gastos','− $'+fmt(tGastos));
+    setEl('dc-neta','$'+fmt(neta));
+    setEl('dc-ef-neta','$'+fmt(Math.round(ef/2)-efG));
+    setEl('dc-qr-neta','$'+fmt(Math.round(qr/2)-qrG));
+    console.log('totales seteados OK');
     const cm={};
     ords.forEach(o=>{const n=o.concesero_nombre||'?';if(!cm[n])cm[n]={n,t:0};cm[n].t+=o.total||0;});
     // Load existing liquidaciones for today
