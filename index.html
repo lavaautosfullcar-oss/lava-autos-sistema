@@ -462,6 +462,18 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <span style="font-weight:800;color:var(--gold)" id="edit-svcs-total">$0</span>
     </div>
   </div>
+  <div class="divider"></div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer" onclick="toggleEditCliente()">
+    <input type="checkbox" id="chk-edit-cliente" style="width:16px;height:16px;accent-color:var(--gold)"/>
+    <span style="font-size:12px;color:var(--muted)">¿Agregar / actualizar datos del cliente?</span>
+  </div>
+  <div id="edit-cliente-fields" style="display:none">
+    <div class="form-grid" style="grid-template-columns:1fr 1fr">
+      <div class="field"><label>Nombre cliente</label><input type="text" id="edit-cli-nombre" placeholder="Nombre cliente"/></div>
+      <div class="field"><label>CC / NIT</label><input type="text" id="edit-cli-cc" placeholder="000000000"/></div>
+    </div>
+    <div class="field"><label>Teléfono (opcional)</label><input type="text" id="edit-cli-tel" placeholder="+57 300 000 0000"/></div>
+  </div>
   <div style="display:flex;gap:8px;margin-top:8px">
     <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarEditarOrden()">💾 Guardar</button>
     <button class="btn btn-g" onclick="cerrarModal('modal-editar-ord')">Cancelar</button>
@@ -883,6 +895,11 @@ function toggleCliente(){
   setTimeout(()=>document.getElementById('cliente-fields').style.display=chk.checked?'block':'none',10);
 }
 
+function toggleEditCliente(){
+  const chk=document.getElementById('chk-edit-cliente');
+  setTimeout(()=>document.getElementById('edit-cliente-fields').style.display=chk.checked?'block':'none',10);
+}
+
 async function guardarOrden(){
   const placa=document.getElementById('ord-placa').value.trim();
   const concSel=document.getElementById('ord-conc');
@@ -985,6 +1002,22 @@ async function abrirEditarOrd(id){
     document.getElementById('edit-svc-search').value='';
     renderEditSvcs();
     renderEditSvcLista(getSvcs());
+    // Reset client fields
+    const chkE=document.getElementById('chk-edit-cliente');
+    if(chkE){ chkE.checked=false; }
+    const editCF=document.getElementById('edit-cliente-fields');
+    if(editCF) editCF.style.display='none';
+    // Pre-fill if has client data
+    if(o.cliente_nombre && o.cliente_nombre!=='CONSUMIDOR FINAL'){
+      if(chkE) chkE.checked=true;
+      if(editCF) editCF.style.display='block';
+      const en=document.getElementById('edit-cli-nombre');
+      const ec=document.getElementById('edit-cli-cc');
+      const et=document.getElementById('edit-cli-tel');
+      if(en) en.value=o.cliente_nombre;
+      if(ec) ec.value=o.cliente_cc||'';
+      if(et) et.value=o.cliente_tel||'';
+    }
     document.getElementById('modal-editar-ord').style.display='flex';
   }catch(e){showToast('Error',true);}
 }
@@ -1040,8 +1073,16 @@ async function guardarEditarOrden(){
   if(!placa){showToast('Ingresa la placa',true);return;}
   if(!editSelectedSvcs.length){showToast('Agrega al menos un servicio',true);return;}
   const total=editSelectedSvcs.reduce((s,x)=>s+x.precio,0);
+  // Client data
+  const chkCli=document.getElementById('chk-edit-cliente')?.checked;
+  const patch={placa,concesero_id:concId,concesero_nombre:concNombre,total};
+  if(chkCli){
+    patch.cliente_nombre=document.getElementById('edit-cli-nombre')?.value||'CONSUMIDOR FINAL';
+    patch.cliente_cc=document.getElementById('edit-cli-cc')?.value||'222222222222';
+    patch.cliente_tel=document.getElementById('edit-cli-tel')?.value||'';
+  }
   try{
-    await api('ordenes?id=eq.'+id,'PATCH',{placa,concesero_id:concId,concesero_nombre:concNombre,total});
+    await api('ordenes?id=eq.'+id,'PATCH',patch);
     await api('orden_servicios?orden_id=eq.'+id,'DELETE');
     for(const s of editSelectedSvcs){
       await api('orden_servicios','POST',{orden_id:parseInt(id),servicio_nombre:s.nombre,cantidad:1,valor_unit:s.precio,subtotal:s.precio});
@@ -1074,46 +1115,79 @@ async function ejecutarBorrarOrden(){
 
 // ── TICKET ────────────────────────────────────────────────────────────────────
 function imprimirTicket(o){
-  const svcsArr=o.servicios||[];
-  const svcsHtml=svcsArr.length
-    ? svcsArr.map(s=>`<tr><td>${s.servicio_nombre||s.nombre||''}${s.cantidad>1?' x'+s.cantidad:''}</td><td style="text-align:right;padding-left:8px">1</td><td style="text-align:right;font-weight:900;padding-left:8px">$${fmt(s.subtotal||s.precio||0)}</td></tr>`).join('')
-    : `<tr><td colspan="3" style="text-align:center">Sin detalle</td></tr>`;
-  const esGen=!o.cliente_nombre||o.cliente_nombre==='CONSUMIDOR FINAL';
-  const ticket=`<div style="text-align:center;margin-bottom:4px">
-    <div style="font-size:13px;font-weight:900;letter-spacing:1px">LAVA AUTOS FULL CAR</div>
-    <div style="font-size:9px;font-weight:700">DAVID MATEO ARIAS CASTRO</div>
-    <div style="font-size:9px">NIT: 700.076.959-3</div>
-    <div style="font-size:9px">CRA 20 No 57-47 baja Leonora</div>
-    <div style="font-size:9px">TEL: 3108749404</div>
-  </div>
-  <hr style="border:none;border-top:1px dashed #ccc;margin:4px 0"/>
-  <div style="text-align:center;font-size:11px;font-weight:900;margin-bottom:2px">ORDEN DE SERVICIO:</div>
-  <div style="text-align:center;font-size:14px;font-weight:900;margin-bottom:4px">${o.numero_orden}</div>
-  <hr style="border:none;border-top:1px dashed #ccc;margin:4px 0"/>
-  <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:1px"><span>Fecha:</span><span>${new Date(o.hora_entrada).toLocaleDateString('es-CO')}</span></div>
-  <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:1px"><span>Hora:</span><span>${fmtTime(o.hora_entrada)}</span></div>
-  <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:1px"><span>Placa:</span><span style="font-weight:900">${o.placa}</span></div>
-  <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:1px"><span>Concesero:</span><span>${o.concesero_nombre||''}</span></div>
-  <hr style="border:none;border-top:1px dashed #ccc;margin:4px 0"/>
-  <table style="width:100%;font-size:9px;border-collapse:collapse;margin-bottom:3px">
-    <tr><td style="font-weight:700">Descripción</td><td style="text-align:right;font-weight:700">Cant</td><td style="text-align:right;font-weight:700;padding-left:8px">Subtotal</td></tr>
-    <tr><td colspan="3"><hr style="border:none;border-top:1px solid #ccc;margin:2px 0"/></td></tr>
-    ${svcsHtml}
-  </table>
-  <hr style="border:none;border-top:1px solid #333;margin:4px 0"/>
-  <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:900;margin:3px 0"><span>TOTAL ==></span><span>$${fmt(o.total)}</span></div>
-  <hr style="border:none;border-top:1px dashed #ccc;margin:4px 0"/>
-  <div style="font-size:9px;margin-bottom:1px"><strong>C.c ó Nit:</strong> ${esGen?'222222222222':o.cliente_cc||'222222222222'}</div>
-  <div style="font-size:9px;margin-bottom:4px"><strong>Señor(es):</strong> ${esGen?'CONSUMIDOR FINAL':o.cliente_nombre}</div>
-  ${!esGen&&o.cliente_tel?'<div style="font-size:9px;margin-bottom:4px"><strong>Tel:</strong> '+o.cliente_tel+'</div>':''}
-  <hr style="border:none;border-top:1px dashed #ccc;margin:4px 0"/>
-  <div style="font-size:9px;text-align:center;margin-bottom:3px">Gracias por su visita</div>
-  <div style="font-size:8px;color:#555;text-align:center">Señor usuario, solicitamos respetuosamente revisar su vehículo antes de ser retirado de la empresa, no se aceptan reclamos posteriores después de salir de este sitio. No se responde por objetos dejados en su vehículo a menos que sean dejados en custodia del administrador. Si el valor de lo cobrado es diferente al valor de la orden de servicio, su lavado será gratis. La entrega del vehículo será con la respectiva orden de servicio.</div>
-  <div style="font-size:8px;color:#555;text-align:center;margin-top:3px">(PARA AVERIGUAR POR EL PROCESO DE SU VEHÍCULO, COMUNÍQUESE AL 3108749404) - PARA QUEJAS Y RECLAMOS 3108359883</div>`;
-  const pa=document.getElementById('print-area');
-  pa.innerHTML='<div style="width:56mm;font-family:\'Courier New\',monospace;font-size:9px;color:#000;background:#fff;padding:2mm 1mm">'+ticket+'</div>';
-  pa.style.display='block';
-  setTimeout(()=>{window.print();setTimeout(()=>{pa.style.display='none';},500);},300);
+  const svcsArr = o.servicios||[];
+  let svcsRows = '';
+  for(const s of svcsArr){
+    svcsRows += '<tr>'
+      +'<td style="padding:2px 4px;font-size:11px">'+( s.servicio_nombre||s.nombre||'')+'</td>'
+      +'<td style="padding:2px 4px;text-align:center;font-size:11px">'+(s.cantidad||1)+'</td>'
+      +'<td style="padding:2px 4px;text-align:right;font-size:11px;font-weight:bold">$'+fmt(s.subtotal||s.precio||0)+'</td>'
+      +'</tr>';
+  }
+  const esGen = !o.cliente_nombre || o.cliente_nombre==='CONSUMIDOR FINAL';
+  const cc     = esGen ? '222222222222' : (o.cliente_cc||'222222222222');
+  const nombre = esGen ? 'CONSUMIDOR FINAL' : o.cliente_nombre;
+  const tel    = (!esGen && o.cliente_tel) ? o.cliente_tel : '';
+  const fecha  = o.hora_entrada ? new Date(o.hora_entrada).toLocaleDateString('es-CO') : '';
+  const hora   = o.hora_entrada ? new Date(o.hora_entrada).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit', hour12:true}) : '';
+
+  const ticket = ''
+    +'<div style="text-align:center;margin-bottom:6px">'
+      +'<div style="font-size:14px;font-weight:900;letter-spacing:1px">LAVA AUTOS FULL CAR</div>'
+      +'<div style="font-size:11px;font-weight:700">DAVID MATEO ARIAS CASTRO</div>'
+      +'<div style="font-size:11px">N-T: 700.076.959-3</div>'
+      +'<div style="font-size:11px">CRA 20 No 57-47 baja Leonora</div>'
+      +'<div style="font-size:11px">TEL: 3108749404</div>'
+    +'</div>'
+    +'<div style="text-align:center;font-size:13px;font-weight:900;margin-bottom:2px">ORDEN DE SERVICIO:</div>'
+    +'<div style="text-align:center;font-size:18px;font-weight:900;margin-bottom:6px">'+o.numero_orden+'</div>'
+    +'<hr style="border:none;border-top:1px solid #000;margin:4px 0"/>'
+    +'<table style="width:100%;font-size:11px;border-collapse:collapse;margin-bottom:4px">'
+      +'<tr><td style="padding:1px 0"><b>Fecha:</b></td><td style="text-align:right;padding:1px 0">'+fecha+'</td></tr>'
+      +'<tr><td style="padding:1px 0"><b>Hora:</b></td><td style="text-align:right;padding:1px 0">'+hora+'</td></tr>'
+      +'<tr><td style="padding:1px 0"><b>Placa:</b></td><td style="text-align:right;padding:1px 0;font-weight:900;font-size:13px">'+o.placa+'</td></tr>'
+      +'<tr><td style="padding:1px 0"><b>Concesero:</b></td><td style="text-align:right;padding:1px 0">'+( o.concesero_nombre||'')+'</td></tr>'
+    +'</table>'
+    +'<div style="font-size:11px;margin-bottom:2px"><b>C.c o Nit:</b></div>'
+    +'<div style="font-size:11px;margin-bottom:2px">'+cc+'</div>'
+    +'<div style="font-size:11px;margin-bottom:2px"><b>Senor(es):</b></div>'
+    +'<div style="font-size:11px;margin-bottom:4px">'+nombre+'</div>'
+    +(tel?'<div style="font-size:11px;margin-bottom:4px"><b>Tel:</b> '+tel+'</div>':'')
+    +'<hr style="border:none;border-top:1px solid #000;margin:4px 0"/>'
+    +'<table style="width:100%;border-collapse:collapse;margin-bottom:4px">'
+      +'<tr>'
+        +'<th style="text-align:left;padding:2px 4px;font-size:11px;border-bottom:1px solid #000">Descripcion</th>'
+        +'<th style="text-align:center;padding:2px 4px;font-size:11px;border-bottom:1px solid #000">Cant</th>'
+        +'<th style="text-align:right;padding:2px 4px;font-size:11px;border-bottom:1px solid #000">Subtotal</th>'
+      +'</tr>'
+      + svcsRows
+    +'</table>'
+    +'<hr style="border:none;border-top:1px solid #000;margin:4px 0"/>'
+    +'<table style="width:100%;border-collapse:collapse;margin-bottom:6px">'
+      +'<tr>'
+        +'<td style="font-size:13px;font-weight:900;padding:2px 0">TOTAL ==></td>'
+        +'<td style="text-align:right;font-size:13px;font-weight:900;padding:2px 0">$'+fmt(o.total)+'</td>'
+      +'</tr>'
+    +'</table>'
+    +'<div style="text-align:center;font-size:11px;margin-bottom:4px">Gracias por su visita</div>'
+    +'<div style="font-size:10px;text-align:justify;margin-bottom:4px">'
+      +'Senor usuario, solicitamos respetuosamente revisar su vehiculo antes de ser retirado de la empresa, '
+      +'no se aceptan reclamos posteriores despues de salir de este sitio. No se responde por objetos dejados '
+      +'en su vehiculo a menos que sean dejados en custodia del administrador. Si el valor de lo cobrado es '
+      +'diferente al valor de la orden de servicio, su lavado sera gratis. La entrega del vehiculo sera con '
+      +'la respectiva orden de servicio.'
+    +'</div>'
+    +'<div style="font-size:10px;text-align:center">'
+      +'(PARA AVERIGUAR POR EL PROCESO DE SU VEHICULO, COMUNIQUESE AL 3108749404) - PARA QUEJAS Y RECLAMOS 3108359883'
+    +'</div>';
+
+  const pa = document.getElementById('print-area');
+  pa.innerHTML = '<div style="width:56mm;font-family:Courier,monospace;color:#000;background:#fff;padding:3mm 2mm">' + ticket + '</div>';
+  pa.style.display = 'block';
+  setTimeout(function(){
+    window.print();
+    setTimeout(function(){ pa.style.display='none'; }, 500);
+  }, 300);
 }
 
 // ── CIERRE ────────────────────────────────────────────────────────────────────
