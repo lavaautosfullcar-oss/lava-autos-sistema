@@ -268,7 +268,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         <div class="card">
           <div class="card-t"><span class="card-tg">✦ Desglose del cierre</span></div>
           <div class="cierre-row"><span style="color:var(--muted)">Total cobrado (ef + QR)</span><span style="font-weight:700;font-family:'Georgia',serif" id="dc-bruto">$0</span></div>
-          <div class="cierre-row"><span style="color:var(--muted)">— Tu parte (50%)</span><span style="font-weight:700;color:var(--gold);font-family:'Georgia',serif" id="dc-parte">$0</span></div>
+          <div class="cierre-row"><span style="color:var(--muted)">— Pago lavadores en efectivo (50% del total)</span><span style="font-weight:700;color:var(--gold);font-family:'Georgia',serif" id="dc-parte">$0</span></div>
           <div class="cierre-row"><span style="color:var(--muted)">— Gastos del día</span><span style="font-weight:700;color:#FCA5A5;font-family:'Georgia',serif" id="dc-gastos">$0</span></div>
           <div class="cierre-row" style="border:none"><span style="font-weight:700">= Tu ganancia neta</span><span style="font-size:20px;font-weight:800;color:#6EE7B7;font-family:'Georgia',serif" id="dc-neta">$0</span></div>
           <div class="divider"></div>
@@ -1372,102 +1372,111 @@ function imprimirTicket(o){
 // ── CIERRE ────────────────────────────────────────────────────────────────────
 async function loadCierre(){
   try{
-    // Cargar ordenes y gastos del dia
     const ords = await api('ordenes?fecha=eq.'+today());
     const gastos = await api('gastos?fecha=eq.'+today());
 
-    // ── Calcular totales ──────────────────────────────────────────
-    // Solo contar ordenes CERRADAS (cobradas) para efectivo/QR
-    const cerradas = ords.filter(o => o.estado === 'cerrada');
-    const abiertas = ords.filter(o => o.estado === 'abierta');
+    // ── Totales del día ───────────────────────────────────────────
+    const cerradas = ords.filter(o=>o.estado==='cerrada');
+    let ef=0, qr=0, tGastos=0, efGastos=0, qrGastos=0;
 
-    let bruto=0, ef=0, qr=0, pendiente=0, tGastos=0, efG=0, qrG=0;
     for(const o of cerradas){
-      const v = parseInt(o.total)||0;
-      bruto += v;
-      if(o.forma_pago==='efectivo') ef += v;
-      else if(o.forma_pago==='qr')  qr += v;
-      else                           pendiente += v;
-    }
-    // Abiertas van al total del dia pero no al efectivo/QR
-    let totalDia = bruto;
-    for(const o of abiertas){
-      totalDia += parseInt(o.total)||0;
+      const v=parseInt(o.total)||0;
+      if(o.forma_pago==='efectivo')      ef+=v;
+      else if(o.forma_pago==='qr')       qr+=v;
+      else if(o.forma_pago==='mixto'){
+        ef+=parseInt(o.pago_efectivo)||0;
+        qr+=parseInt(o.pago_qr)||0;
+      }
     }
     for(const g of gastos){
-      const v = parseInt(g.valor)||0;
-      tGastos += v;
-      if(g.forma_pago==='efectivo') efG += v;
-      if(g.forma_pago==='qr')       qrG += v;
+      const v=parseInt(g.valor)||0;
+      tGastos+=v;
+      if(g.forma_pago==='efectivo') efGastos+=v;
+      else if(g.forma_pago==='qr')  qrGastos+=v;
     }
-    const parte = Math.round(bruto/2);
-    const neta  = parte - tGastos;
-    const efNeta = Math.round(ef/2) - efG;
-    const qrNeta = Math.round(qr/2) - qrG;
 
-    // ── Mostrar totales ───────────────────────────────────────────
-    const s = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+    const bruto = ef + qr;
+
+    // ── Lógica correcta de pagos ──────────────────────────────────
+    // Los lavadores SIEMPRE se pagan en efectivo (50% del bruto total)
+    // No importa si el cliente pagó en QR o efectivo
+    const pagoLavadores = Math.round(bruto / 2);
+
+    // Efectivo que queda en caja:
+    // Efectivo recibido - pago lavadores (50% de TODO el bruto) - gastos en efectivo
+    const cajaEfectivo = ef - pagoLavadores - efGastos;
+
+    // Cuenta QR no se toca para pagar lavadores
+    // Solo se restan gastos que se pagaron por QR
+    const cuentaQR = qr - qrGastos;
+
+    // Ganancia total = lo que queda en caja + lo que queda en cuenta
+    const gananciaNeta = cajaEfectivo + cuentaQR;
+
+    // ── Mostrar ───────────────────────────────────────────────────
+    const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
     s('c-ef',    '$'+fmt(ef));
     s('c-qr',    '$'+fmt(qr));
     s('c-gastos','$'+fmt(tGastos));
-    s('c-neta',  '$'+fmt(neta));
+    s('c-neta',  '$'+fmt(gananciaNeta));
     s('dc-bruto','$'+fmt(bruto));
-    s('dc-parte','$'+fmt(parte));
+    s('dc-parte','$'+fmt(pagoLavadores));
     s('dc-gastos','- $'+fmt(tGastos));
-    s('dc-neta', '$'+fmt(neta));
-    s('dc-ef-neta','$'+fmt(efNeta));
-    s('dc-qr-neta','$'+fmt(qrNeta));
-    // Show pending if any
-    const pendEl = document.getElementById('c-pendiente');
-    if(pendEl) pendEl.textContent = '$'+fmt(pendiente + abiertas.reduce((s,o)=>s+(parseInt(o.total)||0),0));
+    s('dc-neta', '$'+fmt(gananciaNeta));
+    s('dc-ef-neta','$'+fmt(cajaEfectivo));
+    s('dc-qr-neta','$'+fmt(cuentaQR));
 
-    // ── Mapa de conceseros ────────────────────────────────────────
-    const cm = {};
+    // ── Labels actualizados ───────────────────────────────────────
+    const lEf = document.getElementById('label-ef-neta');
+    const lQr = document.getElementById('label-qr-neta');
+    if(lEf) lEf.textContent = 'Efectivo en caja (después de pagar lavadores y gastos)';
+    if(lQr) lQr.textContent = 'Cuenta QR (intacta, solo menos gastos QR)';
+
+    // ── Mapa conceseros ───────────────────────────────────────────
+    const cm={};
     for(const o of ords){
-      const n = o.concesero_nombre || 'Sin asignar';
-      if(!cm[n]) cm[n] = {n, t:0};
-      cm[n].t += parseInt(o.total)||0;
+      const n=o.concesero_nombre||'Sin asignar';
+      if(!cm[n]) cm[n]={n,t:0};
+      cm[n].t+=parseInt(o.total)||0;
     }
 
     // ── Liquidaciones ─────────────────────────────────────────────
-    let liqSet = new Set();
+    let liqSet=new Set();
     try{
-      const liqs = await api('liquidaciones?fecha=eq.'+today());
+      const liqs=await api('liquidaciones?fecha=eq.'+today());
       for(const l of liqs) liqSet.add(l.concesero_nombre);
     }catch(e){ console.warn('liquidaciones:', e.message); }
 
-    const sorted = Object.values(cm).sort((a,b) => b.t - a.t);
-    const liqEl = document.getElementById('liq-resumen');
-    if(liqEl) liqEl.textContent = liqSet.size+'/'+sorted.length+' liquidados';
+    const sorted=Object.values(cm).sort((a,b)=>b.t-a.t);
+    const liqEl=document.getElementById('liq-resumen');
+    if(liqEl) liqEl.textContent=liqSet.size+'/'+sorted.length+' liquidados';
 
-    // ── Renderizar tabla ──────────────────────────────────────────
-    let rows = '';
+    let rows='';
     if(!sorted.length){
-      rows = '<tr><td colspan="4" style="text-align:center;color:#8BA3BB;padding:20px">Sin ordenes hoy</td></tr>';
+      rows='<tr><td colspan="4" style="text-align:center;color:#8BA3BB;padding:20px">Sin ordenes hoy</td></tr>';
     } else {
       for(const c of sorted){
-        const pago = Math.round(c.t/2);
-        const yaLiq = liqSet.has(c.n);
-        let estadoCell = '';
-        if(yaLiq){
-          estadoCell = '<span class="badge bg">Liquidado</span>';
-        } else {
-          estadoCell = '<button class="btn btn-gr" style="padding:4px 12px;font-size:11px" onclick="liquidarConcesero(this)">Liquidar</button>';
-        }
-        rows += '<tr>'
-          + '<td style="font-weight:600">'+c.n+'</td>'
-          + '<td style="font-weight:700">$'+fmt(c.t)+'</td>'
-          + '<td style="color:#C9A84C;font-weight:700">$'+fmt(pago)+'</td>'
-          + '<td data-nombre="'+c.n+'" data-total="'+c.t+'" data-pago="'+pago+'">'+estadoCell+'</td>'
-          + '</tr>';
+        const pago=Math.round(c.t/2);
+        const yaLiq=liqSet.has(c.n);
+        const estado=yaLiq
+          ? '<span class="badge bg">&#10003; Liquidado</span>'
+          : '<button class="btn btn-gr" style="padding:4px 12px;font-size:11px" onclick="liquidarConcesero(this)">&#x1F4B5; Liquidar</button>';
+        rows+='<tr>'
+          +'<td style="font-weight:600">'+c.n+'</td>'
+          +'<td style="font-weight:700">$'+fmt(c.t)+'</td>'
+          +'<td style="color:#C9A84C;font-weight:700">$'+fmt(pago)+'</td>'
+          +'<td data-nombre="'+c.n+'" data-total="'+c.t+'" data-pago="'+pago+'">'+estado+'</td>'
+          +'</tr>';
       }
     }
-    const tbody = document.getElementById('cierre-concs');
-    if(tbody) tbody.innerHTML = rows;
+    const tbody=document.getElementById('cierre-concs');
+    if(tbody) tbody.innerHTML=rows;
+
+    console.log('Cierre OK — Ef:$'+fmt(ef)+' QR:$'+fmt(qr)+' Lavadores:-$'+fmt(pagoLavadores)+' Caja:$'+fmt(cajaEfectivo)+' Cuenta:$'+fmt(cuentaQR));
 
   }catch(e){
-    console.error('Error en loadCierre:', e.message, e.stack);
-    showToast('Error cargando cierre: '+e.message, true);
+    console.error('Error en loadCierre:', e.message);
+    showToast('Error cargando cierre: '+e.message,true);
   }
 }
 
