@@ -388,6 +388,39 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 
       </div>
 
+      <!-- HISTORIAL -->
+      <div id="s-historial" class="screen">
+        <div class="row">
+          <div><div class="page-title">Historial de órdenes</div><div class="page-sub">Busca y edita órdenes de cualquier fecha</div></div>
+        </div>
+        <div class="card">
+          <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr auto">
+            <div class="field" style="margin:0">
+              <label>Buscar por placa</label>
+              <input type="text" id="hist-placa" placeholder="ABC 123" oninput="this.value=this.value.toUpperCase()"/>
+            </div>
+            <div class="field" style="margin:0">
+              <label>Fecha desde</label>
+              <input type="date" id="hist-desde"/>
+            </div>
+            <div class="field" style="margin:0">
+              <label>Fecha hasta</label>
+              <input type="date" id="hist-hasta"/>
+            </div>
+            <div class="field" style="margin:0">
+              <label>&nbsp;</label>
+              <button class="btn btn-p" style="width:100%;padding:9px" onclick="buscarHistorial()">🔍 Buscar</button>
+            </div>
+          </div>
+        </div>
+        <div id="hist-results">
+          <div style="text-align:center;padding:40px;color:var(--muted)">
+            <div style="font-size:32px;margin-bottom:8px">📅</div>
+            Ingresa una placa o selecciona un rango de fechas y haz clic en Buscar
+          </div>
+        </div>
+      </div>
+
       <!-- CONCESEROS -->
       <div id="s-conceseros" class="screen">
         <div class="row"><div><div class="page-title">Conceseros</div></div><button class="btn btn-p" onclick="abrirModalConcesero()">+ Agregar</button></div>
@@ -1550,7 +1583,9 @@ async function loadDashboard(){
 async function loadDashResumen(){
   if(!dashMes) return;
   try{
-    const start=dashMes+'-01', end=dashMes+'-31';
+    const [_y,_m]=dashMes.split('-');
+    const _lastDay=new Date(parseInt(_y),parseInt(_m),0).getDate();
+    const start=dashMes+'-01', end=dashMes+'-'+String(_lastDay).padStart(2,'0');
     const ords=await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
     const total=ords.reduce((s,o)=>s+(o.total||0),0);
     const dias=new Set(ords.map(o=>o.fecha)).size;
@@ -1560,7 +1595,8 @@ async function loadDashResumen(){
     const [y,m]=dashMes.split('-');
     const prevDate=new Date(parseInt(y),parseInt(m)-2,1);
     const prevMes=prevDate.getFullYear()+'-'+String(prevDate.getMonth()+1).padStart(2,'0');
-    const ordsP=await api('ordenes?fecha=gte.'+prevMes+'-01&fecha=lte.'+prevMes+'-31');
+    const prevLastDay=new Date(parseInt(prevDate.getFullYear()),prevDate.getMonth()+1,0).getDate();
+    const ordsP=await api('ordenes?fecha=gte.'+prevMes+'-01&fecha=lte.'+prevMes+'-'+String(prevLastDay).padStart(2,'0'));
     const totalP=ordsP.reduce((s,o)=>s+(o.total||0),0);
     const diff=totalP?Math.round((total-totalP)/totalP*100):0;
     const diffStr=diff>0?'▲ +'+diff+'% vs mes anterior':diff<0?'▼ '+diff+'% vs mes anterior':'= igual al mes anterior';
@@ -1625,7 +1661,9 @@ async function loadDashResumen(){
 async function loadDashDiario(){
   if(!dashMes) return;
   try{
-    const start=dashMes+'-01', end=dashMes+'-31';
+    const [_y,_m]=dashMes.split('-');
+    const _lastDay=new Date(parseInt(_y),parseInt(_m),0).getDate();
+    const start=dashMes+'-01', end=dashMes+'-'+String(_lastDay).padStart(2,'0');
     const ords=await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
     const byDay={};
     ords.forEach(o=>{byDay[o.fecha]=(byDay[o.fecha]||0)+(o.total||0);});
@@ -1682,7 +1720,9 @@ async function verDiaDetalle(fecha){
 async function loadDashFinanzas(){
   if(!dashMes) return;
   try{
-    const start=dashMes+'-01', end=dashMes+'-31';
+    const [_y,_m]=dashMes.split('-');
+    const _lastDay=new Date(parseInt(_y),parseInt(_m),0).getDate();
+    const start=dashMes+'-01', end=dashMes+'-'+String(_lastDay).padStart(2,'0');
     const ords=await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end);
     const gastos=await api('gastos?fecha=gte.'+start+'&fecha=lte.'+end);
     const ingresos=ords.reduce((s,o)=>s+(o.total||0),0);
@@ -1732,8 +1772,10 @@ async function loadDashFinanzas(){
       meses3.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
     }
     const mesesData=await Promise.all(meses3.map(async mes=>{
-      const o=await api('ordenes?fecha=gte.'+mes+'-01&fecha=lte.'+mes+'-31');
-      const g=await api('gastos?fecha=gte.'+mes+'-01&fecha=lte.'+mes+'-31');
+      const [my,mm]=mes.split('-');
+      const mLastDay=new Date(parseInt(my),parseInt(mm),0).getDate();
+      const o=await api('ordenes?fecha=gte.'+mes+'-01&fecha=lte.'+mes+'-'+String(mLastDay).padStart(2,'0'));
+      const g=await api('gastos?fecha=gte.'+mes+'-01&fecha=lte.'+mes+'-'+String(mLastDay).padStart(2,'0'));
       const ing=o.reduce((s,x)=>s+(x.total||0),0);
       const gas=g.reduce((s,x)=>s+(x.valor||0),0);
       return {mes,ing,gas,neta:Math.round(ing/2)-gas};
@@ -1762,7 +1804,9 @@ async function loadDashFinanzas(){
 async function loadDashConceseros(){
   if(!dashMes) return;
   try{
-    const start=dashMes+'-01', end=dashMes+'-31';
+    const [_y,_m]=dashMes.split('-');
+    const _lastDay=new Date(parseInt(_y),parseInt(_m),0).getDate();
+    const start=dashMes+'-01', end=dashMes+'-'+String(_lastDay).padStart(2,'0');
     const ords=await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
     const cm={};
     ords.forEach(o=>{
@@ -2145,10 +2189,14 @@ function initHistorial(){
   // Set default dates: last 7 days
   const hoy = today();
   const hace7 = new Date(Date.now()-7*24*60*60*1000).toISOString().slice(0,10);
-  document.getElementById('hist-desde').value = hace7;
-  document.getElementById('hist-hasta').value = hoy;
-  document.getElementById('hist-placa').value = '';
-  document.getElementById('hist-results').innerHTML = '';
+  const desdeEl = document.getElementById('hist-desde');
+  const hastaEl = document.getElementById('hist-hasta');
+  const placaEl = document.getElementById('hist-placa');
+  const resEl   = document.getElementById('hist-results');
+  if(desdeEl) desdeEl.value = hace7;
+  if(hastaEl) hastaEl.value = hoy;
+  if(placaEl) placaEl.value = '';
+  if(resEl)   resEl.innerHTML = '';
 }
 
 async function buscarHistorial(){
