@@ -145,8 +145,8 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
     <div class="login-title">LAVA AUTOS</div>
     <div class="login-sub">Full Car · by AMJ Motors</div>
     <div class="login-roles">
-      <div class="role-btn sel" onclick="selRole('dueno',this)"><div class="role-icon">👑</div><div class="role-name">Dueño</div><div class="role-desc">Acceso total</div></div>
-      <div class="role-btn" onclick="selRole('cajero',this)"><div class="role-icon">🖥️</div><div class="role-name">Cajero</div><div class="role-desc">Órdenes</div></div>
+      <div class="role-btn sel" onclick="selRole('dueno',this)"><div class="role-icon">👑</div><div class="role-name">Propietario</div><div class="role-desc">Acceso total</div></div>
+      <div class="role-btn" onclick="selRole('cajero',this)"><div class="role-icon">🖥️</div><div class="role-name">Administrador</div><div class="role-desc">Órdenes</div></div>
     </div>
     <div class="pin-label">PIN de acceso</div>
     <input class="pin-input" type="password" maxlength="6" id="pin-input" placeholder="••••" onkeydown="if(event.key==='Enter')doLogin()"/>
@@ -178,6 +178,8 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <div class="nav-sep hidden" id="sep-reportes">Reportes</div>
       <div class="ni hidden" onclick="go('dashboard',this)" id="nav-dashboard"><span class="ni-ico">📊</span>Dashboard</div>
       <div class="ni hidden" onclick="go('historial',this)" id="nav-historial"><span class="ni-ico">📅</span>Historial</div>
+      <div class="nav-sep hidden" id="sep-empresas">Empresas</div>
+      <div class="ni hidden" onclick="go('susuerte',this)" id="nav-susuerte"><span class="ni-ico">🏢</span>Susuerte</div>
       <div class="nav-sep hidden" id="sep-config">Configuración</div>
       <div class="ni hidden" onclick="go('conceseros',this)" id="nav-conceseros"><span class="ni-ico">👥</span>Conceseros</div>
       <div class="ni hidden" onclick="go('servicios-cfg',this)" id="nav-servicios-cfg"><span class="ni-ico">⚙️</span>Servicios</div>
@@ -197,12 +199,12 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         </div>
         <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
           <div class="kpi"><div class="kpi-l">Ventas del día</div><div class="kpi-v" style="color:var(--gold)" id="kpi-ventas">$0</div><div class="kpi-s" id="kpi-split">💵 $0 · 📲 $0</div></div>
-          <div class="kpi" style="border-left-color:var(--green)"><div class="kpi-l">Órdenes</div><div class="kpi-v" style="color:#6EE7B7" id="kpi-count">0</div><div class="kpi-s" id="kpi-estados">0 cerradas · 0 abiertas</div></div>
+          <div class="kpi" style="border-left-color:var(--green)"><div class="kpi-l">Operación</div><div class="kpi-v" style="color:#6EE7B7" id="kpi-count">0</div><div class="kpi-s" id="kpi-estados">0 cerradas · 0 abiertas</div></div>
           <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">Vehículos</div><div class="kpi-v" style="color:#C4B5FD" id="kpi-veh">0</div></div>
           <div class="kpi"><div class="kpi-l">Conceseros activos</div><div class="kpi-v" style="color:var(--gold)" id="kpi-conc">0</div></div>
         </div>
         <div class="card">
-          <div class="card-t"><span class="card-tg">✦ Órdenes de hoy</span><span class="badge ba" id="badge-abiertas">0 abiertas</span></div>
+          <div class="card-t"><span class="card-tg">✦ Operación de hoy</span><span class="badge ba" id="badge-abiertas">0 abiertas</span></div>
           <div style="display:flex;gap:8px;margin-bottom:10px">
             <input type="text" id="placa-search" placeholder="🔍 Buscar por placa..." oninput="filtrarOrdenes()" style="flex:1;background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;text-transform:uppercase" oninput="this.value=this.value.toUpperCase();filtrarOrdenes()"/>
             <select id="estado-filter" onchange="filtrarOrdenes()" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none">
@@ -328,7 +330,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
             <div class="card"><div class="card-t"><span class="card-tg">✦ Top conceseros</span></div><div id="d-concs"></div></div>
-            <div class="card"><div class="card-t"><span class="card-tg">✦ Órdenes recientes</span></div>
+            <div class="card"><div class="card-t"><span class="card-tg">✦ Operación recientes</span></div>
               <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Fecha</th><th>Placa</th><th>Pago</th><th>Total</th></tr></thead><tbody id="d-recientes"></tbody></table></div>
             </div>
           </div>
@@ -463,6 +465,41 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         </div>
       </div>
 
+      <!-- SUSUERTE -->
+      <div id="s-susuerte" class="screen">
+        <div class="row">
+          <div>
+            <div class="page-title">🏢 Susuerte — Contrato mensual</div>
+            <div class="page-sub">Cobro el 18 de cada mes · Selecciona el mes a facturar</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <select id="sus-mes" onchange="loadSusuerte()" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none"></select>
+            <button class="btn btn-p" onclick="generarFacturaSusuerte()">📄 Generar factura</button>
+          </div>
+        </div>
+        <!-- KPIs -->
+        <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+          <div class="kpi"><div class="kpi-l">Lavadas del mes</div><div class="kpi-v" style="color:var(--gold)" id="sus-count">0</div></div>
+          <div class="kpi" style="border-left-color:#FCD34D"><div class="kpi-l">⏳ Pendientes de cobro</div><div class="kpi-v" style="color:#FCD34D" id="sus-pendiente">$0</div></div>
+          <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">✅ Ya cobrado</div><div class="kpi-v" style="color:#6EE7B7" id="sus-cobrado">$0</div></div>
+        </div>
+        <!-- Tabla -->
+        <div class="card">
+          <div class="card-t"><span class="card-tg">✦ Detalle de lavadas</span></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Fecha</th><th>Placa</th><th>Servicio</th><th>Valor</th><th>Estado pago</th><th></th></tr></thead>
+              <tbody id="sus-tabla"></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Resumen cobro -->
+        <div class="card" id="sus-resumen-card" style="display:none">
+          <div class="card-t"><span class="card-tg">✦ Resumen para cobro</span></div>
+          <div id="sus-resumen"></div>
+        </div>
+      </div>
+
       <!-- CONCESEROS -->
       <div id="s-conceseros" class="screen">
         <div class="row"><div><div class="page-title">Conceseros</div></div><button class="btn btn-p" onclick="abrirModalConcesero()">+ Agregar</button></div>
@@ -491,7 +528,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 <!-- BOTTOM NAV -->
 <div class="bottom-nav" id="bottom-nav">
   <div class="bn-items">
-    <div class="bn-item on" onclick="goMobile('ordenes',this)" id="bn-ordenes"><div class="bn-ico">🧾</div><div class="bn-label">Órdenes</div></div>
+    <div class="bn-item on" onclick="goMobile('ordenes',this)" id="bn-ordenes"><div class="bn-ico">🧾</div><div class="bn-label">Operación</div></div>
     <div class="bn-item" onclick="goMobile('planilla',this)" id="bn-planilla"><div class="bn-ico">📋</div><div class="bn-label">Planilla</div></div>
     <div class="bn-item hidden" onclick="goMobile('cierre',this)" id="bn-cierre"><div class="bn-ico">💰</div><div class="bn-label">Cierre</div></div>
     <div class="bn-item hidden" onclick="goMobile('gastos',this)" id="bn-gastos"><div class="bn-ico">📋</div><div class="bn-label">Gastos</div></div>
@@ -643,6 +680,28 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
   <div style="display:flex;gap:8px;margin-top:8px">
     <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarEditarOrden()">💾 Guardar</button>
     <button class="btn btn-g" onclick="cerrarModal('modal-editar-ord')">Cancelar</button>
+  </div>
+</div>
+</div>
+
+<!-- Modal cambiar forma de pago -->
+<div id="modal-cambiar-pago" class="modal-bg" style="display:none">
+<div class="modal">
+  <div class="modal-title">💳 Cambiar forma de pago</div>
+  <input type="hidden" id="cpago-id"/>
+  <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px">
+    <div style="color:var(--muted);margin-bottom:4px">Forma de pago actual:</div>
+    <div style="font-weight:700;font-size:14px" id="cpago-actual"></div>
+  </div>
+  <div class="field"><label>Nueva forma de pago</label>
+    <div class="pay-toggle">
+      <button class="pt pt-ef on-ef" onclick="selCambiarPay(this,'efectivo')" id="cpago-ef">💵 Efectivo</button>
+      <button class="pt pt-qr" onclick="selCambiarPay(this,'qr')" id="cpago-qr">📲 QR</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button class="btn btn-p" style="flex:1;padding:10px" onclick="confirmarCambiarPago()">✅ Guardar cambio</button>
+    <button class="btn btn-g" onclick="cerrarModal('modal-cambiar-pago')">Cancelar</button>
   </div>
 </div>
 </div>
@@ -821,8 +880,10 @@ function doLogout(){
   document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('sel'));
   document.querySelector('.role-btn')?.classList.add('sel');
   // Reset nav
-  ['nav-cierre','nav-gastos','nav-dashboard','nav-historial','nav-conceseros','nav-servicios-cfg',
-   'sep-reportes','sep-config','bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
+  ['nav-cierre','nav-gastos','nav-dashboard','nav-historial','nav-susuerte',
+   'nav-conceseros','nav-servicios-cfg',
+   'sep-reportes','sep-empresas','sep-config',
+   'bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
     document.getElementById(id)?.classList.add('hidden'));
   go('ordenes',document.getElementById('nav-ordenes'));
 }
@@ -831,8 +892,10 @@ function setupNav(){
   const isOwner=currentUser.rol==='dueno';
   const isCajero=currentUser.rol==='cajero';
   // Reset all first
-  ['nav-cierre','nav-gastos','nav-dashboard','nav-historial','nav-conceseros','nav-servicios-cfg',
-   'sep-reportes','sep-config','bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
+  ['nav-cierre','nav-gastos','nav-dashboard','nav-historial','nav-susuerte',
+   'nav-conceseros','nav-servicios-cfg',
+   'sep-reportes','sep-empresas','sep-config',
+   'bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
     document.getElementById(id)?.classList.add('hidden'));
   // Cajero: ordenes + cierre + historial
   if(isCajero){
@@ -843,11 +906,13 @@ function setupNav(){
   }
   // Dueño: todo
   if(isOwner){
-    ['nav-cierre','nav-gastos','nav-dashboard','nav-historial','nav-conceseros','nav-servicios-cfg',
-     'sep-reportes','sep-config','bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
+    ['nav-cierre','nav-gastos','nav-dashboard','nav-historial','nav-susuerte',
+     'nav-conceseros','nav-servicios-cfg',
+     'sep-reportes','sep-empresas','sep-config',
+     'bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
       document.getElementById(id)?.classList.remove('hidden'));
   }
-  document.getElementById('tb-user').textContent=(isOwner?'👑 Dueño':'🖥️ Cajero');
+  document.getElementById('tb-user').textContent=(isOwner?'👑 Propietario':'🖥️ Administrador');
   document.getElementById('tb-date').textContent=new Date().toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short'});
   document.getElementById('ordenes-fecha').textContent=new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   document.getElementById('cierre-fecha').textContent='Cierre — '+new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
@@ -867,6 +932,7 @@ function go(s,el){
   }
   else if(s==='cierre') loadCierre();
   else if(s==='historial') initHistorial();
+  else if(s==='susuerte') initSusuerte();
   else if(s==='gastos') loadGastos();
   else if(s==='dashboard') loadDashboard();
   else if(s==='conceseros') loadConcsLista();
@@ -2450,6 +2516,230 @@ async function reimprimirHist(id){
     const svcs = await api('orden_servicios?orden_id=eq.'+id);
     imprimirTicket({...ords[0], servicios:svcs});
   }catch(e){ showToast('Error',true); }
+}
+
+// ── CAMBIAR FORMA DE PAGO ────────────────────────────────────────────────────
+let cpagoId = null;
+let cpagoMode = 'efectivo';
+
+function cambiarPago(id, pagoActual, total){
+  cpagoId = id;
+  cpagoMode = pagoActual==='qr'?'qr':'efectivo';
+  const label = pagoActual==='qr'?'📲 QR':pagoActual==='efectivo'?'💵 Efectivo':'🔀 Mixto';
+  document.getElementById('cpago-id').value = id;
+  document.getElementById('cpago-actual').textContent = label;
+  // Set toggle
+  document.getElementById('cpago-ef').classList.remove('on-ef');
+  document.getElementById('cpago-qr').classList.remove('on-qr');
+  if(cpagoMode==='qr') document.getElementById('cpago-qr').classList.add('on-qr');
+  else document.getElementById('cpago-ef').classList.add('on-ef');
+  document.getElementById('modal-cambiar-pago').style.display='flex';
+}
+
+function selCambiarPay(btn, type){
+  cpagoMode = type;
+  document.getElementById('cpago-ef').classList.remove('on-ef');
+  document.getElementById('cpago-qr').classList.remove('on-qr');
+  btn.classList.add(type==='efectivo'?'on-ef':'on-qr');
+}
+
+async function confirmarCambiarPago(){
+  try{
+    const patch = {forma_pago: cpagoMode};
+    if(cpagoMode==='efectivo'){
+      const ords = await api('ordenes?id=eq.'+cpagoId);
+      patch.pago_efectivo = ords[0].total;
+      patch.pago_qr = 0;
+    } else {
+      const ords = await api('ordenes?id=eq.'+cpagoId);
+      patch.pago_qr = ords[0].total;
+      patch.pago_efectivo = 0;
+    }
+    await api('ordenes?id=eq.'+cpagoId, 'PATCH', patch);
+    cerrarModal('modal-cambiar-pago');
+    showToast('Forma de pago actualizada ✅');
+    loadOrdenes();
+  }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+// ── PENDIENTE DE PAGO ─────────────────────────────────────────────────────────
+async function marcarPendientePago(id){
+  try{
+    await api('ordenes?id=eq.'+id, 'PATCH', {
+      estado: 'pendiente_pago',
+      forma_pago: 'pendiente',
+      hora_salida: new Date().toISOString()
+    });
+    showToast('Orden marcada como pendiente de pago ⏳');
+    loadOrdenes();
+  }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+// ── SUSUERTE ─────────────────────────────────────────────────────────────────
+async function initSusuerte(){
+  // Fill month selector
+  const sel = document.getElementById('sus-mes');
+  if(!sel) return;
+  const now = new Date();
+  sel.innerHTML = '';
+  for(let i=0; i<6; i++){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const val = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    const label = MES[d.getMonth()]+' '+d.getFullYear();
+    sel.innerHTML += '<option value="'+val+'">'+label+'</option>';
+  }
+  loadSusuerte();
+}
+
+async function loadSusuerte(){
+  const mes = document.getElementById('sus-mes')?.value;
+  if(!mes) return;
+  try{
+    const [y,m] = mes.split('-');
+    const lastDay = new Date(parseInt(y),parseInt(m),0).getDate();
+    const start = mes+'-01', end = mes+'-'+String(lastDay).padStart(2,'0');
+    // Get orders for Susuerte (cliente_nombre contains 'SUSUERTE' or similar)
+    const ords = await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
+    const susOrdenes = ords.filter(o=>
+      (o.cliente_nombre||'').toUpperCase().includes('SUSUERTE') ||
+      (o.cliente_cc||'').includes('susuerte') ||
+      o.forma_pago === 'pendiente' ||
+      o.estado === 'pendiente_pago'
+    );
+
+    // For now show all pendiente_pago orders as they might be Susuerte
+    const pendientes = ords.filter(o => o.estado==='pendiente_pago' || o.forma_pago==='pendiente');
+
+    const totalPend = pendientes.reduce((s,o)=>s+(o.total||0),0);
+    const cobradas  = ords.filter(o => o.estado==='cerrada' &&
+      (o.cliente_nombre||'').toUpperCase().includes('SUSUERTE'));
+    const totalCob  = cobradas.reduce((s,o)=>s+(o.total||0),0);
+
+    document.getElementById('sus-count').textContent   = pendientes.length + cobradas.length;
+    document.getElementById('sus-pendiente').textContent = '$'+fmt(totalPend);
+    document.getElementById('sus-cobrado').textContent   = '$'+fmt(totalCob);
+
+    const allSus = [...pendientes, ...cobradas].sort((a,b)=>a.fecha.localeCompare(b.fecha));
+
+    // Load services
+    const withSvcs = await Promise.all(allSus.map(async o=>{
+      const svcs = await api('orden_servicios?orden_id=eq.'+o.id);
+      return {...o, servicios:svcs};
+    }));
+
+    document.getElementById('sus-tabla').innerHTML = withSvcs.length
+      ? withSvcs.map(o=>{
+          const svc = o.servicios?.[0]?.servicio_nombre || '—';
+          const isPend = o.estado==='pendiente_pago' || o.forma_pago==='pendiente';
+          return '<tr>'
+            +'<td style="font-family:monospace;color:var(--muted)">'+o.fecha.split('-').reverse().join('/')+'</td>'
+            +'<td style="font-weight:700;color:var(--gold)">'+o.placa+'</td>'
+            +'<td style="font-size:11px">'+svc+'</td>'
+            +'<td style="font-weight:700">$'+fmt(o.total)+'</td>'
+            +'<td><span class="badge" style="'+(isPend?'background:rgba(245,158,11,.15);color:#FCD34D':'background:rgba(16,185,129,.15);color:#6EE7B7')+'">'+( isPend?'⏳ Pendiente':'✅ Cobrado')+'</span></td>'
+            +'<td>'+(isPend?'<button class="btn btn-gr" style="padding:3px 8px;font-size:10px" onclick="cobrarSusuerte('+o.id+')">💰 Cobrar</button>':'')+'</td>'
+            +'</tr>';
+        }).join('')
+      : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Sin lavadas pendientes este mes</td></tr>';
+
+    // Show resumen
+    if(withSvcs.length){
+      document.getElementById('sus-resumen-card').style.display='block';
+      document.getElementById('sus-resumen').innerHTML=''
+        +'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">'
+          +'<span style="color:var(--muted)">Total lavadas</span><span style="font-weight:700">'+withSvcs.length+'</span>'
+        +'</div>'
+        +'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">'
+          +'<span style="color:var(--muted)">⏳ Pendiente por cobrar</span><span style="font-weight:800;color:#FCD34D">$'+fmt(totalPend)+'</span>'
+        +'</div>'
+        +'<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px">'
+          +'<span style="color:var(--muted)">✅ Ya cobrado</span><span style="font-weight:800;color:#6EE7B7">$'+fmt(totalCob)+'</span>'
+        +'</div>';
+    }
+  }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+async function cobrarSusuerte(id){
+  // Open cobrar modal for this order
+  await abrirCobrar(id);
+}
+
+async function generarFacturaSusuerte(){
+  const mes = document.getElementById('sus-mes')?.value;
+  if(!mes) return;
+  try{
+    const [y,m] = mes.split('-');
+    const lastDay = new Date(parseInt(y),parseInt(m),0).getDate();
+    const start = mes+'-01', end = mes+'-'+String(lastDay).padStart(2,'0');
+    const ords = await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
+    const pendientes = ords.filter(o => o.estado==='pendiente_pago' || o.forma_pago==='pendiente');
+
+    if(!pendientes.length){ showToast('No hay lavadas pendientes este mes', true); return; }
+
+    // Load services
+    const withSvcs = await Promise.all(pendientes.map(async o=>{
+      const svcs = await api('orden_servicios?orden_id=eq.'+o.id);
+      return {...o, servicios:svcs};
+    }));
+
+    const total = withSvcs.reduce((s,o)=>s+(o.total||0),0);
+    const mesLabel = MES[parseInt(m)-1]+' '+y;
+
+    // Generate printable invoice
+    const w = window.open('','_blank','width=800,height=700');
+    let rows = withSvcs.map((o,i)=>{
+      const svc = o.servicios?.[0]?.servicio_nombre || '—';
+      return '<tr>'
+        +'<td style="padding:6px 10px;border-bottom:1px solid #eee">'+(i+1)+'</td>'
+        +'<td style="padding:6px 10px;border-bottom:1px solid #eee">'+o.fecha.split('-').reverse().join('/')+'</td>'
+        +'<td style="padding:6px 10px;border-bottom:1px solid #eee;font-weight:bold">'+o.placa+'</td>'
+        +'<td style="padding:6px 10px;border-bottom:1px solid #eee">'+svc+'</td>'
+        +'<td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:right;font-weight:bold">$'+fmt(o.total)+'</td>'
+        +'</tr>';
+    }).join('');
+
+    w.document.write('<!DOCTYPE html><html><head>'
+      +'<title>Factura Susuerte '+mesLabel+'</title>'
+      +'<style>'
+        +'body{font-family:Arial,sans-serif;padding:30px;color:#111}'
+        +'h1{color:#1B3A5C;margin-bottom:4px}'
+        +'h3{color:#888;font-weight:normal;margin-bottom:20px}'
+        +'table{width:100%;border-collapse:collapse}'
+        +'th{background:#1B3A5C;color:#C9A84C;padding:8px 10px;text-align:left}'
+        +'.total-row{background:#FFF8E7;font-weight:bold;font-size:16px}'
+        +'.total-row td{padding:10px}'
+        +'@page{size:A4;margin:15mm}'
+      +'</style></head><body>'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">'
+        +'<div>'
+          +'<h1>LAVAUTOS FULL CAR</h1>'
+          +'<p style="margin:2px 0">DAVID MATEO ARIAS CASTRO</p>'
+          +'<p style="margin:2px 0">NIT: 700.076.959-3</p>'
+          +'<p style="margin:2px 0">CRA 20 No 57-47 baja Leonora · TEL: 3108749404</p>'
+        +'</div>'
+        +'<div style="text-align:right">'
+          +'<div style="font-size:18px;font-weight:bold;color:#1B3A5C">RELACIÓN DE SERVICIOS</div>'
+          +'<div style="font-size:14px;color:#888">'+mesLabel+'</div>'
+          +'<div style="font-size:13px;margin-top:4px">Fecha de cobro: 18/'+String(m).padStart(2,'0')+'/'+y+'</div>'
+        +'</div>'
+      +'</div>'
+      +'<div style="background:#f5f5f5;padding:10px 14px;border-radius:6px;margin-bottom:16px">'
+        +'<strong>Cliente:</strong> SUSUERTE S.A.S'
+      +'</div>'
+      +'<table>'
+        +'<thead><tr><th>#</th><th>Fecha</th><th>Placa</th><th>Servicio</th><th style="text-align:right">Valor</th></tr></thead>'
+        +'<tbody>'+rows+'</tbody>'
+        +'<tfoot><tr class="total-row">'
+          +'<td colspan="4" style="text-align:right">TOTAL A COBRAR:</td>'
+          +'<td style="text-align:right;color:#1B3A5C;font-size:18px">$'+fmt(total)+'</td>'
+        +'</tr></tfoot>'
+      +'</table>'
+      +'<p style="margin-top:30px;font-size:12px;color:#888">Servicios prestados durante el mes de '+mesLabel+'. '
+        +'Total de '+withSvcs.length+' vehículos atendidos.</p>'
+      +'<script>window.onload=function(){window.print();}<\/script>'
+      +'</body></html>');
+    w.document.close();
+  }catch(e){ showToast('Error: '+e.message, true); }
 }
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────
