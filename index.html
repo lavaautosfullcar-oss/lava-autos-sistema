@@ -222,8 +222,10 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <!-- PLANILLA -->
       <div id="s-planilla" class="screen">
         <div class="row">
-          <div><div class="page-title">Planilla del día</div><div class="page-sub" id="planilla-fecha"></div></div>
-          <div style="display:flex;gap:6px">
+          <div><div class="page-title">Planilla de servicios</div><div class="page-sub" id="planilla-fecha"></div></div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+            <input type="date" id="planilla-date-sel" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:7px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none" onchange="loadPlanillaFecha(this.value)"/>
+            <button class="btn btn-g" onclick="loadPlanilla()">📅 Hoy</button>
             <button class="btn btn-g" onclick="loadPlanilla()">🔄 Actualizar</button>
             <button class="btn btn-p" onclick="imprimirPlanilla()">🖨️ Imprimir</button>
           </div>
@@ -307,7 +309,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         <div style="display:flex;gap:5px;margin-bottom:14px;flex-wrap:wrap" id="dash-tabs">
           <button class="btn btn-p" onclick="showDashTab('resumen',this)" id="dt-resumen">📊 Resumen</button>
           <button class="btn btn-g" onclick="showDashTab('diario',this)" id="dt-diario">📅 Diario</button>
-          <button class="btn btn-g" onclick="showDashTab('finanzas',this)" id="dt-finanzas">💰 Ingresos y Gastos</button>
+          <button class="btn btn-g" onclick="showDashTab('finanzas',this)" id="dt-finanzas">📒 Libro del mes</button>
           <button class="btn btn-g" onclick="showDashTab('conceseros',this)" id="dt-conceseros">👥 Conceseros</button>
         </div>
 
@@ -348,26 +350,66 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           </div>
         </div>
 
-        <!-- FINANZAS -->
+        <!-- FINANZAS / LIBRO DEL MES -->
         <div id="dt-finanzas-content" style="display:none">
-          <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
-            <div class="kpi"><div class="kpi-l">Ingresos del mes</div><div class="kpi-v" style="color:var(--gold)" id="fin-ingresos">$0</div></div>
-            <div class="kpi" style="border-left-color:#EF4444"><div class="kpi-l">Gastos del mes</div><div class="kpi-v" style="color:#FCA5A5" id="fin-gastos">$0</div></div>
-            <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">Ganancia neta</div><div class="kpi-v" style="color:#6EE7B7" id="fin-neta">$0</div></div>
+          <!-- KPIs resumen -->
+          <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+            <div class="kpi"><div class="kpi-l">💵 Efectivo recibido</div><div class="kpi-v" style="color:#6EE7B7" id="fin-ef">$0</div></div>
+            <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">📲 QR recibido</div><div class="kpi-v" style="color:#C4B5FD" id="fin-qr">$0</div></div>
+            <div class="kpi" style="border-left-color:#EF4444"><div class="kpi-l">📋 Total gastos</div><div class="kpi-v" style="color:#FCA5A5" id="fin-gastos">$0</div></div>
+            <div class="kpi" style="border-left-color:var(--gold)"><div class="kpi-l">✦ Ganancia neta</div><div class="kpi-v" style="color:var(--gold)" id="fin-neta">$0</div></div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <div class="card">
-              <div class="card-t"><span class="card-tg">✦ Gastos por categoría</span></div>
-              <div id="fin-gastos-cat"></div>
-            </div>
-            <div class="card">
-              <div class="card-t"><span class="card-tg">✦ Efectivo vs QR</span></div>
-              <div id="fin-pago-split"></div>
-            </div>
-          </div>
+
+          <!-- Tabla ingresos diarios -->
           <div class="card">
-            <div class="card-t"><span class="card-tg">✦ Últimos 3 meses — comparativo</span></div>
-            <div id="fin-comparativo"></div>
+            <div class="card-t">
+              <span class="card-tg">✦ Ingresos día a día</span>
+              <button class="btn btn-g" style="padding:4px 12px;font-size:11px" onclick="exportarExcel()">⬇️ Exportar Excel</button>
+            </div>
+            <div class="tbl-wrap">
+              <table id="fin-tabla-ingresos">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>💵 Efectivo</th>
+                    <th>📲 QR</th>
+                    <th>Total día</th>
+                    <th>Pago lavadores</th>
+                    <th>💵 Caja</th>
+                    <th>📲 Cuenta</th>
+                  </tr>
+                </thead>
+                <tbody id="fin-ingresos-rows"></tbody>
+                <tfoot id="fin-ingresos-total"></tfoot>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tabla gastos -->
+          <div class="card">
+            <div class="card-t"><span class="card-tg">✦ Gastos del mes</span></div>
+            <div class="tbl-wrap">
+              <table id="fin-tabla-gastos">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Descripción</th>
+                    <th>Categoría</th>
+                    <th>💵 Efectivo</th>
+                    <th>📲 QR</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody id="fin-gastos-rows"></tbody>
+                <tfoot id="fin-gastos-total"></tfoot>
+              </table>
+            </div>
+          </div>
+
+          <!-- Resumen final -->
+          <div class="card" style="background:var(--gold-p);border-color:var(--gold-b)">
+            <div class="card-t"><span class="card-tg">✦ Resumen final del mes</span></div>
+            <div id="fin-resumen-final"></div>
           </div>
         </div>
 
@@ -818,7 +860,11 @@ function go(s,el){
   document.getElementById('s-'+s)?.classList.add('on');
   el?.classList.add('on');
   if(s==='ordenes') loadOrdenes();
-  else if(s==='planilla') loadPlanilla();
+  else if(s==='planilla'){
+    const sel=document.getElementById('planilla-date-sel');
+    if(sel && !sel.value) sel.value=today();
+    loadPlanilla();
+  }
   else if(s==='cierre') loadCierre();
   else if(s==='historial') initHistorial();
   else if(s==='gastos') loadGastos();
@@ -1301,9 +1347,9 @@ function imprimirTicket(o){
   let svcsRows = '';
   for(const s of svcsArr){
     svcsRows += '<tr>'
-      +'<td style="padding:3px 0;font-size:13px;font-weight:bold">'+( s.servicio_nombre||s.nombre||'')+'</td>'
-      +'<td style="padding:3px 0;text-align:center;font-size:13px">'+(s.cantidad||1)+'</td>'
-      +'<td style="padding:3px 0;text-align:right;font-size:13px;font-weight:bold">'+fmt(s.subtotal||s.precio||0)+'</td>'
+      +'<td style="padding:3px 0;font-size:12px">'+( s.servicio_nombre||s.nombre||'')+'</td>'
+      +'<td style="padding:3px 0;text-align:center;font-size:12px;width:24px">'+(s.cantidad||1)+'</td>'
+      +'<td style="padding:3px 0;text-align:right;font-size:12px;font-weight:bold;width:60px">'+fmt(s.subtotal||s.precio||0)+'</td>'
       +'</tr>';
   }
   const esGen = !o.cliente_nombre || o.cliente_nombre==='CONSUMIDOR FINAL';
@@ -1314,50 +1360,60 @@ function imprimirTicket(o){
   const hora   = o.hora_entrada ? new Date(o.hora_entrada).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',hour12:true}) : '';
 
   const ticket = ''
-    +'<p style="text-align:center;font-size:16px;font-weight:900;margin:0 0 1px 0;letter-spacing:1px">LAVA AUTOS FULL CAR</p>'
-    +'<p style="text-align:center;font-size:13px;font-weight:900;margin:0">DAVID MATEO ARIAS CASTRO</p>'
-    +'<p style="text-align:center;font-size:13px;font-weight:bold;margin:0">N-T: 700.076.959-3</p>'
-    +'<p style="text-align:center;font-size:13px;font-weight:bold;margin:0">CRA 20 No 57-47 baja Leonora</p>'
-    +'<p style="text-align:center;font-size:13px;font-weight:bold;margin:0 0 4px 0">TEL: 3108749404</p>'
-    +'<p style="text-align:center;font-size:14px;font-weight:900;margin:0">ORDEN DE SERVICIO:</p>'
-    +'<p style="text-align:center;font-size:22px;font-weight:900;margin:0 0 4px 0">'+o.numero_orden+'</p>'
-    +'<hr style="border:none;border-top:2px solid #000;margin:3px 0"/>'
+    // ── Encabezado ──────────────────────────────────────────────
+    +'<p style="text-align:center;font-size:15px;font-weight:900;margin:0;letter-spacing:1px">LAVAUTOS FULL CAR</p>'
+    +'<p style="text-align:center;font-size:12px;font-weight:900;margin:0">DAVID MATEO ARIAS CASTRO</p>'
+    +'<p style="text-align:center;font-size:11px;margin:0">Nit: 700.076.959-3</p>'
+    +'<p style="text-align:center;font-size:11px;margin:0">CRA 20 No 57-47 baja Leonora</p>'
+    +'<p style="text-align:center;font-size:11px;margin:0 0 3px 0">TEL: 3108749404</p>'
+    // ── Orden ───────────────────────────────────────────────────
+    +'<hr style="border:none;border-top:1px solid #000;margin:4px 0"/>'
+    +'<p style="text-align:center;font-size:13px;font-weight:900;margin:0">ORDEN DE SERVICIO:</p>'
+    +'<p style="text-align:center;font-size:26px;font-weight:900;margin:0 0 3px 0;letter-spacing:2px">'+o.numero_orden+'</p>'
+    +'<hr style="border:none;border-top:1px solid #000;margin:4px 0"/>'
+    // ── Datos ───────────────────────────────────────────────────
     +'<table style="width:100%;border-collapse:collapse">'
-      +'<tr><td style="font-size:13px;padding:2px 0;font-weight:bold">Fecha:</td><td style="font-size:13px;text-align:right;padding:2px 0;font-weight:bold">'+fecha+'</td></tr>'
-      +'<tr><td style="font-size:13px;padding:2px 0;font-weight:bold">Hora:</td><td style="font-size:13px;text-align:right;padding:2px 0;font-weight:bold">'+hora+'</td></tr>'
-      +'<tr><td style="font-size:13px;padding:2px 0;font-weight:bold">Placa:</td><td style="font-size:16px;text-align:right;padding:2px 0;font-weight:900">'+o.placa+'</td></tr>'
+      +'<tr><td style="font-size:12px;padding:2px 0"><b>Fecha:</b></td><td style="font-size:12px;text-align:right;padding:2px 0">'+fecha+'</td></tr>'
+      +'<tr><td style="font-size:12px;padding:2px 0"><b>Hora:</b></td><td style="font-size:12px;text-align:right;padding:2px 0">'+hora+'</td></tr>'
+      +'<tr><td style="font-size:13px;padding:2px 0"><b>Placa:</b></td><td style="font-size:18px;text-align:right;padding:2px 0;font-weight:900;letter-spacing:2px">'+o.placa+'</td></tr>'
     +'</table>'
-    +'<hr style="border:none;border-top:2px solid #000;margin:3px 0"/>'
-    +'<p style="font-size:13px;font-weight:900;margin:2px 0">C.c o Nit:</p>'
-    +'<p style="font-size:13px;font-weight:bold;margin:1px 0 3px 0">'+cc+'</p>'
-    +'<p style="font-size:13px;font-weight:900;margin:2px 0">Senor(es):</p>'
-    +'<p style="font-size:13px;font-weight:bold;margin:1px 0 4px 0">'+nombre+'</p>'
-    +(tel?'<p style="font-size:13px;font-weight:bold;margin:1px 0"><b>Tel:</b> '+tel+'</p>':'')
-    +'<table style="width:100%;border-collapse:collapse;border-top:2px solid #000;border-bottom:1px dashed #000">'
+    +'<hr style="border:none;border-top:1px solid #000;margin:4px 0"/>'
+    // ── Cliente ─────────────────────────────────────────────────
+    +'<p style="font-size:12px;margin:2px 0"><b>C.c ó Nit:</b></p>'
+    +'<p style="font-size:12px;margin:1px 0 3px 0">'+cc+'</p>'
+    +'<p style="font-size:12px;margin:2px 0"><b>Señor(es):</b></p>'
+    +'<p style="font-size:12px;margin:1px 0 4px 0">'+nombre+'</p>'
+    +(tel?'<p style="font-size:12px;margin:1px 0 3px 0"><b>Tel:</b> '+tel+'</p>':'')
+    // ── Servicios ───────────────────────────────────────────────
+    +'<table style="width:100%;border-collapse:collapse;border-top:1px solid #000">'
       +'<tr>'
-        +'<td style="font-size:13px;font-weight:900;padding:3px 0">Descripcion</td>'
-        +'<td style="font-size:13px;font-weight:900;text-align:center;padding:3px 0">Cant</td>'
-        +'<td style="font-size:13px;font-weight:900;text-align:right;padding:3px 0">Subtotal</td>'
+        +'<td style="font-size:12px;font-weight:bold;padding:3px 0">Descripción</td>'
+        +'<td style="font-size:12px;font-weight:bold;text-align:center;padding:3px 0;width:24px">Cant</td>'
+        +'<td style="font-size:12px;font-weight:bold;text-align:right;padding:3px 0;width:60px">Subtotal</td>'
       +'</tr>'
+      +'<tr><td colspan="3"><hr style="border:none;border-top:1px dashed #999;margin:1px 0"/></td></tr>'
       + svcsRows
     +'</table>'
-    +'<hr style="border:none;border-top:2px solid #000;margin:3px 0"/>'
+    // ── Total ───────────────────────────────────────────────────
+    +'<hr style="border:none;border-top:2px solid #000;margin:4px 0"/>'
     +'<table style="width:100%;border-collapse:collapse;margin-bottom:6px">'
       +'<tr>'
-        +'<td style="font-size:16px;font-weight:900;padding:2px 0">TOTAL ==></td>'
-        +'<td style="font-size:16px;font-weight:900;text-align:right;padding:2px 0">$'+fmt(o.total)+'</td>'
+        +'<td style="font-size:15px;font-weight:900;padding:2px 0">TOTAL ==></td>'
+        +'<td style="font-size:15px;font-weight:900;text-align:right;padding:2px 0">$'+fmt(o.total)+'</td>'
       +'</tr>'
     +'</table>'
-    +'<p style="text-align:center;font-size:12px;font-weight:bold;margin:2px 0">Gracias por su visita</p>'
-    +'<p style="text-align:center;font-size:11px;font-weight:bold;margin:3px 0;line-height:1.5">'
-      +'Senor usuario, solicitamos respetuosamente revisar su vehiculo antes de ser retirado de la empresa, '
-      +'no se aceptan reclamos posteriores despues de salir de este sitio. No se responde por objetos dejados '
-      +'en su vehiculo a menos que sean dejados en custodia del administrador. Si el valor de lo cobrado es '
-      +'diferente al valor de la orden de servicio, su lavado sera gratis. La entrega del vehiculo sera con '
+    // ── Legal ───────────────────────────────────────────────────
+    +'<hr style="border:none;border-top:1px dashed #999;margin:3px 0"/>'
+    +'<p style="text-align:center;font-size:11px;font-weight:bold;margin:2px 0">Gracias por su visita</p>'
+    +'<p style="text-align:left;font-size:10px;font-weight:normal;margin:3px 0;line-height:1.4">'
+      +'Señor usuario, solicitamos respetuosamente revisar su vehículo antes de ser retirado de la empresa, '
+      +'no se aceptan reclamos posteriores después de salir de este sitio. No se responde por objetos dejados '
+      +'en su vehículo a menos que sean dejados en custodia del administrador. Si el valor de lo cobrado es '
+      +'diferente al valor de la orden de servicio, su lavado será gratis. La entrega del vehículo será con '
       +'la respectiva orden de servicio.'
     +'</p>'
-    +'<p style="text-align:center;font-size:11px;font-weight:bold;margin:2px 0;line-height:1.5">'
-      +'(PARA AVERIGUAR POR EL PROCESO DE SU VEHICULO, COMUNIQUESE AL 3108749404) - PARA QUEJAS Y RECLAMOS 3108359883'
+    +'<p style="text-align:center;font-size:10px;font-weight:normal;margin:4px 0;line-height:1.4">'
+      +'(PARA AVERIGUAR POR EL PROCESO DE SU VEHÍCULO, COMUNÍQUESE AL 3108749404) - PARA QUEJAS Y RECLAMOS 3108359883'
     +'</p>';
 
   const pa = document.getElementById('print-area');
@@ -1725,88 +1781,192 @@ async function verDiaDetalle(fecha){
   }catch(e){}
 }
 
-// ── FINANZAS ──────────────────────────────────────────────────────────────────
+// ── FINANZAS / LIBRO DEL MES ─────────────────────────────────────────────────
 async function loadDashFinanzas(){
   if(!dashMes) return;
   try{
     const [_y,_m]=dashMes.split('-');
     const _lastDay=new Date(parseInt(_y),parseInt(_m),0).getDate();
     const start=dashMes+'-01', end=dashMes+'-'+String(_lastDay).padStart(2,'0');
-    const ords=await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end);
-    const gastos=await api('gastos?fecha=gte.'+start+'&fecha=lte.'+end);
-    const ingresos=ords.reduce((s,o)=>s+(o.total||0),0);
-    const tGastos=gastos.reduce((s,g)=>s+(g.valor||0),0);
-    const neta=Math.round(ingresos/2)-tGastos;
-    const ef=ords.filter(o=>o.forma_pago==='efectivo').reduce((s,o)=>s+(o.total||0),0);
-    const qr=ords.filter(o=>o.forma_pago==='qr').reduce((s,o)=>s+(o.total||0),0);
-    document.getElementById('fin-ingresos').textContent='$'+fmt(ingresos);
-    document.getElementById('fin-gastos').textContent='$'+fmt(tGastos);
-    document.getElementById('fin-neta').textContent='$'+fmt(neta);
 
-    // Gastos por categoría
-    const catMap={};
-    gastos.forEach(g=>{catMap[g.categoria]=(catMap[g.categoria]||0)+g.valor;});
-    const catSorted=Object.entries(catMap).sort((a,b)=>b[1]-a[1]);
-    const maxCat=catSorted[0]?.[1]||1;
-    document.getElementById('fin-gastos-cat').innerHTML=catSorted.length
-      ? catSorted.map(([cat,val],i)=>
-          '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span>'+cat+'</span><span style="font-weight:700;color:#FCA5A5">$'+fmt(val)+'</span></div>'
-          +'<div style="height:4px;background:rgba(255,255,255,.07);border-radius:2px;margin-bottom:8px"><div style="height:4px;border-radius:2px;background:#EF4444;width:'+Math.round(val/maxCat*100)+'%"></div></div>'
-        ).join('')
-      : '<div style="color:var(--muted);text-align:center;padding:20px">Sin gastos registrados</div>';
+    const ords=await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&estado=eq.cerrada&order=fecha.asc');
+    const gastos=await api('gastos?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
 
-    // Efectivo vs QR
-    const totalCobrado=ef+qr;
-    const efPct=totalCobrado?Math.round(ef/totalCobrado*100):0;
-    const qrPct=totalCobrado?Math.round(qr/totalCobrado*100):0;
-    document.getElementById('fin-pago-split').innerHTML=
-      '<div style="margin-bottom:10px">'
-        +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>💵 Efectivo</span><span style="font-weight:700;color:#6EE7B7">$'+fmt(ef)+' ('+efPct+'%)</span></div>'
-        +'<div style="height:12px;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden">'
-          +'<div style="height:100%;background:#10B981;width:'+efPct+'%;border-radius:6px;transition:width .5s"></div>'
-        +'</div>'
-      +'</div>'
-      +'<div>'
-        +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>📲 QR</span><span style="font-weight:700;color:#C4B5FD">$'+fmt(qr)+' ('+qrPct+'%)</span></div>'
-        +'<div style="height:12px;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden">'
-          +'<div style="height:100%;background:#8B5CF6;width:'+qrPct+'%;border-radius:6px;transition:width .5s"></div>'
-        +'</div>'
-      +'</div>';
-
-    // Last 3 months comparison
-    const meses3=[];
-    for(let i=0;i<3;i++){
-      const [y,m]=dashMes.split('-');
-      const d=new Date(parseInt(y),parseInt(m)-1-i,1);
-      meses3.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
+    // ── Agrupar órdenes por día ───────────────────────────────────
+    const byDay={};
+    for(const o of ords){
+      if(!byDay[o.fecha]) byDay[o.fecha]={fecha:o.fecha,ef:0,qr:0};
+      if(o.forma_pago==='efectivo')     byDay[o.fecha].ef+=parseInt(o.total)||0;
+      else if(o.forma_pago==='qr')      byDay[o.fecha].qr+=parseInt(o.total)||0;
+      else if(o.forma_pago==='mixto'){
+        byDay[o.fecha].ef+=parseInt(o.pago_efectivo)||0;
+        byDay[o.fecha].qr+=parseInt(o.pago_qr)||0;
+      }
     }
-    const mesesData=await Promise.all(meses3.map(async mes=>{
-      const [my,mm]=mes.split('-');
-      const mLastDay=new Date(parseInt(my),parseInt(mm),0).getDate();
-      const o=await api('ordenes?fecha=gte.'+mes+'-01&fecha=lte.'+mes+'-'+String(mLastDay).padStart(2,'0'));
-      const g=await api('gastos?fecha=gte.'+mes+'-01&fecha=lte.'+mes+'-'+String(mLastDay).padStart(2,'0'));
-      const ing=o.reduce((s,x)=>s+(x.total||0),0);
-      const gas=g.reduce((s,x)=>s+(x.valor||0),0);
-      return {mes,ing,gas,neta:Math.round(ing/2)-gas};
-    }));
-    const maxComp=Math.max(...mesesData.map(m=>m.ing),1);
-    document.getElementById('fin-comparativo').innerHTML=mesesData.reverse().map(m=>{
-      const [y,mo]=m.mes.split('-');
-      return '<div style="margin-bottom:12px">'
-        +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;font-weight:700">'
-          +'<span>'+MES[parseInt(mo)-1]+' '+y+'</span>'
-          +'<span style="color:var(--gold)">$'+fmt(m.ing)+'</span>'
+    const days=Object.values(byDay).sort((a,b)=>a.fecha.localeCompare(b.fecha));
+
+    // ── Totales mes ───────────────────────────────────────────────
+    let totEf=0,totQr=0,totGastos=0,totGastosEf=0,totGastosQr=0;
+    days.forEach(d=>{totEf+=d.ef;totQr+=d.qr;});
+    gastos.forEach(g=>{
+      totGastos+=parseInt(g.valor)||0;
+      if(g.forma_pago==='efectivo') totGastosEf+=parseInt(g.valor)||0;
+      else totGastosQr+=parseInt(g.valor)||0;
+    });
+
+    const totBruto=totEf+totQr;
+    const pagoLavadores=Math.round(totBruto/2);
+    const cajaEf=totEf-pagoLavadores-totGastosEf;
+    const cuentaQr=totQr-totGastosQr;
+    const neta=cajaEf+cuentaQr;
+
+    // ── KPIs ──────────────────────────────────────────────────────
+    const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+    s('fin-ef','$'+fmt(totEf));
+    s('fin-qr','$'+fmt(totQr));
+    s('fin-gastos','$'+fmt(totGastos));
+    s('fin-neta','$'+fmt(neta));
+
+    // ── Tabla ingresos ────────────────────────────────────────────
+    let ingRows='';
+    let acumEf=0, acumQr=0;
+    for(const d of days){
+      const total=d.ef+d.qr;
+      const pago=Math.round(total/2);
+      const caja=d.ef-pago;
+      acumEf+=d.ef; acumQr+=d.qr;
+      ingRows+='<tr>'
+        +'<td style="font-family:monospace;color:var(--muted)">'+d.fecha.split('-').reverse().join('/')+'</td>'
+        +'<td style="color:#6EE7B7;font-weight:700">$'+fmt(d.ef)+'</td>'
+        +'<td style="color:#C4B5FD;font-weight:700">$'+fmt(d.qr)+'</td>'
+        +'<td style="font-weight:700">$'+fmt(total)+'</td>'
+        +'<td style="color:#FCA5A5">-$'+fmt(pago)+'</td>'
+        +'<td style="color:#6EE7B7;font-weight:700">$'+fmt(caja)+'</td>'
+        +'<td style="color:#C4B5FD;font-weight:700">$'+fmt(d.qr)+'</td>'
+        +'</tr>';
+    }
+    const ingTotBody=document.getElementById('fin-ingresos-rows');
+    if(ingTotBody) ingTotBody.innerHTML=ingRows||'<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">Sin ingresos registrados</td></tr>';
+
+    // Footer totales ingresos
+    const totCaja=totEf-pagoLavadores-totGastosEf;
+    const ingFoot=document.getElementById('fin-ingresos-total');
+    if(ingFoot) ingFoot.innerHTML='<tr style="background:var(--gold-p);font-weight:800">'
+      +'<td style="color:var(--gold)">TOTAL MES</td>'
+      +'<td style="color:#6EE7B7">$'+fmt(totEf)+'</td>'
+      +'<td style="color:#C4B5FD">$'+fmt(totQr)+'</td>'
+      +'<td style="color:var(--gold)">$'+fmt(totBruto)+'</td>'
+      +'<td style="color:#FCA5A5">-$'+fmt(pagoLavadores)+'</td>'
+      +'<td style="color:#6EE7B7">$'+fmt(cajaEf)+'</td>'
+      +'<td style="color:#C4B5FD">$'+fmt(cuentaQr)+'</td>'
+      +'</tr>';
+
+    // ── Tabla gastos ──────────────────────────────────────────────
+    let gasRows='';
+    for(const g of gastos){
+      const ef=g.forma_pago==='efectivo'?g.valor:0;
+      const qr=g.forma_pago==='qr'?g.valor:0;
+      gasRows+='<tr>'
+        +'<td style="font-family:monospace;color:var(--muted)">'+g.fecha.split('-').reverse().join('/')+'</td>'
+        +'<td>'+g.descripcion+'</td>'
+        +'<td style="font-size:11px">'+g.categoria+'</td>'
+        +'<td style="color:#6EE7B7">'+(ef?'$'+fmt(ef):'-')+'</td>'
+        +'<td style="color:#C4B5FD">'+(qr?'$'+fmt(qr):'-')+'</td>'
+        +'<td style="color:#FCA5A5;font-weight:700">$'+fmt(g.valor)+'</td>'
+        +'</tr>';
+    }
+    const gasBody=document.getElementById('fin-gastos-rows');
+    if(gasBody) gasBody.innerHTML=gasRows||'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Sin gastos registrados</td></tr>';
+
+    // Footer totales gastos
+    const gasFoot=document.getElementById('fin-gastos-total');
+    if(gasFoot) gasFoot.innerHTML='<tr style="background:rgba(239,68,68,.1);font-weight:800">'
+      +'<td colspan="3" style="color:#FCA5A5">TOTAL GASTOS</td>'
+      +'<td style="color:#6EE7B7">$'+fmt(totGastosEf)+'</td>'
+      +'<td style="color:#C4B5FD">$'+fmt(totGastosQr)+'</td>'
+      +'<td style="color:#FCA5A5">$'+fmt(totGastos)+'</td>'
+      +'</tr>';
+
+    // ── Resumen final ─────────────────────────────────────────────
+    const resEl=document.getElementById('fin-resumen-final');
+    if(resEl) resEl.innerHTML=''
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+        +'<div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-bottom:4px">Total ingresos del mes</div>'
+          +'<div style="font-size:20px;font-weight:800;font-family:Georgia,serif;color:var(--gold)">$'+fmt(totBruto)+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-top:8px;margin-bottom:4px">— Pago lavadores (50%)</div>'
+          +'<div style="font-size:16px;font-weight:700;color:#FCA5A5">- $'+fmt(pagoLavadores)+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-top:8px;margin-bottom:4px">— Gastos del mes</div>'
+          +'<div style="font-size:16px;font-weight:700;color:#FCA5A5">- $'+fmt(totGastos)+'</div>'
         +'</div>'
-        +'<div style="height:8px;background:rgba(255,255,255,.07);border-radius:4px;margin-bottom:3px;overflow:hidden">'
-          +'<div style="height:100%;background:var(--gold);width:'+Math.round(m.ing/maxComp*100)+'%;border-radius:4px"></div>'
-        +'</div>'
-        +'<div style="display:flex;gap:12px;font-size:10px;color:var(--muted)">'
-          +'<span style="color:#FCA5A5">Gastos: $'+fmt(m.gas)+'</span>'
-          +'<span style="color:#6EE7B7">Neta: $'+fmt(m.neta)+'</span>'
+        +'<div style="border-left:1px solid var(--border);padding-left:16px">'
+          +'<div style="font-size:11px;color:var(--muted);margin-bottom:4px">💵 Caja efectivo neta</div>'
+          +'<div style="font-size:18px;font-weight:800;color:#6EE7B7">$'+fmt(cajaEf)+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-top:8px;margin-bottom:4px">📲 Cuenta QR neta</div>'
+          +'<div style="font-size:18px;font-weight:800;color:#C4B5FD">$'+fmt(cuentaQr)+'</div>'
+          +'<div style="border-top:1px solid var(--gold-b);margin-top:10px;padding-top:10px">'
+            +'<div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">✦ Ganancia neta total</div>'
+            +'<div style="font-size:24px;font-weight:900;font-family:Georgia,serif;color:var(--gold)">$'+fmt(neta)+'</div>'
+          +'</div>'
         +'</div>'
       +'</div>';
-    }).join('');
-  }catch(e){showToast('Error finanzas',true);}
+
+  }catch(e){
+    console.error('Error finanzas:', e.message);
+    showToast('Error finanzas: '+e.message,true);
+  }
+}
+
+// ── EXPORTAR EXCEL ────────────────────────────────────────────────────────────
+async function exportarExcel(){
+  if(!dashMes) return;
+  try{
+    const [_y,_m]=dashMes.split('-');
+    const _lastDay=new Date(parseInt(_y),parseInt(_m),0).getDate();
+    const start=dashMes+'-01', end=dashMes+'-'+String(_lastDay).padStart(2,'0');
+    const ords=await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&estado=eq.cerrada&order=fecha.asc');
+    const gastos=await api('gastos?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
+
+    // Build CSV
+    let csv='INGRESOS '+dashMes+'\n';
+    csv+='Fecha,Efectivo,QR,Total,Pago Lavadores,Caja Efectivo,Cuenta QR\n';
+    const byDay={};
+    for(const o of ords){
+      if(!byDay[o.fecha]) byDay[o.fecha]={ef:0,qr:0};
+      if(o.forma_pago==='efectivo') byDay[o.fecha].ef+=parseInt(o.total)||0;
+      else if(o.forma_pago==='qr')  byDay[o.fecha].qr+=parseInt(o.total)||0;
+      else if(o.forma_pago==='mixto'){byDay[o.fecha].ef+=parseInt(o.pago_efectivo)||0;byDay[o.fecha].qr+=parseInt(o.pago_qr)||0;}
+    }
+    let totEf=0,totQr=0;
+    Object.entries(byDay).sort().forEach(([fecha,d])=>{
+      const t=d.ef+d.qr; const p=Math.round(t/2);
+      totEf+=d.ef; totQr+=d.qr;
+      csv+=fecha+','+d.ef+','+d.qr+','+t+','+p+','+(d.ef-p)+','+d.qr+'\n';
+    });
+    const totB=totEf+totQr; const totP=Math.round(totB/2);
+    csv+='TOTAL,'+totEf+','+totQr+','+totB+','+totP+','+(totEf-totP)+','+totQr+'\n';
+
+    csv+='\nGASTOS '+dashMes+'\n';
+    csv+='Fecha,Descripcion,Categoria,Efectivo,QR,Total\n';
+    let tGef=0,tGqr=0;
+    gastos.forEach(g=>{
+      const ef=g.forma_pago==='efectivo'?g.valor:0;
+      const qr=g.forma_pago==='qr'?g.valor:0;
+      tGef+=ef; tGqr+=qr;
+      csv+=g.fecha+','+g.descripcion+','+g.categoria+','+ef+','+qr+','+g.valor+'\n';
+    });
+    csv+='TOTAL,,,'+tGef+','+tGqr+','+(tGef+tGqr)+'\n';
+
+    // Download
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download='lava-autos-'+dashMes+'.csv';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Excel descargado ✅');
+  }catch(e){ showToast('Error exportando: '+e.message,true); }
 }
 
 // ── CONCESEROS DASH ───────────────────────────────────────────────────────────
@@ -2014,11 +2174,30 @@ async function toggleSvc(id,activo){
 }
 
 // ── PLANILLA ─────────────────────────────────────────────────────────────────
+async function loadPlanillaFecha(fecha){
+  // Set date selector and load
+  const sel = document.getElementById('planilla-date-sel');
+  if(sel) sel.value = fecha;
+  await loadPlanillaForDate(fecha);
+}
+
 async function loadPlanilla(){
-  document.getElementById('planilla-fecha').textContent =
-    new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const fecha = today();
+  const sel = document.getElementById('planilla-date-sel');
+  if(sel) sel.value = fecha;
+  await loadPlanillaForDate(fecha);
+}
+
+async function loadPlanillaForDate(fecha){
+  const fechaLabel = new Date(fecha+'T12:00:00').toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('planilla-fecha').textContent = fechaLabel;
   try{
-    const ords = await api('ordenes?fecha=eq.'+today()+'&order=concesero_nombre,id');
+    const ords = await api('ordenes?fecha=eq.'+fecha+'&order=concesero_nombre,id');
+    if(!ords.length){
+      document.getElementById('planilla-container').innerHTML=
+        '<div style="text-align:center;padding:40px;color:var(--muted)">📋 Sin órdenes para esta fecha.</div>';
+      return;
+    }
     // Load services for each order
     const ordsConSvcs = await Promise.all(ords.map(async o=>{
       const svcs = await api('orden_servicios?orden_id=eq.'+o.id);
@@ -2139,7 +2318,8 @@ function renderPlanilla(ords){
 
 function imprimirPlanilla(){
   const content=document.getElementById('planilla-print')?.innerHTML||'';
-  const fecha=new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase();
+  const selDate=document.getElementById('planilla-date-sel')?.value||today();
+  const fecha=new Date(selDate+'T12:00:00').toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase();
   const w=window.open('','_blank','width=1100,height=700');
   w.document.write('<!DOCTYPE html><html><head>'
     +'<title>Planilla '+fecha+'</title>'
