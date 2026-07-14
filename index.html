@@ -300,47 +300,92 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <!-- DASHBOARD -->
       <div id="s-dashboard" class="screen">
         <div class="row">
-          <div><div class="page-title">Dashboard</div><div class="page-sub">Análisis en tiempo real</div></div>
+          <div><div class="page-title">Dashboard</div><div class="page-sub">Análisis financiero — Lava Autos Full Car</div></div>
           <div style="display:flex;gap:5px;flex-wrap:wrap" id="mes-btns"></div>
         </div>
-        <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
-          <div class="kpi"><div class="kpi-l">Ingresos del mes</div><div class="kpi-v" style="color:var(--gold)" id="d-total">$0</div></div>
-          <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">Tu ganancia</div><div class="kpi-v" style="color:#6EE7B7" id="d-gan">$0</div></div>
-          <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">Vehículos</div><div class="kpi-v" style="color:#C4B5FD" id="d-veh">0</div></div>
-          <div class="kpi"><div class="kpi-l">Días trabajados</div><div class="kpi-v" style="color:var(--gold)" id="d-dias">0</div></div>
+        <!-- Pestañas dashboard -->
+        <div style="display:flex;gap:5px;margin-bottom:14px;flex-wrap:wrap" id="dash-tabs">
+          <button class="btn btn-p" onclick="showDashTab('resumen',this)" id="dt-resumen">📊 Resumen</button>
+          <button class="btn btn-g" onclick="showDashTab('diario',this)" id="dt-diario">📅 Diario</button>
+          <button class="btn btn-g" onclick="showDashTab('finanzas',this)" id="dt-finanzas">💰 Ingresos y Gastos</button>
+          <button class="btn btn-g" onclick="showDashTab('conceseros',this)" id="dt-conceseros">👥 Conceseros</button>
         </div>
-        <div class="card"><div class="card-t"><span class="card-tg">✦ Top conceseros</span></div><div id="d-concs"></div></div>
-        <div class="card"><div class="card-t"><span class="card-tg">✦ Órdenes recientes</span></div>
-          <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Fecha</th><th>Concesero</th><th>Placa</th><th>Pago</th><th>Total</th></tr></thead><tbody id="d-recientes"></tbody></table></div>
-        </div>
-      </div>
 
-      <!-- HISTORIAL -->
-      <div id="s-historial" class="screen">
-        <div class="row">
-          <div><div class="page-title">Historial de órdenes</div><div class="page-sub">Busca y edita órdenes de cualquier fecha</div></div>
-        </div>
-        <div class="card">
-          <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr auto;margin-bottom:0">
-            <div class="field" style="margin:0">
-              <label>Buscar por placa</label>
-              <input type="text" id="hist-placa" placeholder="ABC 123" oninput="this.value=this.value.toUpperCase()" style="text-transform:uppercase"/>
-            </div>
-            <div class="field" style="margin:0">
-              <label>Fecha desde</label>
-              <input type="date" id="hist-desde"/>
-            </div>
-            <div class="field" style="margin:0">
-              <label>Fecha hasta</label>
-              <input type="date" id="hist-hasta"/>
-            </div>
-            <div class="field" style="margin:0">
-              <label>&nbsp;</label>
-              <button class="btn btn-p" style="width:100%;padding:9px" onclick="buscarHistorial()">🔍 Buscar</button>
+        <!-- RESUMEN -->
+        <div id="dt-resumen-content">
+          <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+            <div class="kpi"><div class="kpi-l">Ingresos del mes</div><div class="kpi-v" style="color:var(--gold)" id="d-total">$0</div><div class="kpi-s" id="d-vs-anterior"></div></div>
+            <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">Tu ganancia (50%)</div><div class="kpi-v" style="color:#6EE7B7" id="d-gan">$0</div></div>
+            <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">Vehículos</div><div class="kpi-v" style="color:#C4B5FD" id="d-veh">0</div><div class="kpi-s" id="d-prom-dia"></div></div>
+            <div class="kpi"><div class="kpi-l">Días trabajados</div><div class="kpi-v" style="color:var(--gold)" id="d-dias">0</div></div>
+          </div>
+          <div class="card">
+            <div class="card-t"><span class="card-tg">✦ Ventas por día del mes</span></div>
+            <div id="d-barras" style="display:flex;align-items:flex-end;gap:3px;height:120px;padding:4px 0"></div>
+            <div id="d-barras-labels" style="display:flex;gap:3px;margin-top:4px"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="card"><div class="card-t"><span class="card-tg">✦ Top conceseros</span></div><div id="d-concs"></div></div>
+            <div class="card"><div class="card-t"><span class="card-tg">✦ Órdenes recientes</span></div>
+              <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Fecha</th><th>Placa</th><th>Pago</th><th>Total</th></tr></thead><tbody id="d-recientes"></tbody></table></div>
             </div>
           </div>
         </div>
-        <div id="hist-results"></div>
+
+        <!-- DIARIO -->
+        <div id="dt-diario-content" style="display:none">
+          <div class="card">
+            <div class="card-t"><span class="card-tg">✦ Detalle por día del mes</span><span id="d-dia-sel" style="color:var(--gold);font-size:11px"></span></div>
+            <div id="d-calendario" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:12px"></div>
+          </div>
+          <div class="card" id="d-dia-detalle-card" style="display:none">
+            <div class="card-t"><span class="card-tg" id="d-dia-detalle-title">✦ Detalle del día</span></div>
+            <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Placa</th><th>Concesero</th><th>Servicio</th><th>Pago</th><th>Total</th></tr></thead><tbody id="d-dia-detalle-list"></tbody></table></div>
+            <div style="margin-top:8px;padding:10px;background:var(--gold-p);border-radius:8px;display:flex;justify-content:space-between">
+              <span style="font-size:12px;color:var(--muted)">Total del día</span>
+              <span style="font-weight:800;color:var(--gold)" id="d-dia-total"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- FINANZAS -->
+        <div id="dt-finanzas-content" style="display:none">
+          <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+            <div class="kpi"><div class="kpi-l">Ingresos del mes</div><div class="kpi-v" style="color:var(--gold)" id="fin-ingresos">$0</div></div>
+            <div class="kpi" style="border-left-color:#EF4444"><div class="kpi-l">Gastos del mes</div><div class="kpi-v" style="color:#FCA5A5" id="fin-gastos">$0</div></div>
+            <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">Ganancia neta</div><div class="kpi-v" style="color:#6EE7B7" id="fin-neta">$0</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="card">
+              <div class="card-t"><span class="card-tg">✦ Gastos por categoría</span></div>
+              <div id="fin-gastos-cat"></div>
+            </div>
+            <div class="card">
+              <div class="card-t"><span class="card-tg">✦ Efectivo vs QR</span></div>
+              <div id="fin-pago-split"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-t"><span class="card-tg">✦ Últimos 3 meses — comparativo</span></div>
+            <div id="fin-comparativo"></div>
+          </div>
+        </div>
+
+        <!-- CONCESEROS DASH -->
+        <div id="dt-conceseros-content" style="display:none">
+          <div class="card">
+            <div class="card-t"><span class="card-tg">✦ Ranking del mes</span></div>
+            <div id="dc-ranking"></div>
+          </div>
+          <div class="card">
+            <div class="card-t"><span class="card-tg">✦ Detalle por concesero</span></div>
+            <div class="tbl-wrap"><table>
+              <thead><tr><th>#</th><th>Concesero</th><th>Total</th><th>Tu parte</th><th>Vehículos</th><th>Días</th><th>Promedio/día</th></tr></thead>
+              <tbody id="dc-tabla"></tbody>
+            </table></div>
+          </div>
+        </div>
+
       </div>
 
       <!-- CONCESEROS -->
@@ -444,13 +489,30 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
   <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px">
     <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--muted)">Placa:</span><span style="font-weight:700;color:var(--gold)" id="cobrar-placa"></span></div>
     <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--muted)">Concesero:</span><span id="cobrar-conc"></span></div>
-    <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Total:</span><span style="font-weight:700;font-size:18px;color:var(--gold)" id="cobrar-total"></span></div>
+    <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Total a cobrar:</span><span style="font-weight:700;font-size:18px;color:var(--gold)" id="cobrar-total"></span></div>
   </div>
   <div class="field"><label>¿Cómo pagó el cliente?</label>
-    <div class="pay-toggle">
-      <button class="pt pt-ef on-ef" onclick="selCobrarPay(this,'efectivo')" id="cobrar-ef">💵 Efectivo</button>
-      <button class="pt pt-qr" onclick="selCobrarPay(this,'qr')" id="cobrar-qr">📲 QR</button>
+    <div class="pay-toggle" style="margin-bottom:10px">
+      <button class="pt pt-ef on-ef" onclick="selCobrarTipo('simple',this)" id="cobrar-tipo-simple">💵/📲 Un solo pago</button>
+      <button class="pt pt-qr" onclick="selCobrarTipo('mixto',this)" id="cobrar-tipo-mixto">🔀 Pago mixto</button>
     </div>
+  </div>
+  <!-- Pago simple -->
+  <div id="cobrar-simple-fields">
+    <div class="field"><label>Forma de pago</label>
+      <div class="pay-toggle">
+        <button class="pt pt-ef on-ef" onclick="selCobrarPay(this,'efectivo')" id="cobrar-ef">💵 Efectivo</button>
+        <button class="pt pt-qr" onclick="selCobrarPay(this,'qr')" id="cobrar-qr">📲 QR</button>
+      </div>
+    </div>
+  </div>
+  <!-- Pago mixto -->
+  <div id="cobrar-mixto-fields" style="display:none">
+    <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-bottom:6px">
+      <div class="field"><label>💵 Efectivo</label><input type="number" id="cobrar-mixto-ef" placeholder="0" oninput="calcMixto()"/></div>
+      <div class="field"><label>📲 QR</label><input type="number" id="cobrar-mixto-qr" placeholder="0" oninput="calcMixto()"/></div>
+    </div>
+    <div id="cobrar-mixto-check" style="padding:8px 12px;border-radius:8px;font-size:12px;text-align:center;background:rgba(255,255,255,.04)">Ingresa los valores</div>
   </div>
   <div style="display:flex;gap:8px;margin-top:12px">
     <button class="btn btn-gr" style="flex:1;padding:10px" onclick="confirmarCobrar()">🖨️ Cobrar e imprimir</button>
@@ -627,7 +689,7 @@ const SERVICIOS_ALL=[{"id": 1, "nombre": "LAVADA SENCILLA + RINES Y CHASIS", "pr
 // State
 let currentUser=null, conceseros=[], servicios=[], selRoleVal='dueno';
 let selectedSvcs=[], editSelectedSvcs=[], tipoActivo='Todos', editTipoActivo='Todos';
-let cobrarOrdenId=null, cobrarPayMode='efectivo', gastoPayMode='efectivo';
+let cobrarOrdenId=null, cobrarPayMode='efectivo', gastoPayMode='efectivo', cobrarTipo='simple', cobrarTotal=0;
 let borrarOrdenId=null, ordenActual=null;
 let serviciosCfgAll=[];
 
@@ -641,7 +703,11 @@ async function api(path,method='GET',body=null){
   return r.json();
 }
 const fmt=n=>new Intl.NumberFormat('es-CO').format(n||0);
-const today=()=>new Date().toISOString().slice(0,10);
+const today=()=>{
+  const now=new Date();
+  const col=new Date(now.toLocaleString('en-US',{timeZone:'America/Bogota'}));
+  return col.getFullYear()+'-'+String(col.getMonth()+1).padStart(2,'0')+'-'+String(col.getDate()).padStart(2,'0');
+};
 const fmtTime=ts=>ts?new Date(ts).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}):'';
 const MES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 const COLORS=['#C9A84C','#E8C96A','#8BA3BB','#6B7280','#4B5563','#9CA3AF'];
@@ -979,16 +1045,33 @@ async function abrirCobrar(id){
     const o=ords[0];
     cobrarOrdenId=id;
     cobrarPayMode='efectivo';
+    cobrarTipo='simple';
+    cobrarTotal=o.total||0;
     document.getElementById('cobrar-num').textContent=o.numero_orden;
     document.getElementById('cobrar-placa').textContent=o.placa;
     document.getElementById('cobrar-conc').textContent=o.concesero_nombre||'';
     document.getElementById('cobrar-total').textContent='$'+fmt(o.total);
     document.getElementById('cobrar-ef').classList.add('on-ef');
     document.getElementById('cobrar-qr').classList.remove('on-qr');
+    document.getElementById('cobrar-simple-fields').style.display='block';
+    document.getElementById('cobrar-mixto-fields').style.display='none';
+    document.getElementById('cobrar-tipo-simple').classList.add('on-ef');
+    document.getElementById('cobrar-tipo-mixto').classList.remove('on-qr');
+    if(document.getElementById('cobrar-mixto-ef')) document.getElementById('cobrar-mixto-ef').value='';
+    if(document.getElementById('cobrar-mixto-qr')) document.getElementById('cobrar-mixto-qr').value='';
     const svcs=await api('orden_servicios?orden_id=eq.'+id);
     ordenActual={...o,servicios:svcs};
     document.getElementById('modal-cobrar').style.display='flex';
   }catch(e){showToast('Error',true);}
+}
+
+function selCobrarTipo(tipo, btn){
+  cobrarTipo=tipo;
+  document.getElementById('cobrar-tipo-simple').classList.remove('on-ef');
+  document.getElementById('cobrar-tipo-mixto').classList.remove('on-qr');
+  btn.classList.add(tipo==='simple'?'on-ef':'on-qr');
+  document.getElementById('cobrar-simple-fields').style.display=tipo==='simple'?'block':'none';
+  document.getElementById('cobrar-mixto-fields').style.display=tipo==='mixto'?'block':'none';
 }
 
 function selCobrarPay(btn,type){
@@ -998,14 +1081,48 @@ function selCobrarPay(btn,type){
   btn.classList.add(type==='efectivo'?'on-ef':'on-qr');
 }
 
+function calcMixto(){
+  const ef=parseInt(document.getElementById('cobrar-mixto-ef').value)||0;
+  const qr=parseInt(document.getElementById('cobrar-mixto-qr').value)||0;
+  const suma=ef+qr;
+  const check=document.getElementById('cobrar-mixto-check');
+  if(suma===cobrarTotal){
+    check.style.background='rgba(16,185,129,.15)';
+    check.style.color='#6EE7B7';
+    check.textContent='✅ Cuadra perfectamente — $'+fmt(ef)+' ef + $'+fmt(qr)+' QR = $'+fmt(suma);
+  } else if(suma>cobrarTotal){
+    check.style.background='rgba(239,68,68,.15)';
+    check.style.color='#FCA5A5';
+    check.textContent='⚠️ Excede por $'+fmt(suma-cobrarTotal);
+  } else {
+    check.style.background='rgba(245,158,11,.15)';
+    check.style.color='#FCD34D';
+    check.textContent='Faltan $'+fmt(cobrarTotal-suma)+' por asignar';
+  }
+}
+
 async function confirmarCobrar(){
   try{
-    await api('ordenes?id=eq.'+cobrarOrdenId,'PATCH',{estado:'cerrada',hora_salida:new Date().toISOString(),forma_pago:cobrarPayMode});
-    if(ordenActual){ordenActual.forma_pago=cobrarPayMode;imprimirTicket(ordenActual);}
+    let pagoFinal=cobrarPayMode;
+    let efMonto=0, qrMonto=0;
+    if(cobrarTipo==='mixto'){
+      efMonto=parseInt(document.getElementById('cobrar-mixto-ef').value)||0;
+      qrMonto=parseInt(document.getElementById('cobrar-mixto-qr').value)||0;
+      if(efMonto+qrMonto!==cobrarTotal){showToast('El total mixto no cuadra',true);return;}
+      pagoFinal='mixto';
+    }
+    await api('ordenes?id=eq.'+cobrarOrdenId,'PATCH',{
+      estado:'cerrada',
+      hora_salida:new Date().toISOString(),
+      forma_pago:pagoFinal,
+      pago_efectivo:cobrarTipo==='mixto'?efMonto:(cobrarPayMode==='efectivo'?cobrarTotal:0),
+      pago_qr:cobrarTipo==='mixto'?qrMonto:(cobrarPayMode==='qr'?cobrarTotal:0)
+    });
+    if(ordenActual){ordenActual.forma_pago=pagoFinal;imprimirTicket(ordenActual);}
     cerrarModal('modal-cobrar');
     showToast('Orden cobrada ✅');
     loadOrdenes();
-  }catch(e){showToast('Error',true);}
+  }catch(e){showToast('Error: '+e.message,true);}
 }
 
 async function reimprimir(id){
@@ -1176,7 +1293,6 @@ function imprimirTicket(o){
       +'<tr><td style="font-size:13px;padding:2px 0;font-weight:bold">Fecha:</td><td style="font-size:13px;text-align:right;padding:2px 0;font-weight:bold">'+fecha+'</td></tr>'
       +'<tr><td style="font-size:13px;padding:2px 0;font-weight:bold">Hora:</td><td style="font-size:13px;text-align:right;padding:2px 0;font-weight:bold">'+hora+'</td></tr>'
       +'<tr><td style="font-size:13px;padding:2px 0;font-weight:bold">Placa:</td><td style="font-size:16px;text-align:right;padding:2px 0;font-weight:900">'+o.placa+'</td></tr>'
-      +'<tr><td style="font-size:13px;padding:2px 0;font-weight:bold">Concesero:</td><td style="font-size:13px;text-align:right;padding:2px 0;font-weight:bold">'+( o.concesero_nombre||'')+'</td></tr>'
     +'</table>'
     +'<hr style="border:none;border-top:2px solid #000;margin:3px 0"/>'
     +'<p style="font-size:13px;font-weight:900;margin:2px 0">C.c o Nit:</p>'
@@ -1200,19 +1316,19 @@ function imprimirTicket(o){
       +'</tr>'
     +'</table>'
     +'<p style="text-align:center;font-size:12px;font-weight:bold;margin:2px 0">Gracias por su visita</p>'
-    +'<p style="font-size:11px;font-weight:bold;margin:3px 0;line-height:1.4">'
+    +'<p style="text-align:center;font-size:11px;font-weight:bold;margin:3px 0;line-height:1.5">'
       +'Senor usuario, solicitamos respetuosamente revisar su vehiculo antes de ser retirado de la empresa, '
       +'no se aceptan reclamos posteriores despues de salir de este sitio. No se responde por objetos dejados '
       +'en su vehiculo a menos que sean dejados en custodia del administrador. Si el valor de lo cobrado es '
       +'diferente al valor de la orden de servicio, su lavado sera gratis. La entrega del vehiculo sera con '
       +'la respectiva orden de servicio.'
     +'</p>'
-    +'<p style="font-size:11px;font-weight:bold;text-align:center;margin:2px 0;line-height:1.4">'
+    +'<p style="text-align:center;font-size:11px;font-weight:bold;margin:2px 0;line-height:1.5">'
       +'(PARA AVERIGUAR POR EL PROCESO DE SU VEHICULO, COMUNIQUESE AL 3108749404) - PARA QUEJAS Y RECLAMOS 3108359883'
     +'</p>';
 
   const pa = document.getElementById('print-area');
-  pa.innerHTML = '<div style="width:56mm;font-family:Courier,monospace;color:#000;background:#fff;padding:2mm;-webkit-print-color-adjust:exact;print-color-adjust:exact">' + ticket + '</div>';
+  pa.innerHTML = '<div style="width:56mm;font-family:Courier,monospace;color:#000;background:#fff;padding:2mm">' + ticket + '</div>';
   pa.style.display = 'block';
   setTimeout(function(){
     window.print();
@@ -1381,6 +1497,27 @@ async function borrarGasto(id){
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────────
 let dashMes=null;
+let currentDashTab='resumen';
+
+function showDashTab(tab, btn){
+  currentDashTab=tab;
+  ['resumen','diario','finanzas','conceseros'].forEach(t=>{
+    const el=document.getElementById('dt-'+t+'-content');
+    if(el) el.style.display=t===tab?'block':'none';
+    const b=document.getElementById('dt-'+t);
+    if(b){ b.classList.remove('btn-p'); b.classList.add('btn-g'); }
+  });
+  if(btn){ btn.classList.remove('btn-g'); btn.classList.add('btn-p'); }
+  loadDashTab(tab);
+}
+
+function loadDashTab(tab){
+  if(tab==='resumen')    loadDashResumen();
+  else if(tab==='diario')    loadDashDiario();
+  else if(tab==='finanzas')  loadDashFinanzas();
+  else if(tab==='conceseros') loadDashConceseros();
+}
+
 async function loadDashMeses(){
   try{
     const ords=await api('ordenes?order=fecha.desc&limit=1000');
@@ -1388,54 +1525,286 @@ async function loadDashMeses(){
     if(!dashMes) dashMes=meses[0];
     document.getElementById('mes-btns').innerHTML=meses.map(m=>{
       const[y,mo]=m.split('-');
-      return`<button class="btn ${m===dashMes?'btn-p':'btn-g'}" onclick="setDashMes('${m}',this)">${MES[parseInt(mo)-1]} ${y}</button>`;
+      return '<button class="btn '+(m===dashMes?'btn-p':'btn-g')+'" onclick="setDashMes(this.dataset.mes,this)" data-mes="'+m+'">'+MES[parseInt(mo)-1]+' '+y+'</button>';
     }).join('');
-    loadDashboard();
-  }catch{}
+    loadDashTab(currentDashTab);
+  }catch(e){}
 }
 
-async function setDashMes(mes,btn){
+async function setDashMes(btn, _unused){
+  // Support both calling conventions
+  let mes = typeof btn === 'string' ? btn : btn.dataset.mes;
+  let el  = typeof btn === 'string' ? _unused : btn;
   dashMes=mes;
   document.querySelectorAll('#mes-btns .btn').forEach(b=>{b.classList.remove('btn-p');b.classList.add('btn-g');});
-  btn.classList.remove('btn-g');btn.classList.add('btn-p');
-  loadDashboard();
+  if(el) el.classList.remove('btn-g'), el.classList.add('btn-p');
+  loadDashTab(currentDashTab);
 }
 
 async function loadDashboard(){
   if(!dashMes) await loadDashMeses();
+  else loadDashTab(currentDashTab);
+}
+
+// ── RESUMEN ───────────────────────────────────────────────────────────────────
+async function loadDashResumen(){
+  if(!dashMes) return;
   try{
-    const start=dashMes+'-01',end=dashMes+'-31';
-    const ords=await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=id.desc');
+    const start=dashMes+'-01', end=dashMes+'-31';
+    const ords=await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
     const total=ords.reduce((s,o)=>s+(o.total||0),0);
     const dias=new Set(ords.map(o=>o.fecha)).size;
+    const prom=dias?Math.round(total/dias):0;
+
+    // Compare with previous month
+    const [y,m]=dashMes.split('-');
+    const prevDate=new Date(parseInt(y),parseInt(m)-2,1);
+    const prevMes=prevDate.getFullYear()+'-'+String(prevDate.getMonth()+1).padStart(2,'0');
+    const ordsP=await api('ordenes?fecha=gte.'+prevMes+'-01&fecha=lte.'+prevMes+'-31');
+    const totalP=ordsP.reduce((s,o)=>s+(o.total||0),0);
+    const diff=totalP?Math.round((total-totalP)/totalP*100):0;
+    const diffStr=diff>0?'▲ +'+diff+'% vs mes anterior':diff<0?'▼ '+diff+'% vs mes anterior':'= igual al mes anterior';
+    const diffColor=diff>0?'#6EE7B7':diff<0?'#FCA5A5':'#8BA3BB';
+
     document.getElementById('d-total').textContent='$'+fmt(total);
     document.getElementById('d-gan').textContent='$'+fmt(Math.round(total/2));
     document.getElementById('d-veh').textContent=ords.length;
     document.getElementById('d-dias').textContent=dias;
+    document.getElementById('d-vs-anterior').innerHTML='<span style="color:'+diffColor+'">'+diffStr+'</span>';
+    document.getElementById('d-prom-dia').textContent='~'+Math.round(ords.length/(dias||1))+'/día';
+
+    // Bar chart by day
+    const byDay={};
+    ords.forEach(o=>{byDay[o.fecha]=(byDay[o.fecha]||0)+(o.total||0);});
+    const days=Object.entries(byDay).sort((a,b)=>a[0].localeCompare(b[0]));
+    const maxVal=Math.max(...days.map(d=>d[1]),1);
+    const barEl=document.getElementById('d-barras');
+    const lblEl=document.getElementById('d-barras-labels');
+    if(barEl){
+      barEl.innerHTML=days.map(([d,v])=>{
+        const pct=Math.round(v/maxVal*100);
+        const dia=d.slice(8);
+        const color=v===Math.max(...days.map(x=>x[1]))?'#C9A84C':'#234B75';
+        return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;cursor:pointer" onclick="verDiaDetalle(this.dataset.fecha)" data-fecha="'+d+'" title="$'+fmt(v)+'">'
+          +'<div style="width:100%;background:'+color+';border-radius:3px 3px 0 0;height:'+pct+'%;min-height:2px;transition:all .2s"></div>'
+          +'</div>';
+      }).join('');
+      lblEl.innerHTML=days.map(([d])=>'<div style="flex:1;text-align:center;font-size:8px;color:var(--muted)">'+d.slice(8)+'</div>').join('');
+    }
+
+    // Top conceseros
     const cm={};
     ords.forEach(o=>{const n=o.concesero_nombre||'?';if(!cm[n])cm[n]={n,t:0,c:0};cm[n].t+=o.total||0;cm[n].c++;});
     const sorted=Object.values(cm).sort((a,b)=>b.t-a.t);
     const maxT=sorted[0]?.t||1;
-    document.getElementById('d-concs').innerHTML=sorted.map((c,i)=>`
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <div style="width:22px;height:22px;border-radius:50%;background:${COLORS[i]||'#4B5563'};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#111;flex-shrink:0">${i+1}</div>
-        <div style="flex:1">
-          <div style="font-size:12px;font-weight:600">${c.n}</div>
-          <div style="font-size:9px;color:var(--muted)">${c.c} vehículos</div>
-          <div style="height:3px;background:rgba(255,255,255,.07);border-radius:2px;margin-top:2px"><div style="height:3px;border-radius:2px;background:${COLORS[i]||'#4B5563'};width:${Math.round(c.t/maxT*100)}%"></div></div>
-        </div>
-        <div style="text-align:right"><div style="font-weight:700;color:var(--gold);font-size:12px">$${fmt(c.t)}</div><div style="font-size:10px;color:#6EE7B7">$${fmt(Math.round(c.t/2))}</div></div>
-      </div>`).join('');
-    document.getElementById('d-recientes').innerHTML=ords.slice(0,10).map(o=>`
-      <tr>
-        <td style="font-family:monospace;color:var(--muted)">${o.numero_orden}</td>
-        <td style="color:var(--muted);font-size:11px">${o.fecha}</td>
-        <td style="font-size:11px">${o.concesero_nombre||''}</td>
-        <td style="color:var(--gold);font-weight:700">${o.placa}</td>
-        <td><span class="badge ${o.forma_pago==='qr'?'bqr':'bg'}">${o.forma_pago==='qr'?'📲':'💵'}</span></td>
-        <td style="font-weight:700">$${fmt(o.total)}</td>
-      </tr>`).join('');
+    document.getElementById('d-concs').innerHTML=sorted.slice(0,6).map((c,i)=>
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+        +'<div style="width:20px;height:20px;border-radius:50%;background:'+COLORS[i]+';display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#111;flex-shrink:0">'+(i+1)+'</div>'
+        +'<div style="flex:1"><div style="font-size:11px;font-weight:700">'+c.n+'</div>'
+          +'<div style="height:3px;background:rgba(255,255,255,.07);border-radius:2px;margin-top:2px"><div style="height:3px;border-radius:2px;background:'+COLORS[i]+';width:'+Math.round(c.t/maxT*100)+'%"></div></div>'
+        +'</div>'
+        +'<div style="text-align:right"><div style="font-weight:700;color:'+COLORS[i]+';font-size:12px">$'+fmt(c.t)+'</div>'
+          +'<div style="font-size:10px;color:#6EE7B7">$'+fmt(Math.round(c.t/2))+'</div></div>'
+      +'</div>'
+    ).join('');
+
+    // Recent orders
+    document.getElementById('d-recientes').innerHTML=ords.slice(-8).reverse().map(o=>
+      '<tr>'
+        +'<td style="font-family:monospace;color:var(--muted)">'+o.numero_orden+'</td>'
+        +'<td style="color:var(--muted);font-size:10px">'+o.fecha+'</td>'
+        +'<td style="color:var(--gold);font-weight:700">'+o.placa+'</td>'
+        +'<td><span class="badge '+(o.forma_pago==='qr'?'bqr':'bg')+'">'+(o.forma_pago==='qr'?'📲':'💵')+'</span></td>'
+        +'<td style="font-weight:700">$'+fmt(o.total)+'</td>'
+      +'</tr>'
+    ).join('');
   }catch(e){showToast('Error dashboard',true);}
+}
+
+// ── DIARIO ────────────────────────────────────────────────────────────────────
+async function loadDashDiario(){
+  if(!dashMes) return;
+  try{
+    const start=dashMes+'-01', end=dashMes+'-31';
+    const ords=await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
+    const byDay={};
+    ords.forEach(o=>{byDay[o.fecha]=(byDay[o.fecha]||0)+(o.total||0);});
+    const maxVal=Math.max(...Object.values(byDay),1);
+    const [y,m]=dashMes.split('-');
+    const daysInMonth=new Date(parseInt(y),parseInt(m),0).getDate();
+    let cal='';
+    // Day headers
+    ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'].forEach(d=>{
+      cal+='<div style="text-align:center;font-size:9px;color:var(--muted);font-weight:700;padding:4px">'+d+'</div>';
+    });
+    // Empty cells before first day
+    const firstDay=new Date(parseInt(y),parseInt(m)-1,1).getDay();
+    for(let i=0;i<firstDay;i++) cal+='<div></div>';
+    // Days
+    for(let d=1;d<=daysInMonth;d++){
+      const dateStr=dashMes+'-'+String(d).padStart(2,'0');
+      const val=byDay[dateStr]||0;
+      const intensity=val?Math.max(20,Math.round(val/maxVal*100)):0;
+      const bg=val?'rgba(201,168,76,'+( intensity/100)+')':'rgba(255,255,255,.03)';
+      const textColor=intensity>60?'#111':'var(--text)';
+      cal+='<div onclick="verDiaDetalle(this.dataset.fecha)" data-fecha="'+dateStr+'" style="background:'+bg+';border-radius:6px;padding:6px 4px;text-align:center;cursor:'+(val?'pointer':'default')+';border:1px solid rgba(255,255,255,.07);transition:all .15s" '+(val?'title="$'+fmt(val)+'"':'')+'>'
+        +'<div style="font-size:11px;font-weight:700;color:'+textColor+'">'+d+'</div>'
+        +(val?'<div style="font-size:8px;color:'+textColor+';margin-top:1px">$'+fmt(Math.round(val/1000))+'k</div>':'')
+        +'</div>';
+    }
+    document.getElementById('d-calendario').innerHTML=cal;
+  }catch(e){showToast('Error',true);}
+}
+
+async function verDiaDetalle(fecha){
+  try{
+    const ords=await api('ordenes?fecha=eq.'+fecha+'&order=id.asc');
+    if(!ords.length) return;
+    const total=ords.reduce((s,o)=>s+(o.total||0),0);
+    document.getElementById('d-dia-sel').textContent='— '+fecha;
+    document.getElementById('d-dia-detalle-title').textContent='✦ Detalle del '+fecha;
+    document.getElementById('d-dia-total').textContent='$'+fmt(total);
+    document.getElementById('d-dia-detalle-list').innerHTML=ords.map(o=>
+      '<tr>'
+        +'<td style="font-family:monospace;color:var(--muted);font-size:11px">'+o.numero_orden+'</td>'
+        +'<td style="font-weight:700;color:var(--gold)">'+o.placa+'</td>'
+        +'<td style="font-size:11px">'+( o.concesero_nombre||'')+'</td>'
+        +'<td style="font-size:10px;color:var(--muted)">—</td>'
+        +'<td><span class="badge '+(o.forma_pago==='qr'?'bqr':o.forma_pago==='efectivo'?'bg':'ba')+'">'+(o.forma_pago==='qr'?'📲':o.forma_pago==='efectivo'?'💵':'⏳')+'</span></td>'
+        +'<td style="font-weight:700">$'+fmt(o.total)+'</td>'
+      +'</tr>'
+    ).join('');
+    document.getElementById('d-dia-detalle-card').style.display='block';
+  }catch(e){}
+}
+
+// ── FINANZAS ──────────────────────────────────────────────────────────────────
+async function loadDashFinanzas(){
+  if(!dashMes) return;
+  try{
+    const start=dashMes+'-01', end=dashMes+'-31';
+    const ords=await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end);
+    const gastos=await api('gastos?fecha=gte.'+start+'&fecha=lte.'+end);
+    const ingresos=ords.reduce((s,o)=>s+(o.total||0),0);
+    const tGastos=gastos.reduce((s,g)=>s+(g.valor||0),0);
+    const neta=Math.round(ingresos/2)-tGastos;
+    const ef=ords.filter(o=>o.forma_pago==='efectivo').reduce((s,o)=>s+(o.total||0),0);
+    const qr=ords.filter(o=>o.forma_pago==='qr').reduce((s,o)=>s+(o.total||0),0);
+    document.getElementById('fin-ingresos').textContent='$'+fmt(ingresos);
+    document.getElementById('fin-gastos').textContent='$'+fmt(tGastos);
+    document.getElementById('fin-neta').textContent='$'+fmt(neta);
+
+    // Gastos por categoría
+    const catMap={};
+    gastos.forEach(g=>{catMap[g.categoria]=(catMap[g.categoria]||0)+g.valor;});
+    const catSorted=Object.entries(catMap).sort((a,b)=>b[1]-a[1]);
+    const maxCat=catSorted[0]?.[1]||1;
+    document.getElementById('fin-gastos-cat').innerHTML=catSorted.length
+      ? catSorted.map(([cat,val],i)=>
+          '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span>'+cat+'</span><span style="font-weight:700;color:#FCA5A5">$'+fmt(val)+'</span></div>'
+          +'<div style="height:4px;background:rgba(255,255,255,.07);border-radius:2px;margin-bottom:8px"><div style="height:4px;border-radius:2px;background:#EF4444;width:'+Math.round(val/maxCat*100)+'%"></div></div>'
+        ).join('')
+      : '<div style="color:var(--muted);text-align:center;padding:20px">Sin gastos registrados</div>';
+
+    // Efectivo vs QR
+    const totalCobrado=ef+qr;
+    const efPct=totalCobrado?Math.round(ef/totalCobrado*100):0;
+    const qrPct=totalCobrado?Math.round(qr/totalCobrado*100):0;
+    document.getElementById('fin-pago-split').innerHTML=
+      '<div style="margin-bottom:10px">'
+        +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>💵 Efectivo</span><span style="font-weight:700;color:#6EE7B7">$'+fmt(ef)+' ('+efPct+'%)</span></div>'
+        +'<div style="height:12px;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden">'
+          +'<div style="height:100%;background:#10B981;width:'+efPct+'%;border-radius:6px;transition:width .5s"></div>'
+        +'</div>'
+      +'</div>'
+      +'<div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>📲 QR</span><span style="font-weight:700;color:#C4B5FD">$'+fmt(qr)+' ('+qrPct+'%)</span></div>'
+        +'<div style="height:12px;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden">'
+          +'<div style="height:100%;background:#8B5CF6;width:'+qrPct+'%;border-radius:6px;transition:width .5s"></div>'
+        +'</div>'
+      +'</div>';
+
+    // Last 3 months comparison
+    const meses3=[];
+    for(let i=0;i<3;i++){
+      const [y,m]=dashMes.split('-');
+      const d=new Date(parseInt(y),parseInt(m)-1-i,1);
+      meses3.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
+    }
+    const mesesData=await Promise.all(meses3.map(async mes=>{
+      const o=await api('ordenes?fecha=gte.'+mes+'-01&fecha=lte.'+mes+'-31');
+      const g=await api('gastos?fecha=gte.'+mes+'-01&fecha=lte.'+mes+'-31');
+      const ing=o.reduce((s,x)=>s+(x.total||0),0);
+      const gas=g.reduce((s,x)=>s+(x.valor||0),0);
+      return {mes,ing,gas,neta:Math.round(ing/2)-gas};
+    }));
+    const maxComp=Math.max(...mesesData.map(m=>m.ing),1);
+    document.getElementById('fin-comparativo').innerHTML=mesesData.reverse().map(m=>{
+      const [y,mo]=m.mes.split('-');
+      return '<div style="margin-bottom:12px">'
+        +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;font-weight:700">'
+          +'<span>'+MES[parseInt(mo)-1]+' '+y+'</span>'
+          +'<span style="color:var(--gold)">$'+fmt(m.ing)+'</span>'
+        +'</div>'
+        +'<div style="height:8px;background:rgba(255,255,255,.07);border-radius:4px;margin-bottom:3px;overflow:hidden">'
+          +'<div style="height:100%;background:var(--gold);width:'+Math.round(m.ing/maxComp*100)+'%;border-radius:4px"></div>'
+        +'</div>'
+        +'<div style="display:flex;gap:12px;font-size:10px;color:var(--muted)">'
+          +'<span style="color:#FCA5A5">Gastos: $'+fmt(m.gas)+'</span>'
+          +'<span style="color:#6EE7B7">Neta: $'+fmt(m.neta)+'</span>'
+        +'</div>'
+      +'</div>';
+    }).join('');
+  }catch(e){showToast('Error finanzas',true);}
+}
+
+// ── CONCESEROS DASH ───────────────────────────────────────────────────────────
+async function loadDashConceseros(){
+  if(!dashMes) return;
+  try{
+    const start=dashMes+'-01', end=dashMes+'-31';
+    const ords=await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
+    const cm={};
+    ords.forEach(o=>{
+      const n=o.concesero_nombre||'?';
+      if(!cm[n]) cm[n]={n,t:0,c:0,dias:new Set()};
+      cm[n].t+=o.total||0; cm[n].c++;
+      cm[n].dias.add(o.fecha);
+    });
+    const sorted=Object.values(cm).sort((a,b)=>b.t-a.t);
+    const maxT=sorted[0]?.t||1;
+
+    // Ranking visual
+    document.getElementById('dc-ranking').innerHTML=sorted.map((c,i)=>{
+      const prom=c.dias.size?Math.round(c.t/c.dias.size):0;
+      return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:10px 12px;background:rgba(255,255,255,.03);border-radius:8px;border-left:3px solid '+COLORS[i%COLORS.length]+'">'
+        +'<div style="width:28px;height:28px;border-radius:50%;background:'+COLORS[i%COLORS.length]+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#111;flex-shrink:0">'+(i+1)+'</div>'
+        +'<div style="flex:1">'
+          +'<div style="font-size:13px;font-weight:700">'+c.n+'</div>'
+          +'<div style="height:4px;background:rgba(255,255,255,.07);border-radius:2px;margin-top:4px"><div style="height:4px;border-radius:2px;background:'+COLORS[i%COLORS.length]+';width:'+Math.round(c.t/maxT*100)+'%;transition:width .5s"></div></div>'
+        +'</div>'
+        +'<div style="text-align:right">'
+          +'<div style="font-weight:800;color:'+COLORS[i%COLORS.length]+';font-size:14px">$'+fmt(c.t)+'</div>'
+          +'<div style="font-size:10px;color:#6EE7B7">Tu parte: $'+fmt(Math.round(c.t/2))+'</div>'
+          +'<div style="font-size:10px;color:var(--muted)">'+c.c+' veh · '+c.dias.size+' días</div>'
+        +'</div>'
+      +'</div>';
+    }).join('');
+
+    // Tabla detalle
+    document.getElementById('dc-tabla').innerHTML=sorted.map((c,i)=>{
+      const prom=c.dias.size?Math.round(c.t/c.dias.size):0;
+      return '<tr>'
+        +'<td><div style="width:20px;height:20px;border-radius:50%;background:'+COLORS[i%COLORS.length]+';display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#111">'+(i+1)+'</div></td>'
+        +'<td style="font-weight:600">'+c.n+'</td>'
+        +'<td style="font-weight:700;color:var(--gold)">$'+fmt(c.t)+'</td>'
+        +'<td style="color:#6EE7B7;font-weight:700">$'+fmt(Math.round(c.t/2))+'</td>'
+        +'<td style="color:var(--muted)">'+c.c+'</td>'
+        +'<td style="color:var(--muted)">'+c.dias.size+'</td>'
+        +'<td style="color:var(--muted)">$'+fmt(prom)+'</td>'
+      +'</tr>';
+    }).join('');
+  }catch(e){showToast('Error',true);}
 }
 
 // ── CONCESEROS ────────────────────────────────────────────────────────────────
