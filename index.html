@@ -207,7 +207,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         <div class="card">
           <div class="card-t"><span class="card-tg">✦ Operación de hoy</span><span class="badge ba" id="badge-abiertas">0 abiertas</span></div>
           <div style="display:flex;gap:8px;margin-bottom:10px">
-            <input type="text" id="placa-search" placeholder="🔍 Buscar por placa..." oninput="filtrarOrdenes()" style="flex:1;background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;text-transform:uppercase" oninput="this.value=this.value.toUpperCase();filtrarOrdenes()"/>
+            <input type="text" id="placa-search" autocomplete="off" placeholder="🔍 Buscar por placa..." oninput="filtrarOrdenes()" style="flex:1;background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;text-transform:uppercase" oninput="this.value=this.value.toUpperCase();filtrarOrdenes()"/>
             <select id="estado-filter" onchange="filtrarOrdenes()" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none">
               <option value="">Todas</option>
               <option value="abierta">⏳ Abiertas</option>
@@ -442,7 +442,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr auto">
             <div class="field" style="margin:0">
               <label>Buscar por placa</label>
-              <input type="text" id="hist-placa" placeholder="ABC 123" oninput="this.value=this.value.toUpperCase()"/>
+              <input type="text" id="hist-placa" autocomplete="off" placeholder="ABC 123" oninput="this.value=this.value.toUpperCase()"/>
             </div>
             <div class="field" style="margin:0">
               <label>Fecha desde</label>
@@ -535,7 +535,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         <div class="row"><div><div class="page-title">Servicios y precios</div></div><button class="btn btn-p" onclick="abrirModalServicio(null)">+ Agregar</button></div>
         <div class="card">
           <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-            <input type="text" id="svc-cfg-search" placeholder="🔍 Buscar..." oninput="filtrarServiciosCfg()" style="flex:1;background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;min-width:140px"/>
+            <input type="text" id="svc-cfg-search" autocomplete="off" placeholder="🔍 Buscar..." oninput="filtrarServiciosCfg()" style="flex:1;background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;min-width:140px"/>
             <select id="svc-cfg-tipo" onchange="filtrarServiciosCfg()" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none">
               <option value="">Todos</option><option value="Automovil">🚗 Automóvil</option><option value="Camionetas">🚙 Camioneta</option><option value="Motos">🏍️ Moto</option><option value="Cuatrimoto">🏎️ Cuatrimoto</option><option value="Bicicletas">🚲 Bicicleta</option><option value="Otros">📦 Otros</option>
             </select>
@@ -566,9 +566,10 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 <div id="modal-orden" class="modal-bg" style="display:none">
 <div class="modal">
   <div class="modal-title">🧾 Nueva orden de servicio</div>
+  <input type="hidden" autocomplete="false"/>
   <div class="form-grid" style="grid-template-columns:1fr 1fr">
     <div class="field"><label>Concesero</label><select id="ord-conc"></select></div>
-    <div class="field"><label>Placa</label><input type="text" id="ord-placa" placeholder="ABC 123" oninput="this.value=this.value.toUpperCase()"/></div>
+    <div class="field"><label>Placa</label><input type="text" id="ord-placa" placeholder="ABC 123" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
   </div>
   <div class="field"><label>Tipo de vehículo</label>
     <div style="display:flex;gap:5px;flex-wrap:wrap" id="tipo-btns">
@@ -583,8 +584,8 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
   </div>
   <div class="field"><label>Buscar y agregar servicios</label>
     <div style="display:flex;gap:6px;margin-bottom:6px">
-      <input type="text" id="svc-search" placeholder="🔍 Nombre del servicio..." oninput="filtrarServicios()" style="flex:1;background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none"/>
-      <input type="number" id="svc-precio-filter" placeholder="💰 Precio" oninput="filtrarServicios()" style="width:100px;background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none"/>
+      <input type="text" id="svc-search" autocomplete="off" placeholder="🔍 Nombre del servicio..." oninput="filtrarServicios()" style="flex:1;background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none"/>
+      <input type="number" id="svc-precio-filter" autocomplete="off" placeholder="💰 Precio" oninput="filtrarServicios()" style="width:100px;background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none"/>
     </div>
     <div id="svc-lista" style="max-height:150px;overflow-y:auto;border:1px solid var(--border);border-radius:7px;padding:6px;background:var(--navy-d)"></div>
   </div>
@@ -671,7 +672,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
   <input type="hidden" id="edit-ord-id"/>
   <div class="form-grid" style="grid-template-columns:1fr 1fr">
     <div class="field"><label>Concesero</label><select id="edit-ord-conc"></select></div>
-    <div class="field"><label>Placa</label><input type="text" id="edit-ord-placa" oninput="this.value=this.value.toUpperCase()"/></div>
+    <div class="field"><label>Placa</label><input type="text" id="edit-ord-placa" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
   </div>
   <div class="field"><label>Tipo de vehículo</label>
     <div style="display:flex;gap:5px;flex-wrap:wrap" id="edit-tipo-btns">
@@ -685,7 +686,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
     </div>
   </div>
   <div class="field"><label>Servicios</label>
-    <input type="text" id="edit-svc-search" placeholder="Buscar servicio..." oninput="editFiltrarServicios()" style="margin-bottom:6px"/>
+    <input type="text" id="edit-svc-search" autocomplete="off" placeholder="Buscar servicio..." oninput="editFiltrarServicios()" style="margin-bottom:6px"/>
     <div id="edit-svc-lista" style="max-height:140px;overflow-y:auto;border:1px solid var(--border);border-radius:7px;padding:6px;background:var(--navy-d)"></div>
   </div>
   <div class="field">
@@ -1215,10 +1216,15 @@ async function guardarOrden(){
   const concNombre=concSel.options[concSel.selectedIndex]?.dataset.nombre||'';
   if(!placa){showToast('Ingresa la placa',true);return;}
   if(!selectedSvcs.length){showToast('Agrega al menos un servicio',true);return;}
+  // Declare all variables first
+  const chk=document.getElementById('chk-cliente').checked;
   const empSel=document.getElementById('ord-empresa');
   const empId=chk&&empSel?.value?parseInt(empSel.value):null;
   const empNombre=chk&&empSel?.value?empSel.options[empSel.selectedIndex]?.dataset.nombre||'':'';
-  const isEmpresa = empId !== null;
+  const isEmpresa=empId!==null;
+  const cliNombre=empNombre||(chk?(document.getElementById('ord-cli-nombre').value||'CONSUMIDOR FINAL'):'CONSUMIDOR FINAL');
+  const cliCc=chk&&!empId?(document.getElementById('ord-cli-cc').value||'222222222222'):'222222222222';
+  const cliTel=chk&&!empId?document.getElementById('ord-cli-tel').value:'';
   // Check duplicate plate
   try{
     const ex=await api('ordenes?fecha=eq.'+today()+'&placa=eq.'+placa+'&estado=eq.abierta');
@@ -1227,10 +1233,6 @@ async function guardarOrden(){
       if(!ok) return;
     }
   }catch{}
-  const chk=document.getElementById('chk-cliente').checked;
-  const cliNombre=empNombre||(chk?(document.getElementById('ord-cli-nombre').value||'CONSUMIDOR FINAL'):'CONSUMIDOR FINAL');
-  const cliCc=chk&&!empId?(document.getElementById('ord-cli-cc').value||'222222222222'):'222222222222';
-  const cliTel=chk&&!empId?document.getElementById('ord-cli-tel').value:'';
   const total=selectedSvcs.reduce((s,x)=>s+x.precio,0);
   try{
     const last=await api('ordenes?order=numero_orden.desc&limit=1');
