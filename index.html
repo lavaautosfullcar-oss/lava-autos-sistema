@@ -179,7 +179,8 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <div class="ni hidden" onclick="go('dashboard',this)" id="nav-dashboard"><span class="ni-ico">📊</span>Dashboard</div>
       <div class="ni hidden" onclick="go('historial',this)" id="nav-historial"><span class="ni-ico">📅</span>Historial</div>
       <div class="nav-sep hidden" id="sep-empresas">Empresas</div>
-      <div class="ni hidden" onclick="go('susuerte',this)" id="nav-susuerte"><span class="ni-ico">🏢</span>Susuerte</div>
+      <div class="ni hidden" onclick="go('empresas',this)" id="nav-susuerte"><span class="ni-ico">🏢</span>Empresas</div>
+      <div class="ni hidden" onclick="go('pendientes',this)" id="nav-pendientes"><span class="ni-ico">⏳</span>Pendientes</div>
       <div class="nav-sep hidden" id="sep-config">Configuración</div>
       <div class="ni hidden" onclick="go('conceseros',this)" id="nav-conceseros"><span class="ni-ico">👥</span>Conceseros</div>
       <div class="ni hidden" onclick="go('servicios-cfg',this)" id="nav-servicios-cfg"><span class="ni-ico">⚙️</span>Servicios</div>
@@ -465,38 +466,61 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         </div>
       </div>
 
-      <!-- SUSUERTE -->
-      <div id="s-susuerte" class="screen">
+      <!-- EMPRESAS -->
+      <div id="s-empresas" class="screen">
+        <div class="row">
+          <div><div class="page-title">🏢 Empresas con contrato</div><div class="page-sub">Clientes con pago mensual</div></div>
+          <button class="btn btn-p" onclick="abrirModalEmpresa(null)">+ Agregar empresa</button>
+        </div>
+        <div id="empresas-lista"></div>
+      </div>
+
+      <!-- EMPRESA DETALLE -->
+      <div id="s-empresa-detalle" class="screen">
         <div class="row">
           <div>
-            <div class="page-title">🏢 Susuerte — Contrato mensual</div>
-            <div class="page-sub">Cobro el 18 de cada mes · Selecciona el mes a facturar</div>
+            <button class="btn btn-g" style="margin-bottom:8px" onclick="go('empresas',document.getElementById('nav-susuerte'))">← Volver</button>
+            <div class="page-title" id="emp-detalle-nombre">Empresa</div>
+            <div class="page-sub">Lavadas del mes</div>
           </div>
           <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-            <select id="sus-mes" onchange="loadSusuerte()" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none"></select>
-            <button class="btn btn-p" onclick="generarFacturaSusuerte()">📄 Generar factura</button>
+            <select id="emp-mes" onchange="loadEmpresaDetalle()" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none"></select>
+            <button class="btn btn-p" onclick="generarFacturaEmpresa()">📄 Generar factura</button>
           </div>
         </div>
-        <!-- KPIs -->
         <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
-          <div class="kpi"><div class="kpi-l">Lavadas del mes</div><div class="kpi-v" style="color:var(--gold)" id="sus-count">0</div></div>
-          <div class="kpi" style="border-left-color:#FCD34D"><div class="kpi-l">⏳ Pendientes de cobro</div><div class="kpi-v" style="color:#FCD34D" id="sus-pendiente">$0</div></div>
-          <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">✅ Ya cobrado</div><div class="kpi-v" style="color:#6EE7B7" id="sus-cobrado">$0</div></div>
+          <div class="kpi"><div class="kpi-l">Lavadas del mes</div><div class="kpi-v" style="color:var(--gold)" id="emp-count">0</div></div>
+          <div class="kpi" style="border-left-color:#FCD34D"><div class="kpi-l">⏳ Pendiente cobro</div><div class="kpi-v" style="color:#FCD34D" id="emp-pendiente">$0</div></div>
+          <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">✅ Ya cobrado</div><div class="kpi-v" style="color:#6EE7B7" id="emp-cobrado">$0</div></div>
         </div>
-        <!-- Tabla -->
         <div class="card">
           <div class="card-t"><span class="card-tg">✦ Detalle de lavadas</span></div>
           <div class="tbl-wrap">
             <table>
-              <thead><tr><th>Fecha</th><th>Placa</th><th>Servicio</th><th>Valor</th><th>Estado pago</th><th></th></tr></thead>
-              <tbody id="sus-tabla"></tbody>
+              <thead><tr><th>Fecha</th><th>Placa</th><th>Servicio</th><th>Valor</th><th>Estado</th><th></th></tr></thead>
+              <tbody id="emp-tabla"></tbody>
             </table>
           </div>
         </div>
-        <!-- Resumen cobro -->
-        <div class="card" id="sus-resumen-card" style="display:none">
-          <div class="card-t"><span class="card-tg">✦ Resumen para cobro</span></div>
-          <div id="sus-resumen"></div>
+      </div>
+
+      <!-- PENDIENTES -->
+      <div id="s-pendientes" class="screen">
+        <div class="row">
+          <div><div class="page-title">⏳ Pendientes de cobro</div><div class="page-sub">Órdenes que aún no han sido pagadas</div></div>
+          <button class="btn btn-g" onclick="loadPendientes()">🔄 Actualizar</button>
+        </div>
+        <div class="kpis" style="grid-template-columns:1fr 1fr">
+          <div class="kpi" style="border-left-color:#FCD34D"><div class="kpi-l">Total pendiente</div><div class="kpi-v" style="color:#FCD34D" id="pend-total">$0</div></div>
+          <div class="kpi"><div class="kpi-l">Órdenes pendientes</div><div class="kpi-v" style="color:var(--gold)" id="pend-count">0</div></div>
+        </div>
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Fecha</th><th>Placa</th><th>Concesero</th><th>Servicio</th><th>Valor</th><th>Empresa</th><th></th></tr></thead>
+              <tbody id="pend-lista"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -577,14 +601,21 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
   <div class="divider"></div>
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer" onclick="toggleCliente()">
     <input type="checkbox" id="chk-cliente" style="width:16px;height:16px;accent-color:var(--gold)"/>
-    <span style="font-size:12px;color:var(--muted)">¿Agregar datos del cliente?</span>
+    <span style="font-size:12px;color:var(--muted)">¿Es de empresa con contrato o agregar datos del cliente?</span>
   </div>
   <div id="cliente-fields" style="display:none">
-    <div class="form-grid" style="grid-template-columns:1fr 1fr">
-      <div class="field"><label>Nombre</label><input type="text" id="ord-cli-nombre" placeholder="Nombre cliente"/></div>
-      <div class="field"><label>CC / NIT</label><input type="text" id="ord-cli-cc" placeholder="000000000"/></div>
+    <div class="field"><label>¿Es de una empresa con contrato?</label>
+      <select id="ord-empresa" onchange="selEmpresaOrden()" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%">
+        <option value="">— Cliente particular —</option>
+      </select>
     </div>
-    <div class="field"><label>Teléfono (opcional)</label><input type="text" id="ord-cli-tel" placeholder="+57 300 000 0000"/></div>
+    <div id="ord-cli-particular">
+      <div class="form-grid" style="grid-template-columns:1fr 1fr">
+        <div class="field"><label>Nombre</label><input type="text" id="ord-cli-nombre" placeholder="Nombre cliente"/></div>
+        <div class="field"><label>CC / NIT</label><input type="text" id="ord-cli-cc" placeholder="000000000"/></div>
+      </div>
+      <div class="field"><label>Teléfono (opcional)</label><input type="text" id="ord-cli-tel" placeholder="+57 300 000 0000"/></div>
+    </div>
   </div>
   <div class="field"><label>Observaciones (opcional)</label><textarea id="ord-obs" rows="2" placeholder="Notas..."></textarea></div>
   <div style="display:flex;gap:8px;margin-top:4px">
@@ -789,6 +820,29 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 </div>
 </div>
 
+<!-- Modal empresa -->
+<div id="modal-empresa" class="modal-bg" style="display:none">
+<div class="modal">
+  <div class="modal-title" id="emp-modal-title">🏢 Empresa</div>
+  <input type="hidden" id="emp-edit-id"/>
+  <div class="field"><label>Nombre de la empresa</label>
+    <input type="text" id="emp-nombre" placeholder="Ej: SUSUERTE S.A.S" oninput="this.value=this.value.toUpperCase()"/>
+  </div>
+  <div class="form-grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label>NIT (opcional)</label><input type="text" id="emp-nit" placeholder="000.000.000-0"/></div>
+    <div class="field"><label>Día de cobro</label><input type="number" id="emp-dia-cobro" value="18" min="1" max="31"/></div>
+  </div>
+  <div class="form-grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label>Contacto (opcional)</label><input type="text" id="emp-contacto" placeholder="Nombre contacto"/></div>
+    <div class="field"><label>Teléfono (opcional)</label><input type="text" id="emp-telefono" placeholder="300 000 0000"/></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarEmpresa()">💾 Guardar</button>
+    <button class="btn btn-g" onclick="cerrarModal('modal-empresa')">Cancelar</button>
+  </div>
+</div>
+</div>
+
 <!-- Servicio -->
 <div id="modal-svc" class="modal-bg" style="display:none">
 <div class="modal">
@@ -881,7 +935,7 @@ function doLogout(){
   document.querySelector('.role-btn')?.classList.add('sel');
   // Reset nav
   ['nav-cierre','nav-gastos','nav-dashboard','nav-historial','nav-susuerte',
-   'nav-conceseros','nav-servicios-cfg',
+   'nav-pendientes','nav-conceseros','nav-servicios-cfg',
    'sep-reportes','sep-empresas','sep-config',
    'bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
     document.getElementById(id)?.classList.add('hidden'));
@@ -893,21 +947,23 @@ function setupNav(){
   const isCajero=currentUser.rol==='cajero';
   // Reset all first
   ['nav-cierre','nav-gastos','nav-dashboard','nav-historial','nav-susuerte',
-   'nav-conceseros','nav-servicios-cfg',
+   'nav-pendientes','nav-conceseros','nav-servicios-cfg',
    'sep-reportes','sep-empresas','sep-config',
    'bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
     document.getElementById(id)?.classList.add('hidden'));
-  // Cajero: ordenes + cierre + historial
+  // Administrador: ordenes + cierre + historial + pendientes
   if(isCajero){
     document.getElementById('nav-cierre')?.classList.remove('hidden');
     document.getElementById('bn-cierre')?.classList.remove('hidden');
     document.getElementById('nav-historial')?.classList.remove('hidden');
+    document.getElementById('nav-pendientes')?.classList.remove('hidden');
     document.getElementById('sep-reportes')?.classList.remove('hidden');
+    document.getElementById('sep-empresas')?.classList.remove('hidden');
   }
   // Dueño: todo
   if(isOwner){
     ['nav-cierre','nav-gastos','nav-dashboard','nav-historial','nav-susuerte',
-     'nav-conceseros','nav-servicios-cfg',
+     'nav-pendientes','nav-conceseros','nav-servicios-cfg',
      'sep-reportes','sep-empresas','sep-config',
      'bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
       document.getElementById(id)?.classList.remove('hidden'));
@@ -932,6 +988,9 @@ function go(s,el){
   }
   else if(s==='cierre') loadCierre();
   else if(s==='historial') initHistorial();
+  else if(s==='empresas') loadEmpresas();
+  else if(s==='empresa-detalle') loadEmpresaDetalle();
+  else if(s==='pendientes') loadPendientes();
   else if(s==='susuerte') initSusuerte();
   else if(s==='gastos') loadGastos();
   else if(s==='dashboard') loadDashboard();
@@ -1077,6 +1136,7 @@ function abrirModalOrden(){
   if(document.getElementById('svc-precio-filter')) document.getElementById('svc-precio-filter').value='';
   renderSvcsAgregados();
   renderSvcLista(getSvcs());
+  fillEmpresasSelector().catch(()=>{});
   document.getElementById('modal-orden').style.display='flex';
 }
 
@@ -1159,9 +1219,12 @@ async function guardarOrden(){
     }
   }catch{}
   const chk=document.getElementById('chk-cliente').checked;
-  const cliNombre=chk?(document.getElementById('ord-cli-nombre').value||'CONSUMIDOR FINAL'):'CONSUMIDOR FINAL';
-  const cliCc=chk?(document.getElementById('ord-cli-cc').value||'222222222222'):'222222222222';
-  const cliTel=chk?document.getElementById('ord-cli-tel').value:'';
+  const empSel=document.getElementById('ord-empresa');
+  const empId=chk&&empSel?.value?parseInt(empSel.value):null;
+  const empNombre=chk&&empSel?.value?empSel.options[empSel.selectedIndex]?.dataset.nombre||'':'';
+  const cliNombre=empNombre||(chk?(document.getElementById('ord-cli-nombre').value||'CONSUMIDOR FINAL'):'CONSUMIDOR FINAL');
+  const cliCc=chk&&!empId?(document.getElementById('ord-cli-cc').value||'222222222222'):'222222222222';
+  const cliTel=chk&&!empId?document.getElementById('ord-cli-tel').value:'';
   const total=selectedSvcs.reduce((s,x)=>s+x.precio,0);
   try{
     const last=await api('ordenes?order=numero_orden.desc&limit=1');
@@ -2575,108 +2638,122 @@ async function marcarPendientePago(id){
   }catch(e){ showToast('Error: '+e.message, true); }
 }
 
-// ── SUSUERTE ─────────────────────────────────────────────────────────────────
-async function initSusuerte(){
-  // Fill month selector
-  const sel = document.getElementById('sus-mes');
-  if(!sel) return;
-  const now = new Date();
-  sel.innerHTML = '';
-  for(let i=0; i<6; i++){
-    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
-    const val = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-    const label = MES[d.getMonth()]+' '+d.getFullYear();
-    sel.innerHTML += '<option value="'+val+'">'+label+'</option>';
-  }
-  loadSusuerte();
+// ── EMPRESAS ─────────────────────────────────────────────────────────────────
+let empresas = [];
+let empresaActual = null;
+
+async function loadEmpresas(){
+  try{
+    empresas = await api('empresas?activo=eq.true&order=nombre');
+    const el = document.getElementById('empresas-lista');
+    if(!el) return;
+    if(!empresas.length){
+      el.innerHTML='<div class="card"><div style="text-align:center;padding:30px;color:var(--muted)">No hay empresas registradas. Agrega la primera.</div></div>';
+      return;
+    }
+    // For each empresa get pending count
+    el.innerHTML = empresas.map(e=>`
+      <div class="card" style="cursor:pointer;transition:all .15s" onclick="verEmpresa(${e.id},'${e.nombre}')" onmouseover="this.style.borderColor='var(--gold-b)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-size:15px;font-weight:700">🏢 ${e.nombre}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:3px">
+              ${e.nit?'NIT: '+e.nit+' · ':''}Cobro día ${e.dia_cobro} de cada mes
+              ${e.contacto?' · '+e.contacto:''}${e.telefono?' · '+e.telefono:''}
+            </div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-p" style="padding:5px 12px" onclick="event.stopPropagation();verEmpresa(${e.id},'${e.nombre}')">Ver lavadas</button>
+            <button class="btn btn-g" style="padding:5px 10px" onclick="event.stopPropagation();abrirModalEmpresa(${e.id})">✏️</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }catch(e){ showToast('Error: '+e.message, true); }
 }
 
-async function loadSusuerte(){
-  const mes = document.getElementById('sus-mes')?.value;
+function verEmpresa(id, nombre){
+  empresaActual = {id, nombre};
+  document.getElementById('emp-detalle-nombre').textContent = '🏢 '+nombre;
+  // Fill month selector
+  const sel = document.getElementById('emp-mes');
+  if(sel){
+    sel.innerHTML = '';
+    const now = new Date();
+    for(let i=0; i<6; i++){
+      const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+      const val = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+      sel.innerHTML += '<option value="'+val+'">'+MES[d.getMonth()]+' '+d.getFullYear()+'</option>';
+    }
+  }
+  go('empresa-detalle', document.getElementById('nav-susuerte'));
+  loadEmpresaDetalle();
+}
+
+async function loadEmpresaDetalle(){
+  if(!empresaActual) return;
+  const mes = document.getElementById('emp-mes')?.value;
   if(!mes) return;
   try{
     const [y,m] = mes.split('-');
     const lastDay = new Date(parseInt(y),parseInt(m),0).getDate();
     const start = mes+'-01', end = mes+'-'+String(lastDay).padStart(2,'0');
-    // Get orders for Susuerte (cliente_nombre contains 'SUSUERTE' or similar)
-    const ords = await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
-    const susOrdenes = ords.filter(o=>
-      (o.cliente_nombre||'').toUpperCase().includes('SUSUERTE') ||
-      (o.cliente_cc||'').includes('susuerte') ||
-      o.forma_pago === 'pendiente' ||
-      o.estado === 'pendiente_pago'
-    );
+    // Get orders for this empresa
+    const ords = await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end
+      +'&empresa_id=eq.'+empresaActual.id+'&order=fecha.asc');
+    // Also get pendiente_pago orders linked to this empresa
+    const pendOrd = await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end
+      +'&empresa_nombre=eq.'+encodeURIComponent(empresaActual.nombre)+'&order=fecha.asc');
 
-    // For now show all pendiente_pago orders as they might be Susuerte
-    const pendientes = ords.filter(o => o.estado==='pendiente_pago' || o.forma_pago==='pendiente');
+    const allOrds = [...new Map([...ords,...pendOrd].map(o=>[o.id,o])).values()]
+      .sort((a,b)=>a.fecha.localeCompare(b.fecha));
 
-    const totalPend = pendientes.reduce((s,o)=>s+(o.total||0),0);
-    const cobradas  = ords.filter(o => o.estado==='cerrada' &&
-      (o.cliente_nombre||'').toUpperCase().includes('SUSUERTE'));
-    const totalCob  = cobradas.reduce((s,o)=>s+(o.total||0),0);
+    const pendientes = allOrds.filter(o=>o.estado==='pendiente_pago'||o.forma_pago==='pendiente');
+    const cobradas   = allOrds.filter(o=>o.estado==='cerrada'&&o.forma_pago!=='pendiente');
 
-    document.getElementById('sus-count').textContent   = pendientes.length + cobradas.length;
-    document.getElementById('sus-pendiente').textContent = '$'+fmt(totalPend);
-    document.getElementById('sus-cobrado').textContent   = '$'+fmt(totalCob);
+    const totPend = pendientes.reduce((s,o)=>s+(o.total||0),0);
+    const totCob  = cobradas.reduce((s,o)=>s+(o.total||0),0);
 
-    const allSus = [...pendientes, ...cobradas].sort((a,b)=>a.fecha.localeCompare(b.fecha));
+    document.getElementById('emp-count').textContent = allOrds.length;
+    document.getElementById('emp-pendiente').textContent = '$'+fmt(totPend);
+    document.getElementById('emp-cobrado').textContent = '$'+fmt(totCob);
 
     // Load services
-    const withSvcs = await Promise.all(allSus.map(async o=>{
+    const withSvcs = await Promise.all(allOrds.map(async o=>{
       const svcs = await api('orden_servicios?orden_id=eq.'+o.id);
       return {...o, servicios:svcs};
     }));
 
-    document.getElementById('sus-tabla').innerHTML = withSvcs.length
+    document.getElementById('emp-tabla').innerHTML = withSvcs.length
       ? withSvcs.map(o=>{
-          const svc = o.servicios?.[0]?.servicio_nombre || '—';
-          const isPend = o.estado==='pendiente_pago' || o.forma_pago==='pendiente';
+          const svc = o.servicios?.[0]?.servicio_nombre||'—';
+          const isPend = o.estado==='pendiente_pago'||o.forma_pago==='pendiente';
           return '<tr>'
             +'<td style="font-family:monospace;color:var(--muted)">'+o.fecha.split('-').reverse().join('/')+'</td>'
             +'<td style="font-weight:700;color:var(--gold)">'+o.placa+'</td>'
             +'<td style="font-size:11px">'+svc+'</td>'
             +'<td style="font-weight:700">$'+fmt(o.total)+'</td>'
-            +'<td><span class="badge" style="'+(isPend?'background:rgba(245,158,11,.15);color:#FCD34D':'background:rgba(16,185,129,.15);color:#6EE7B7')+'">'+( isPend?'⏳ Pendiente':'✅ Cobrado')+'</span></td>'
-            +'<td>'+(isPend?'<button class="btn btn-gr" style="padding:3px 8px;font-size:10px" onclick="cobrarSusuerte('+o.id+')">💰 Cobrar</button>':'')+'</td>'
+            +'<td><span style="padding:3px 8px;border-radius:20px;font-size:9px;font-weight:700;'
+              +(isPend?'background:rgba(245,158,11,.15);color:#FCD34D':'background:rgba(16,185,129,.15);color:#6EE7B7')+'">'+( isPend?'⏳ Pendiente':'✅ Cobrado')+'</span></td>'
+            +'<td>'+(isPend?'<button class="btn btn-gr" style="padding:3px 8px;font-size:10px" onclick="abrirCobrar('+o.id+')">💰 Cobrar</button>':'')+'</td>'
             +'</tr>';
         }).join('')
-      : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Sin lavadas pendientes este mes</td></tr>';
-
-    // Show resumen
-    if(withSvcs.length){
-      document.getElementById('sus-resumen-card').style.display='block';
-      document.getElementById('sus-resumen').innerHTML=''
-        +'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">'
-          +'<span style="color:var(--muted)">Total lavadas</span><span style="font-weight:700">'+withSvcs.length+'</span>'
-        +'</div>'
-        +'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">'
-          +'<span style="color:var(--muted)">⏳ Pendiente por cobrar</span><span style="font-weight:800;color:#FCD34D">$'+fmt(totalPend)+'</span>'
-        +'</div>'
-        +'<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px">'
-          +'<span style="color:var(--muted)">✅ Ya cobrado</span><span style="font-weight:800;color:#6EE7B7">$'+fmt(totalCob)+'</span>'
-        +'</div>';
-    }
+      : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Sin lavadas este mes</td></tr>';
   }catch(e){ showToast('Error: '+e.message, true); }
 }
 
-async function cobrarSusuerte(id){
-  // Open cobrar modal for this order
-  await abrirCobrar(id);
-}
-
-async function generarFacturaSusuerte(){
-  const mes = document.getElementById('sus-mes')?.value;
+async function generarFacturaEmpresa(){
+  if(!empresaActual) return;
+  const mes = document.getElementById('emp-mes')?.value;
   if(!mes) return;
   try{
     const [y,m] = mes.split('-');
     const lastDay = new Date(parseInt(y),parseInt(m),0).getDate();
     const start = mes+'-01', end = mes+'-'+String(lastDay).padStart(2,'0');
-    const ords = await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
-    const pendientes = ords.filter(o => o.estado==='pendiente_pago' || o.forma_pago==='pendiente');
-
+    const ords = await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end
+      +'&empresa_nombre=eq.'+encodeURIComponent(empresaActual.nombre)+'&order=fecha.asc');
+    const pendientes = ords.filter(o=>o.estado==='pendiente_pago'||o.forma_pago==='pendiente');
     if(!pendientes.length){ showToast('No hay lavadas pendientes este mes', true); return; }
 
-    // Load services
     const withSvcs = await Promise.all(pendientes.map(async o=>{
       const svcs = await api('orden_servicios?orden_id=eq.'+o.id);
       return {...o, servicios:svcs};
@@ -2684,65 +2761,163 @@ async function generarFacturaSusuerte(){
 
     const total = withSvcs.reduce((s,o)=>s+(o.total||0),0);
     const mesLabel = MES[parseInt(m)-1]+' '+y;
+    const emp = empresas.find(e=>e.id===empresaActual.id)||{};
 
-    // Generate printable invoice
-    const w = window.open('','_blank','width=800,height=700');
-    let rows = withSvcs.map((o,i)=>{
-      const svc = o.servicios?.[0]?.servicio_nombre || '—';
+    const w = window.open('','_blank','width=850,height=750');
+    const rows = withSvcs.map((o,i)=>{
+      const svc = o.servicios?.[0]?.servicio_nombre||'—';
       return '<tr>'
-        +'<td style="padding:6px 10px;border-bottom:1px solid #eee">'+(i+1)+'</td>'
+        +'<td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:center">'+(i+1)+'</td>'
         +'<td style="padding:6px 10px;border-bottom:1px solid #eee">'+o.fecha.split('-').reverse().join('/')+'</td>'
-        +'<td style="padding:6px 10px;border-bottom:1px solid #eee;font-weight:bold">'+o.placa+'</td>'
+        +'<td style="padding:6px 10px;border-bottom:1px solid #eee;font-weight:bold;letter-spacing:1px">'+o.placa+'</td>'
         +'<td style="padding:6px 10px;border-bottom:1px solid #eee">'+svc+'</td>'
         +'<td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:right;font-weight:bold">$'+fmt(o.total)+'</td>'
         +'</tr>';
     }).join('');
 
     w.document.write('<!DOCTYPE html><html><head>'
-      +'<title>Factura Susuerte '+mesLabel+'</title>'
+      +'<title>Factura '+empresaActual.nombre+' '+mesLabel+'</title>'
       +'<style>'
-        +'body{font-family:Arial,sans-serif;padding:30px;color:#111}'
-        +'h1{color:#1B3A5C;margin-bottom:4px}'
-        +'h3{color:#888;font-weight:normal;margin-bottom:20px}'
-        +'table{width:100%;border-collapse:collapse}'
-        +'th{background:#1B3A5C;color:#C9A84C;padding:8px 10px;text-align:left}'
-        +'.total-row{background:#FFF8E7;font-weight:bold;font-size:16px}'
-        +'.total-row td{padding:10px}'
+        +'body{font-family:Arial,sans-serif;padding:30px;color:#111;font-size:13px}'
+        +'h1{color:#1B3A5C;margin:0 0 4px 0;font-size:20px}'
+        +'table{width:100%;border-collapse:collapse;margin-top:16px}'
+        +'th{background:#1B3A5C;color:#C9A84C;padding:8px 10px;text-align:left;font-size:12px}'
+        +'.total-row td{background:#FFF8E7;font-weight:bold;font-size:15px;padding:10px}'
+        +'.header{display:flex;justify-content:space-between;margin-bottom:20px;border-bottom:2px solid #1B3A5C;padding-bottom:16px}'
         +'@page{size:A4;margin:15mm}'
       +'</style></head><body>'
-      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">'
+      +'<div class="header">'
         +'<div>'
           +'<h1>LAVAUTOS FULL CAR</h1>'
-          +'<p style="margin:2px 0">DAVID MATEO ARIAS CASTRO</p>'
-          +'<p style="margin:2px 0">NIT: 700.076.959-3</p>'
-          +'<p style="margin:2px 0">CRA 20 No 57-47 baja Leonora · TEL: 3108749404</p>'
+          +'<p style="margin:2px 0;color:#555">DAVID MATEO ARIAS CASTRO</p>'
+          +'<p style="margin:2px 0;color:#555">NIT: 700.076.959-3</p>'
+          +'<p style="margin:2px 0;color:#555">CRA 20 No 57-47 baja Leonora · TEL: 3108749404</p>'
         +'</div>'
         +'<div style="text-align:right">'
-          +'<div style="font-size:18px;font-weight:bold;color:#1B3A5C">RELACIÓN DE SERVICIOS</div>'
-          +'<div style="font-size:14px;color:#888">'+mesLabel+'</div>'
-          +'<div style="font-size:13px;margin-top:4px">Fecha de cobro: 18/'+String(m).padStart(2,'0')+'/'+y+'</div>'
+          +'<div style="font-size:16px;font-weight:bold;color:#1B3A5C">RELACIÓN DE SERVICIOS</div>'
+          +'<div style="font-size:14px;color:#888;margin-top:4px">'+mesLabel+'</div>'
+          +'<div style="margin-top:6px;padding:6px 12px;background:#FFF8E7;border-radius:6px;color:#1B3A5C;font-weight:bold">'
+            +'Cobro: día '+emp.dia_cobro+' de cada mes'
+          +'</div>'
         +'</div>'
       +'</div>'
-      +'<div style="background:#f5f5f5;padding:10px 14px;border-radius:6px;margin-bottom:16px">'
-        +'<strong>Cliente:</strong> SUSUERTE S.A.S'
+      +'<div style="background:#f0f4f8;padding:10px 14px;border-radius:6px;border-left:4px solid #1B3A5C">'
+        +'<strong>Cliente:</strong> '+empresaActual.nombre
+        +(emp.nit?' &nbsp;|&nbsp; <strong>NIT:</strong> '+emp.nit:'')
+        +(emp.contacto?' &nbsp;|&nbsp; <strong>Contacto:</strong> '+emp.contacto:'')
       +'</div>'
       +'<table>'
         +'<thead><tr><th>#</th><th>Fecha</th><th>Placa</th><th>Servicio</th><th style="text-align:right">Valor</th></tr></thead>'
         +'<tbody>'+rows+'</tbody>'
         +'<tfoot><tr class="total-row">'
-          +'<td colspan="4" style="text-align:right">TOTAL A COBRAR:</td>'
+          +'<td colspan="4" style="text-align:right">TOTAL A COBRAR ('+withSvcs.length+' vehículos):</td>'
           +'<td style="text-align:right;color:#1B3A5C;font-size:18px">$'+fmt(total)+'</td>'
         +'</tr></tfoot>'
       +'</table>'
-      +'<p style="margin-top:30px;font-size:12px;color:#888">Servicios prestados durante el mes de '+mesLabel+'. '
-        +'Total de '+withSvcs.length+' vehículos atendidos.</p>'
+      +'<p style="margin-top:24px;font-size:11px;color:#888;border-top:1px solid #eee;padding-top:12px">'
+        +'Servicios prestados durante '+mesLabel+'. '
+        +'Valor a pagar antes del día '+emp.dia_cobro+' del mes siguiente.'
+      +'</p>'
       +'<script>window.onload=function(){window.print();}<\/script>'
       +'</body></html>');
     w.document.close();
   }catch(e){ showToast('Error: '+e.message, true); }
 }
 
-// ── UTILS ─────────────────────────────────────────────────────────────────────
+function abrirModalEmpresa(id){
+  document.getElementById('emp-edit-id').value = id||'';
+  if(id){
+    const e = empresas.find(x=>x.id===id);
+    if(!e) return;
+    document.getElementById('emp-modal-title').textContent = '✏️ Editar empresa';
+    document.getElementById('emp-nombre').value = e.nombre;
+    document.getElementById('emp-nit').value = e.nit||'';
+    document.getElementById('emp-dia-cobro').value = e.dia_cobro||18;
+    document.getElementById('emp-contacto').value = e.contacto||'';
+    document.getElementById('emp-telefono').value = e.telefono||'';
+  } else {
+    document.getElementById('emp-modal-title').textContent = '🏢 Agregar empresa';
+    document.getElementById('emp-nombre').value = '';
+    document.getElementById('emp-nit').value = '';
+    document.getElementById('emp-dia-cobro').value = 18;
+    document.getElementById('emp-contacto').value = '';
+    document.getElementById('emp-telefono').value = '';
+  }
+  document.getElementById('modal-empresa').style.display = 'flex';
+}
+
+async function guardarEmpresa(){
+  const id = document.getElementById('emp-edit-id').value;
+  const nombre = document.getElementById('emp-nombre').value.trim();
+  if(!nombre){ showToast('Ingresa el nombre', true); return; }
+  const data = {
+    nombre,
+    nit: document.getElementById('emp-nit').value.trim(),
+    dia_cobro: parseInt(document.getElementById('emp-dia-cobro').value)||18,
+    contacto: document.getElementById('emp-contacto').value.trim(),
+    telefono: document.getElementById('emp-telefono').value.trim()
+  };
+  try{
+    if(id) await api('empresas?id=eq.'+id,'PATCH',data);
+    else await api('empresas','POST',{...data,activo:true});
+    cerrarModal('modal-empresa');
+    showToast('Empresa guardada ✅');
+    loadEmpresas();
+  }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+// Fill empresa selector in nueva orden modal
+async function fillEmpresasSelector(){
+  const sel = document.getElementById('ord-empresa');
+  if(!sel) return;
+  const emps = await api('empresas?activo=eq.true&order=nombre');
+  sel.innerHTML = '<option value="">— Cliente particular —</option>'
+    + emps.map(e=>'<option value="'+e.id+'" data-nombre="'+e.nombre+'">🏢 '+e.nombre+'</option>').join('');
+}
+
+function selEmpresaOrden(){
+  const sel = document.getElementById('ord-empresa');
+  const particular = document.getElementById('ord-cli-particular');
+  const empId = sel?.value;
+  if(empId){
+    // Is empresa - hide particular fields, set pending payment
+    if(particular) particular.style.display='none';
+  } else {
+    if(particular) particular.style.display='block';
+  }
+}
+
+// ── PENDIENTES ────────────────────────────────────────────────────────────────
+async function loadPendientes(){
+  try{
+    const pends = await api('ordenes?estado=eq.pendiente_pago&order=fecha.desc&limit=100');
+    const total = pends.reduce((s,o)=>s+(o.total||0),0);
+    document.getElementById('pend-total').textContent = '$'+fmt(total);
+    document.getElementById('pend-count').textContent = pends.length;
+
+    const withSvcs = await Promise.all(pends.map(async o=>{
+      const svcs = await api('orden_servicios?orden_id=eq.'+o.id);
+      return {...o, servicios:svcs};
+    }));
+
+    document.getElementById('pend-lista').innerHTML = withSvcs.length
+      ? withSvcs.map(o=>{
+          const svc = o.servicios?.[0]?.servicio_nombre||'—';
+          return '<tr>'
+            +'<td style="font-family:monospace;color:var(--muted)">'+o.fecha.split('-').reverse().join('/')+'</td>'
+            +'<td style="font-weight:700;color:var(--gold)">'+o.placa+'</td>'
+            +'<td style="font-size:11px">'+( o.concesero_nombre||'')+'</td>'
+            +'<td style="font-size:11px">'+svc+'</td>'
+            +'<td style="font-weight:700">$'+fmt(o.total)+'</td>'
+            +'<td style="font-size:11px;color:var(--muted)">'+(o.empresa_nombre||o.cliente_nombre||'—')+'</td>'
+            +'<td><button class="btn btn-gr" style="padding:3px 8px;font-size:10px" onclick="abrirCobrar('+o.id+')">💰 Cobrar</button></td>'
+            +'</tr>';
+        }).join('')
+      : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:30px">✅ No hay órdenes pendientes de cobro</td></tr>';
+  }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+// ── UTILS ───────────────────────────────────────────────────────────────────── ─────────────────────────────────────────────────────────────────────
 function cerrarModal(id){document.getElementById(id).style.display='none';}
 document.addEventListener('keydown',e=>{if(e.key==='Escape') document.querySelectorAll('.modal-bg').forEach(m=>m.style.display='none');});
 function showToast(msg,isErr=false){
