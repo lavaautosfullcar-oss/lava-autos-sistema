@@ -1010,6 +1010,8 @@ async function initApp(){
     conceseros=await api('conceseros?activo=eq.true&order=nombre');
     const dbSvcs=await api('servicios?activo=eq.true&order=tipo,nombre');
     servicios=dbSvcs.length>0?dbSvcs:SERVICIOS_ALL;
+    // Load empresas for all users (needed in nueva orden modal)
+    try{ empresas=await api('empresas?activo=eq.true&order=nombre'); }catch{}
     loadOrdenes();
     checkBday();
     if(currentUser.rol==='dueno') loadDashMeses();
@@ -1083,8 +1085,11 @@ function renderOrdenes(ords){
           <span class="badge ${o.estado==='abierta'?'ba':'bg'}">${o.estado==='abierta'?'Abierta':'Cerrada'}</span>
           ${o.estado==='abierta'?`
             <button class="btn btn-p" style="padding:4px 10px;font-size:10px" onclick="abrirCobrar(${o.id})">💰 Cobrar</button>
+            <button class="btn" style="padding:4px 10px;font-size:10px;background:rgba(245,158,11,.15);color:#FCD34D;border:1px solid rgba(245,158,11,.3);border-radius:7px;cursor:pointer;font-weight:700;font-family:'Segoe UI',sans-serif" onclick="marcarPendientePago(${o.id})">⏳ Pdte pago</button>
             <button class="btn btn-g" style="padding:4px 10px;font-size:10px" onclick="abrirEditarOrd(${o.id})">✏️</button>
           `:''}
+          ${o.estado==='pendiente_pago'?`<button class="btn btn-p" style="padding:4px 10px;font-size:10px" onclick="abrirCobrar(${o.id})">💰 Cobrar ahora</button>`:''}
+          ${o.estado==='cerrada'?`<button class="btn btn-g" style="padding:4px 10px;font-size:10px" onclick="cambiarPago(${o.id},'${o.forma_pago}',${o.total})">💳</button>`:''}
           <button class="btn btn-g" style="padding:4px 10px;font-size:10px" onclick="reimprimir(${o.id})">🖨️</button>
           ${currentUser?.rol==='dueno'?`<button class="btn btn-r" style="padding:4px 10px;font-size:10px" onclick="abrirBorrar(${o.id},${o.numero_orden})">🗑️</button>`:''}
         </div>
@@ -1242,6 +1247,26 @@ async function guardarOrden(){
     cerrarModal('modal-orden');
     showToast('Orden #'+nextNum+' creada ✅');
     loadOrdenes();
+    // Si es empresa, imprimir ticket inmediatamente
+    if(isEmpresa){
+      const svcsTicket = selectedSvcs.map(s=>({
+        servicio_nombre: s.nombre,
+        cantidad: 1,
+        subtotal: s.precio
+      }));
+      imprimirTicket({
+        numero_orden: nextNum,
+        placa,
+        concesero_nombre: concNombre,
+        cliente_nombre: empNombre||cliNombre,
+        cliente_cc: cliCc,
+        cliente_tel: cliTel,
+        forma_pago: 'pendiente',
+        total: totalOrden,
+        hora_entrada: new Date().toISOString(),
+        servicios: svcsTicket
+      });
+    }
     selectedSvcs=[];
   }catch(e){showToast('Error: '+e.message,true);}
 }
