@@ -1583,11 +1583,10 @@ function imprimirTicket(o){
 async function loadCierre(){
   try{
     const ords = await api('ordenes?fecha=eq.'+today());
-    const gastos = await api('gastos?fecha=eq.'+today());
 
-    // ── Totales del día ───────────────────────────────────────────
+    // ── Solo órdenes cerradas ─────────────────────────────────────
     const cerradas = ords.filter(o=>o.estado==='cerrada');
-    let ef=0, qr=0, tGastos=0, efGastos=0, qrGastos=0;
+    let ef=0, qr=0;
 
     for(const o of cerradas){
       const v=parseInt(o.total)||0;
@@ -1598,49 +1597,25 @@ async function loadCierre(){
         qr+=parseInt(o.pago_qr)||0;
       }
     }
-    for(const g of gastos){
-      const v=parseInt(g.valor)||0;
-      tGastos+=v;
-      if(g.forma_pago==='efectivo') efGastos+=v;
-      else if(g.forma_pago==='qr')  qrGastos+=v;
-    }
 
     const bruto = ef + qr;
-
-    // ── Lógica correcta de pagos ──────────────────────────────────
-    // Los lavadores SIEMPRE se pagan en efectivo (50% del bruto total)
-    // No importa si el cliente pagó en QR o efectivo
+    // Lavadores siempre se pagan en efectivo (50% del bruto total)
     const pagoLavadores = Math.round(bruto / 2);
-
-    // Efectivo que queda en caja:
-    // Efectivo recibido - pago lavadores (50% de TODO el bruto) - gastos en efectivo
-    const cajaEfectivo = ef - pagoLavadores - efGastos;
-
-    // Cuenta QR no se toca para pagar lavadores
-    // Solo se restan gastos que se pagaron por QR
-    const cuentaQR = qr - qrGastos;
-
-    // Ganancia total = lo que queda en caja + lo que queda en cuenta
-    const gananciaNeta = cajaEfectivo + cuentaQR;
+    // Efectivo en caja = efectivo recibido - pago lavadores
+    const cajaEfectivo = ef - pagoLavadores;
+    // QR no se toca
+    const cuentaQR = qr;
 
     // ── Mostrar ───────────────────────────────────────────────────
     const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
     s('c-ef',    '$'+fmt(ef));
     s('c-qr',    '$'+fmt(qr));
-    s('c-gastos','$'+fmt(tGastos));
-    s('c-neta',  '$'+fmt(gananciaNeta));
+    s('c-neta',  '$'+fmt(cajaEfectivo+cuentaQR));
     s('dc-bruto','$'+fmt(bruto));
     s('dc-parte','$'+fmt(pagoLavadores));
-    s('dc-gastos','- $'+fmt(tGastos));
-    s('dc-neta', '$'+fmt(gananciaNeta));
+    s('dc-neta', '$'+fmt(cajaEfectivo+cuentaQR));
     s('dc-ef-neta','$'+fmt(cajaEfectivo));
     s('dc-qr-neta','$'+fmt(cuentaQR));
-
-    // ── Labels actualizados ───────────────────────────────────────
-    const lEf = document.getElementById('label-ef-neta');
-    const lQr = document.getElementById('label-qr-neta');
-    if(lEf) lEf.textContent = 'Efectivo en caja (después de pagar lavadores y gastos)';
-    if(lQr) lQr.textContent = 'Cuenta QR (intacta, solo menos gastos QR)';
 
     // ── Mapa conceseros ───────────────────────────────────────────
     const cm={};
@@ -1681,8 +1656,6 @@ async function loadCierre(){
     }
     const tbody=document.getElementById('cierre-concs');
     if(tbody) tbody.innerHTML=rows;
-
-    console.log('Cierre OK — Ef:$'+fmt(ef)+' QR:$'+fmt(qr)+' Lavadores:-$'+fmt(pagoLavadores)+' Caja:$'+fmt(cajaEfectivo)+' Cuenta:$'+fmt(cuentaQR));
 
   }catch(e){
     console.error('Error en loadCierre:', e.message);
