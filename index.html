@@ -1215,6 +1215,10 @@ async function guardarOrden(){
   const concNombre=concSel.options[concSel.selectedIndex]?.dataset.nombre||'';
   if(!placa){showToast('Ingresa la placa',true);return;}
   if(!selectedSvcs.length){showToast('Agrega al menos un servicio',true);return;}
+  const empSel=document.getElementById('ord-empresa');
+  const empId=chk&&empSel?.value?parseInt(empSel.value):null;
+  const empNombre=chk&&empSel?.value?empSel.options[empSel.selectedIndex]?.dataset.nombre||'':'';
+  const isEmpresa = empId !== null;
   // Check duplicate plate
   try{
     const ex=await api('ordenes?fecha=eq.'+today()+'&placa=eq.'+placa+'&estado=eq.abierta');
@@ -1224,9 +1228,6 @@ async function guardarOrden(){
     }
   }catch{}
   const chk=document.getElementById('chk-cliente').checked;
-  const empSel=document.getElementById('ord-empresa');
-  const empId=chk&&empSel?.value?parseInt(empSel.value):null;
-  const empNombre=chk&&empSel?.value?empSel.options[empSel.selectedIndex]?.dataset.nombre||'':'';
   const cliNombre=empNombre||(chk?(document.getElementById('ord-cli-nombre').value||'CONSUMIDOR FINAL'):'CONSUMIDOR FINAL');
   const cliCc=chk&&!empId?(document.getElementById('ord-cli-cc').value||'222222222222'):'222222222222';
   const cliTel=chk&&!empId?document.getElementById('ord-cli-tel').value:'';
