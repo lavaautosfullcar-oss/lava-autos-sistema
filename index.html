@@ -1201,7 +1201,12 @@ function renderSvcsAgregados(){
 
 function toggleCliente(){
   const chk=document.getElementById('chk-cliente');
-  setTimeout(()=>document.getElementById('cliente-fields').style.display=chk.checked?'block':'none',10);
+  setTimeout(()=>{
+    document.getElementById('cliente-fields').style.display=chk.checked?'block':'none';
+    if(chk.checked){
+      fillEmpresasSelector().catch(()=>{});
+    }
+  },10);
 }
 
 function toggleEditCliente(){
@@ -1504,9 +1509,9 @@ function imprimirTicket(o){
   let svcsRows = '';
   for(const s of svcsArr){
     svcsRows += '<tr>'
-      +'<td style="padding:3px 0;font-size:12px">'+( s.servicio_nombre||s.nombre||'')+'</td>'
-      +'<td style="padding:3px 0;text-align:center;font-size:12px;width:24px">'+(s.cantidad||1)+'</td>'
-      +'<td style="padding:3px 0;text-align:right;font-size:12px;font-weight:bold;width:60px">'+fmt(s.subtotal||s.precio||0)+'</td>'
+      +'<td style="padding:2px 0;font-size:11px">'+( s.servicio_nombre||s.nombre||'')+'</td>'
+      +'<td style="padding:2px 0;text-align:center;font-size:11px">'+(s.cantidad||1)+'</td>'
+      +'<td style="padding:2px 0;text-align:right;font-size:11px;font-weight:bold">'+fmt(s.subtotal||s.precio||0)+'</td>'
       +'</tr>';
   }
   const esGen = !o.cliente_nombre || o.cliente_nombre==='CONSUMIDOR FINAL';
@@ -1517,60 +1522,59 @@ function imprimirTicket(o){
   const hora   = o.hora_entrada ? new Date(o.hora_entrada).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',hour12:true}) : '';
 
   const ticket = ''
-    // ── Encabezado ──────────────────────────────────────────────
-    +'<p style="text-align:center;font-size:15px;font-weight:900;margin:0;letter-spacing:1px">LAVAUTOS FULL CAR</p>'
-    +'<p style="text-align:center;font-size:12px;font-weight:900;margin:0">DAVID MATEO ARIAS CASTRO</p>'
-    +'<p style="text-align:center;font-size:11px;margin:0">Nit: 700.076.959-3</p>'
-    +'<p style="text-align:center;font-size:11px;margin:0">CRA 20 No 57-47 baja Leonora</p>'
-    +'<p style="text-align:center;font-size:11px;margin:0 0 3px 0">TEL: 3108749404</p>'
-    // ── Orden ───────────────────────────────────────────────────
-    +'<hr style="border:none;border-top:1px solid #000;margin:4px 0"/>'
-    +'<p style="text-align:center;font-size:13px;font-weight:900;margin:0">ORDEN DE SERVICIO:</p>'
-    +'<p style="text-align:center;font-size:26px;font-weight:900;margin:0 0 3px 0;letter-spacing:2px">'+o.numero_orden+'</p>'
-    +'<hr style="border:none;border-top:1px solid #000;margin:4px 0"/>'
-    // ── Datos ───────────────────────────────────────────────────
+    // Encabezado - negrita fuerte
+    +'<p style="text-align:center;font-size:14px;font-weight:bold;margin:0;letter-spacing:1px">LAVAUTOS FULL CAR</p>'
+    +'<p style="text-align:center;font-size:11px;font-weight:bold;margin:0">DAVID MATEO ARIAS CASTRO</p>'
+    +'<p style="text-align:center;font-size:10px;margin:0">Nit: 700.076.959-3</p>'
+    +'<p style="text-align:center;font-size:10px;margin:0">CRA 20 No 57-47 baja Leonora</p>'
+    +'<p style="text-align:center;font-size:10px;margin:0 0 3px 0">TEL: 3108749404</p>'
+    // Orden - número grande
+    +'<p style="text-align:center;font-size:11px;font-weight:bold;margin:0">ORDEN DE SERVICIO:</p>'
+    +'<p style="text-align:center;font-size:22px;font-weight:bold;margin:0 0 3px 0">'+o.numero_orden+'</p>'
+    +'<hr style="border:none;border-top:1px solid #000;margin:3px 0"/>'
+    // Datos - etiquetas normales, valores normales
     +'<table style="width:100%;border-collapse:collapse">'
-      +'<tr><td style="font-size:12px;padding:2px 0"><b>Fecha:</b></td><td style="font-size:12px;text-align:right;padding:2px 0">'+fecha+'</td></tr>'
-      +'<tr><td style="font-size:12px;padding:2px 0"><b>Hora:</b></td><td style="font-size:12px;text-align:right;padding:2px 0">'+hora+'</td></tr>'
-      +'<tr><td style="font-size:13px;padding:2px 0"><b>Placa:</b></td><td style="font-size:18px;text-align:right;padding:2px 0;font-weight:900;letter-spacing:2px">'+o.placa+'</td></tr>'
+      +'<tr><td style="font-size:11px;padding:1px 0">Fecha:</td><td style="font-size:11px;text-align:right;padding:1px 0">'+fecha+'</td></tr>'
+      +'<tr><td style="font-size:11px;padding:1px 0">Hora:</td><td style="font-size:11px;text-align:right;padding:1px 0">'+hora+'</td></tr>'
+      +'<tr><td style="font-size:11px;padding:1px 0">Placa:</td><td style="font-size:14px;text-align:right;padding:1px 0;font-weight:bold;letter-spacing:2px">'+o.placa+'</td></tr>'
     +'</table>'
-    +'<hr style="border:none;border-top:1px solid #000;margin:4px 0"/>'
-    // ── Cliente ─────────────────────────────────────────────────
-    +'<p style="font-size:12px;margin:2px 0"><b>C.c ó Nit:</b></p>'
-    +'<p style="font-size:12px;margin:1px 0 3px 0">'+cc+'</p>'
-    +'<p style="font-size:12px;margin:2px 0"><b>Señor(es):</b></p>'
-    +'<p style="font-size:12px;margin:1px 0 4px 0">'+nombre+'</p>'
-    +(tel?'<p style="font-size:12px;margin:1px 0 3px 0"><b>Tel:</b> '+tel+'</p>':'')
-    // ── Servicios ───────────────────────────────────────────────
+    +'<hr style="border:none;border-top:1px solid #000;margin:3px 0"/>'
+    // Cliente
+    +'<p style="font-size:11px;margin:1px 0">C.c o Nit:</p>'
+    +'<p style="font-size:11px;margin:1px 0 2px 0">'+cc+'</p>'
+    +'<p style="font-size:11px;margin:1px 0">Senor(es):</p>'
+    +'<p style="font-size:11px;margin:1px 0 3px 0">'+nombre+'</p>'
+    +(tel?'<p style="font-size:11px;margin:1px 0">Tel: '+tel+'</p>':'')
+    // Servicios
     +'<table style="width:100%;border-collapse:collapse;border-top:1px solid #000">'
       +'<tr>'
-        +'<td style="font-size:12px;font-weight:bold;padding:3px 0">Descripción</td>'
-        +'<td style="font-size:12px;font-weight:bold;text-align:center;padding:3px 0;width:24px">Cant</td>'
-        +'<td style="font-size:12px;font-weight:bold;text-align:right;padding:3px 0;width:60px">Subtotal</td>'
+        +'<td style="font-size:11px;font-weight:bold;padding:2px 0">Descripcion</td>'
+        +'<td style="font-size:11px;font-weight:bold;text-align:center;padding:2px 0">Cant</td>'
+        +'<td style="font-size:11px;font-weight:bold;text-align:right;padding:2px 0">Subtotal</td>'
       +'</tr>'
       +'<tr><td colspan="3"><hr style="border:none;border-top:1px dashed #999;margin:1px 0"/></td></tr>'
       + svcsRows
     +'</table>'
-    // ── Total ───────────────────────────────────────────────────
-    +'<hr style="border:none;border-top:2px solid #000;margin:4px 0"/>'
-    +'<table style="width:100%;border-collapse:collapse;margin-bottom:6px">'
+    // Total - negrita fuerte
+    +'<hr style="border:none;border-top:1px solid #000;margin:3px 0"/>'
+    +'<table style="width:100%;border-collapse:collapse;margin-bottom:4px">'
       +'<tr>'
-        +'<td style="font-size:15px;font-weight:900;padding:2px 0">TOTAL ==></td>'
-        +'<td style="font-size:15px;font-weight:900;text-align:right;padding:2px 0">$'+fmt(o.total)+'</td>'
+        +'<td style="font-size:13px;font-weight:bold;padding:2px 0">TOTAL ==></td>'
+        +'<td style="font-size:13px;font-weight:bold;text-align:right;padding:2px 0">$'+fmt(o.total)+'</td>'
       +'</tr>'
     +'</table>'
-    // ── Legal ───────────────────────────────────────────────────
+    // Legal - letra normal, pequeña
     +'<hr style="border:none;border-top:1px dashed #999;margin:3px 0"/>'
-    +'<p style="text-align:center;font-size:11px;font-weight:bold;margin:2px 0">Gracias por su visita</p>'
-    +'<p style="text-align:left;font-size:10px;font-weight:normal;margin:3px 0;line-height:1.4">'
-      +'Señor usuario, solicitamos respetuosamente revisar su vehículo antes de ser retirado de la empresa, '
-      +'no se aceptan reclamos posteriores después de salir de este sitio. No se responde por objetos dejados '
-      +'en su vehículo a menos que sean dejados en custodia del administrador. Si el valor de lo cobrado es '
-      +'diferente al valor de la orden de servicio, su lavado será gratis. La entrega del vehículo será con '
+    +'<p style="text-align:center;font-size:10px;margin:2px 0">Gracias por su visita</p>'
+    +'<p style="text-align:left;font-size:9px;margin:2px 0;line-height:1.4">'
+      +'Senor usuario, solicitamos respetuosamente revisar su vehiculo antes de ser retirado de la empresa, '
+      +'no se aceptan reclamos posteriores despues de salir de este sitio. No se responde por objetos dejados '
+      +'en su vehiculo a menos que sean dejados en custodia del administrador. Si el valor de lo cobrado es '
+      +'diferente al valor de la orden de servicio, su lavado sera gratis. La entrega del vehiculo sera con '
       +'la respectiva orden de servicio.'
     +'</p>'
-    +'<p style="text-align:center;font-size:10px;font-weight:normal;margin:4px 0;line-height:1.4">'
-      +'(PARA AVERIGUAR POR EL PROCESO DE SU VEHÍCULO, COMUNÍQUESE AL 3108749404) - PARA QUEJAS Y RECLAMOS 3108359883'
+    +'<p style="text-align:center;font-size:9px;margin:2px 0;line-height:1.4">'
+      +'(PARA AVERIGUAR POR EL PROCESO DE SU VEHICULO, COMUNIQUESE AL 3108749404) - PARA QUEJAS Y RECLAMOS 3108359883'
     +'</p>';
 
   const pa = document.getElementById('print-area');
@@ -1587,8 +1591,8 @@ async function loadCierre(){
   try{
     const ords = await api('ordenes?fecha=eq.'+today());
 
-    // ── Solo órdenes cerradas ─────────────────────────────────────
     const cerradas = ords.filter(o=>o.estado==='cerrada');
+    const pendientes = ords.filter(o=>o.estado==='pendiente_pago'||o.forma_pago==='pendiente');
     let ef=0, qr=0;
 
     for(const o of cerradas){
@@ -1601,34 +1605,36 @@ async function loadCierre(){
       }
     }
 
+    const totPend = pendientes.reduce((s,o)=>s+(o.total||0),0);
     const bruto = ef + qr;
-    // Lavadores siempre se pagan en efectivo (50% del bruto total)
     const pagoLavadores = Math.round(bruto / 2);
-    // Efectivo en caja = efectivo recibido - pago lavadores
     const cajaEfectivo = ef - pagoLavadores;
-    // QR no se toca
     const cuentaQR = qr;
 
-    // ── Mostrar ───────────────────────────────────────────────────
     const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
     s('c-ef',    '$'+fmt(ef));
     s('c-qr',    '$'+fmt(qr));
+    s('c-pendiente', '$'+fmt(totPend));
     s('c-neta',  '$'+fmt(cajaEfectivo+cuentaQR));
     s('dc-bruto','$'+fmt(bruto));
     s('dc-parte','$'+fmt(pagoLavadores));
     s('dc-neta', '$'+fmt(cajaEfectivo+cuentaQR));
     s('dc-ef-neta','$'+fmt(cajaEfectivo));
     s('dc-qr-neta','$'+fmt(cuentaQR));
+    // Set arqueo expected value
+    arqueoEsperado = cajaEfectivo;
+    const arqueoEl = document.getElementById('arqueo-esperado');
+    if(arqueoEl) arqueoEl.textContent = '$'+fmt(cajaEfectivo);
 
-    // ── Mapa conceseros ───────────────────────────────────────────
+    // Mapa conceseros
     const cm={};
     for(const o of ords){
+      if(o.estado==='pendiente_pago') continue; // exclude pending from concesero totals
       const n=o.concesero_nombre||'Sin asignar';
       if(!cm[n]) cm[n]={n,t:0};
       cm[n].t+=parseInt(o.total)||0;
     }
 
-    // ── Liquidaciones ─────────────────────────────────────────────
     let liqSet=new Set();
     try{
       const liqs=await api('liquidaciones?fecha=eq.'+today());
@@ -1641,7 +1647,7 @@ async function loadCierre(){
 
     let rows='';
     if(!sorted.length){
-      rows='<tr><td colspan="4" style="text-align:center;color:#8BA3BB;padding:20px">Sin ordenes hoy</td></tr>';
+      rows='<tr><td colspan="4" style="text-align:center;color:#8BA3BB;padding:20px">Sin ordenes cobradas hoy</td></tr>';
     } else {
       for(const c of sorted){
         const pago=Math.round(c.t/2);
@@ -2698,15 +2704,36 @@ async function loadEmpresaDetalle(){
     const [y,m] = mes.split('-');
     const lastDay = new Date(parseInt(y),parseInt(m),0).getDate();
     const start = mes+'-01', end = mes+'-'+String(lastDay).padStart(2,'0');
-    // Get orders for this empresa
-    const ords = await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end
-      +'&empresa_id=eq.'+empresaActual.id+'&order=fecha.asc');
-    // Also get pendiente_pago orders linked to this empresa
-    const pendOrd = await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end
-      +'&empresa_nombre=eq.'+encodeURIComponent(empresaActual.nombre)+'&order=fecha.asc');
 
-    const allOrds = [...new Map([...ords,...pendOrd].map(o=>[o.id,o])).values()]
-      .sort((a,b)=>a.fecha.localeCompare(b.fecha));
+    // Query by empresa_id OR empresa_nombre OR pendiente_pago with matching name
+    let allOrds = [];
+    try{
+      const byId = empresaActual.id
+        ? await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&empresa_id=eq.'+empresaActual.id+'&order=fecha.asc')
+        : [];
+      allOrds = [...byId];
+    }catch{}
+    try{
+      const byNombre = await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end
+        +'&empresa_nombre=eq.'+encodeURIComponent(empresaActual.nombre)+'&order=fecha.asc');
+      // Merge without duplicates
+      const ids = new Set(allOrds.map(o=>o.id));
+      byNombre.forEach(o=>{ if(!ids.has(o.id)) allOrds.push(o); });
+    }catch{}
+
+    // Also get pendiente_pago orders for today that match empresa
+    try{
+      const pendHoy = await api('ordenes?estado=eq.pendiente_pago&order=fecha.desc&limit=200');
+      pendHoy.forEach(o=>{
+        if(!allOrds.find(x=>x.id===o.id)){
+          const empMatch = (o.empresa_nombre||'').toUpperCase()===empresaActual.nombre.toUpperCase()
+            || o.empresa_id===empresaActual.id;
+          if(empMatch) allOrds.push(o);
+        }
+      });
+    }catch{}
+
+    allOrds.sort((a,b)=>a.fecha.localeCompare(b.fecha));
 
     const pendientes = allOrds.filter(o=>o.estado==='pendiente_pago'||o.forma_pago==='pendiente');
     const cobradas   = allOrds.filter(o=>o.estado==='cerrada'&&o.forma_pago!=='pendiente');
@@ -2915,6 +2942,50 @@ async function loadPendientes(){
             +'</tr>';
         }).join('')
       : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:30px">✅ No hay órdenes pendientes de cobro</td></tr>';
+  }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+// ── ARQUEO DE CAJA ───────────────────────────────────────────────────────────
+let arqueoEsperado = 0;
+
+function calcArqueo(){
+  const real = parseInt(document.getElementById('arqueo-real')?.value)||0;
+  const diff = real - arqueoEsperado;
+  const res = document.getElementById('arqueo-resultado');
+  const lbl = document.getElementById('arqueo-label');
+  const dif = document.getElementById('arqueo-diff');
+  if(!res) return;
+  res.style.display = 'block';
+  if(diff === 0){
+    res.style.background = 'rgba(16,185,129,.15)';
+    if(lbl) lbl.textContent = '✅ Caja cuadrada perfectamente';
+    if(dif){ dif.textContent = '$0'; dif.style.color = '#6EE7B7'; }
+  } else if(diff < 0){
+    res.style.background = 'rgba(239,68,68,.15)';
+    if(lbl) lbl.textContent = '⚠️ Falta en caja (descuadre)';
+    if(dif){ dif.textContent = '-$'+fmt(Math.abs(diff)); dif.style.color = '#FCA5A5'; }
+  } else {
+    res.style.background = 'rgba(245,158,11,.15)';
+    if(lbl) lbl.textContent = '💛 Sobra en caja';
+    if(dif){ dif.textContent = '+$'+fmt(diff); dif.style.color = '#FCD34D'; }
+  }
+}
+
+async function guardarArqueo(){
+  const real = parseInt(document.getElementById('arqueo-real')?.value)||0;
+  if(!real){ showToast('Ingresa el valor físico en caja', true); return; }
+  const diff = real - arqueoEsperado;
+  try{
+    await api('gastos','POST',{
+      categoria: '🔐 Arqueo de caja',
+      descripcion: 'Arqueo: esperado $'+fmt(arqueoEsperado)+' · real $'+fmt(real)+' · diferencia $'+fmt(diff),
+      valor: Math.abs(diff),
+      forma_pago: 'efectivo',
+      fecha: today()
+    });
+    const el = document.getElementById('arqueo-estado');
+    if(el) el.textContent = diff===0?'✅ Cuadrado':diff<0?'⚠️ Falta $'+fmt(Math.abs(diff)):'💛 Sobra $'+fmt(diff);
+    showToast('Arqueo guardado ✅');
   }catch(e){ showToast('Error: '+e.message, true); }
 }
 
