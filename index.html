@@ -287,6 +287,28 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           <div class="card-t"><span>Pago a conceseros</span></div>
           <div class="tbl-wrap"><table><thead><tr><th>Concesero</th><th>Generó</th><th>Le toca (50%)</th><th>Estado</th></tr></thead><tbody id="cierre-concs"></tbody></table></div>
         </div>
+
+        <!-- Arqueo de caja -->
+        <div class="card" style="border-color:rgba(245,158,11,.3)">
+          <div class="card-t"><span class="card-tg">🔐 Arqueo de caja</span><span id="arqueo-estado" style="font-size:11px"></span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+            <div>
+              <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Lo que debería haber en caja</div>
+              <div style="font-size:22px;font-weight:800;color:#6EE7B7;font-family:'Georgia',serif" id="arqueo-esperado">$0</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--muted);margin-bottom:4px">¿Cuánto hay físicamente?</div>
+              <input type="number" id="arqueo-real" placeholder="0" oninput="calcArqueo()"
+                style="width:100%;background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:16px;font-family:'Segoe UI',sans-serif;outline:none"/>
+            </div>
+          </div>
+          <div id="arqueo-resultado" style="display:none;padding:12px;border-radius:8px;margin-bottom:10px;text-align:center">
+            <div style="font-size:12px;margin-bottom:4px" id="arqueo-label"></div>
+            <div style="font-size:24px;font-weight:900;font-family:'Georgia',serif" id="arqueo-diff"></div>
+          </div>
+          <button class="btn btn-p" style="width:100%;padding:10px" onclick="guardarArqueo()">💾 Guardar arqueo del día</button>
+        </div>
+
       </div>
 
       <!-- GASTOS -->
