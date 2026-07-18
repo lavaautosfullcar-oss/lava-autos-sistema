@@ -728,11 +728,18 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
     <span style="font-size:12px;color:var(--muted)">¿Agregar / actualizar datos del cliente?</span>
   </div>
   <div id="edit-cliente-fields" style="display:none">
-    <div class="form-grid" style="grid-template-columns:1fr 1fr">
-      <div class="field"><label>Nombre cliente</label><input type="text" id="edit-cli-nombre" placeholder="Nombre cliente"/></div>
-      <div class="field"><label>CC / NIT</label><input type="text" id="edit-cli-cc" placeholder="000000000"/></div>
+    <div class="field"><label>¿Es de una empresa con contrato?</label>
+      <select id="edit-ord-empresa" onchange="selEditEmpresaOrden()" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%">
+        <option value="">— Cliente particular —</option>
+      </select>
     </div>
-    <div class="field"><label>Teléfono (opcional)</label><input type="text" id="edit-cli-tel" placeholder="+57 300 000 0000"/></div>
+    <div id="edit-cli-particular">
+      <div class="form-grid" style="grid-template-columns:1fr 1fr">
+        <div class="field"><label>Nombre cliente</label><input type="text" id="edit-cli-nombre" placeholder="Nombre cliente"/></div>
+        <div class="field"><label>CC / NIT</label><input type="text" id="edit-cli-cc" placeholder="000000000"/></div>
+      </div>
+      <div class="field"><label>Teléfono (opcional)</label><input type="text" id="edit-cli-tel" placeholder="+57 300 000 0000"/></div>
+    </div>
   </div>
   <div style="display:flex;gap:8px;margin-top:8px">
     <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarEditarOrden()">💾 Guardar</button>
@@ -1433,6 +1440,23 @@ async function abrirEditarOrd(id){
       if(ec) ec.value=o.cliente_cc||'';
       if(et) et.value=o.cliente_tel||'';
     }
+    // Fill empresa selector
+    const editEmpSel = document.getElementById('edit-ord-empresa');
+    if(editEmpSel){
+      editEmpSel.innerHTML = '<option value="">— Cliente particular —</option>'
+        + empresas.map(e=>'<option value="'+e.id+'" data-nombre="'+e.nombre+'"'
+          +(o.empresa_id===e.id?' selected':'')
+          +'>🏢 '+e.nombre+'</option>').join('');
+      // If empresa selected, hide particular fields
+      if(o.empresa_id){
+        const ep = document.getElementById('edit-cli-particular');
+        if(ep) ep.style.display='none';
+        const chk = document.getElementById('chk-edit-cliente');
+        if(chk){ chk.checked=true; }
+        const ef = document.getElementById('edit-cliente-fields');
+        if(ef) ef.style.display='block';
+      }
+    }
     document.getElementById('modal-editar-ord').style.display='flex';
   }catch(e){showToast('Error',true);}
 }
@@ -1490,11 +1514,22 @@ async function guardarEditarOrden(){
   const total=editSelectedSvcs.reduce((s,x)=>s+x.precio,0);
   // Client data
   const chkCli=document.getElementById('chk-edit-cliente')?.checked;
+  const editEmpSel = document.getElementById('edit-ord-empresa');
+  const editEmpId = chkCli&&editEmpSel?.value?parseInt(editEmpSel.value):null;
+  const editEmpNombre = chkCli&&editEmpSel?.value?editEmpSel.options[editEmpSel.selectedIndex]?.dataset.nombre||'':'';
   const patch={placa,concesero_id:concId,concesero_nombre:concNombre,total};
   if(chkCli){
-    patch.cliente_nombre=document.getElementById('edit-cli-nombre')?.value||'CONSUMIDOR FINAL';
-    patch.cliente_cc=document.getElementById('edit-cli-cc')?.value||'222222222222';
-    patch.cliente_tel=document.getElementById('edit-cli-tel')?.value||'';
+    if(editEmpId){
+      patch.empresa_id = editEmpId;
+      patch.empresa_nombre = editEmpNombre;
+      patch.cliente_nombre = editEmpNombre;
+      patch.estado = 'pendiente_pago';
+      patch.forma_pago = 'pendiente';
+    } else {
+      patch.cliente_nombre=document.getElementById('edit-cli-nombre')?.value||'CONSUMIDOR FINAL';
+      patch.cliente_cc=document.getElementById('edit-cli-cc')?.value||'222222222222';
+      patch.cliente_tel=document.getElementById('edit-cli-tel')?.value||'';
+    }
   }
   try{
     await api('ordenes?id=eq.'+id,'PATCH',patch);
