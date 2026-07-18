@@ -198,6 +198,9 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           <div><div class="page-title">Órdenes del día</div><div class="page-sub" id="ordenes-fecha"></div></div>
           <button class="btn btn-p" onclick="abrirModalOrden()">+ Nueva orden</button>
         </div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:6px">
+          <button id="btn-toggle-kpis" onclick="toggleKpis()" style="background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:7px;padding:5px 12px;color:var(--muted);font-size:11px;cursor:pointer;font-family:'Segoe UI',sans-serif">👁️ Ocultar valores</button>
+        </div>
         <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
           <div class="kpi"><div class="kpi-l">Ventas del día</div><div class="kpi-v" style="color:var(--gold)" id="kpi-ventas">$0</div><div class="kpi-s" id="kpi-split">💵 $0 · 📲 $0</div></div>
           <div class="kpi" style="border-left-color:var(--green)"><div class="kpi-l">Operación</div><div class="kpi-v" style="color:#6EE7B7" id="kpi-count">0</div><div class="kpi-s" id="kpi-estados">0 cerradas · 0 abiertas</div></div>
@@ -2987,6 +2990,29 @@ async function guardarArqueo(){
     if(el) el.textContent = diff===0?'✅ Cuadrado':diff<0?'⚠️ Falta $'+fmt(Math.abs(diff)):'💛 Sobra $'+fmt(diff);
     showToast('Arqueo guardado ✅');
   }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+// ── OCULTAR VALORES ──────────────────────────────────────────────────────────
+let kpisVisible = true;
+let kpisData = {};
+
+function toggleKpis(){
+  kpisVisible = !kpisVisible;
+  const btn = document.getElementById('btn-toggle-kpis');
+  const ids = ['kpi-ventas','kpi-split','kpi-count','kpi-estados','kpi-veh','kpi-conc'];
+  if(!kpisVisible){
+    ids.forEach(id=>{
+      const el=document.getElementById(id);
+      if(el){ kpisData[id]=el.textContent; el.textContent='••••••'; }
+    });
+    if(btn) btn.textContent='👁️ Mostrar valores';
+  } else {
+    ids.forEach(id=>{
+      const el=document.getElementById(id);
+      if(el && kpisData[id]) el.textContent=kpisData[id];
+    });
+    if(btn) btn.textContent='👁️ Ocultar valores';
+  }
 }
 
 // ── UTILS ───────────────────────────────────────────────────────────────────── ─────────────────────────────────────────────────────────────────────
