@@ -1569,9 +1569,9 @@ function imprimirTicket(o){
   let svcsRows = '';
   for(const s of svcsArr){
     svcsRows += '<tr>'
-      +'<td style="padding:2px 0;font-size:11px">'+( s.servicio_nombre||s.nombre||'')+'</td>'
-      +'<td style="padding:2px 0;text-align:center;font-size:11px">'+(s.cantidad||1)+'</td>'
-      +'<td style="padding:2px 0;text-align:right;font-size:11px;font-weight:bold">'+fmt(s.subtotal||s.precio||0)+'</td>'
+      +'<td style="padding:3px 0;font-size:12px">'+( s.servicio_nombre||s.nombre||'')+'</td>'
+      +'<td style="padding:3px 4px;text-align:center;font-size:12px">'+(s.cantidad||1)+'</td>'
+      +'<td style="padding:3px 0;text-align:right;font-size:12px;font-weight:bold">'+fmt(s.subtotal||s.precio||0)+'</td>'
       +'</tr>';
   }
   const esGen = !o.cliente_nombre || o.cliente_nombre==='CONSUMIDOR FINAL';
@@ -1582,63 +1582,56 @@ function imprimirTicket(o){
   const hora   = o.hora_entrada ? new Date(o.hora_entrada).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',hour12:true}) : '';
 
   const ticket = ''
-    // Encabezado - negrita fuerte
-    +'<p style="text-align:center;font-size:14px;font-weight:bold;margin:0;letter-spacing:1px">LAVAUTOS FULL CAR</p>'
-    +'<p style="text-align:center;font-size:11px;font-weight:bold;margin:0">DAVID MATEO ARIAS CASTRO</p>'
-    +'<p style="text-align:center;font-size:10px;margin:0">Nit: 700.076.959-3</p>'
-    +'<p style="text-align:center;font-size:10px;margin:0">CRA 20 No 57-47 baja Leonora</p>'
-    +'<p style="text-align:center;font-size:10px;margin:0 0 3px 0">TEL: 3108749404</p>'
-    // Orden - número grande
-    +'<p style="text-align:center;font-size:11px;font-weight:bold;margin:0">ORDEN DE SERVICIO:</p>'
-    +'<p style="text-align:center;font-size:22px;font-weight:bold;margin:0 0 3px 0">'+o.numero_orden+'</p>'
+    +'<p style="text-align:center;font-size:14px;font-weight:bold;margin:0 0 1px 0;letter-spacing:1px">LAVAUTOS FULL CAR</p>'
+    +'<p style="text-align:center;font-size:12px;font-weight:bold;margin:0">DAVID MATEO ARIAS CASTRO</p>'
+    +'<p style="text-align:center;font-size:11px;margin:0">Nit: 700.076.959-3</p>'
+    +'<p style="text-align:center;font-size:11px;margin:0">CRA 20 No 57-47 baja Leonora</p>'
+    +'<p style="text-align:center;font-size:11px;margin:0 0 4px 0">TEL: 3108749404</p>'
+    +'<p style="text-align:center;font-size:12px;font-weight:bold;margin:0">ORDEN DE SERVICIO:</p>'
+    +'<p style="text-align:center;font-size:22px;font-weight:bold;margin:0 0 4px 0">'+o.numero_orden+'</p>'
     +'<hr style="border:none;border-top:1px solid #000;margin:3px 0"/>'
-    // Datos - etiquetas normales, valores normales
     +'<table style="width:100%;border-collapse:collapse">'
       +'<tr><td style="font-size:11px;padding:1px 0">Fecha:</td><td style="font-size:11px;text-align:right;padding:1px 0">'+fecha+'</td></tr>'
       +'<tr><td style="font-size:11px;padding:1px 0">Hora:</td><td style="font-size:11px;text-align:right;padding:1px 0">'+hora+'</td></tr>'
       +'<tr><td style="font-size:11px;padding:1px 0">Placa:</td><td style="font-size:14px;text-align:right;padding:1px 0;font-weight:bold;letter-spacing:2px">'+o.placa+'</td></tr>'
     +'</table>'
     +'<hr style="border:none;border-top:1px solid #000;margin:3px 0"/>'
-    // Cliente
     +'<p style="font-size:11px;margin:1px 0">C.c o Nit:</p>'
     +'<p style="font-size:11px;margin:1px 0 2px 0">'+cc+'</p>'
     +'<p style="font-size:11px;margin:1px 0">Senor(es):</p>'
-    +'<p style="font-size:11px;margin:1px 0 3px 0">'+nombre+'</p>'
+    +'<p style="font-size:11px;margin:1px 0 4px 0">'+nombre+'</p>'
     +(tel?'<p style="font-size:11px;margin:1px 0">Tel: '+tel+'</p>':'')
-    // Servicios
     +'<table style="width:100%;border-collapse:collapse;border-top:1px solid #000">'
       +'<tr>'
-        +'<td style="font-size:11px;font-weight:bold;padding:2px 0">Descripcion</td>'
-        +'<td style="font-size:11px;font-weight:bold;text-align:center;padding:2px 0">Cant</td>'
-        +'<td style="font-size:11px;font-weight:bold;text-align:right;padding:2px 0">Subtotal</td>'
+        +'<td style="font-size:11px;font-weight:bold;padding:3px 0">Descripcion</td>'
+        +'<td style="font-size:11px;font-weight:bold;text-align:center;padding:3px 4px;width:28px">Cant</td>'
+        +'<td style="font-size:11px;font-weight:bold;text-align:right;padding:3px 0;width:60px">Subtotal</td>'
       +'</tr>'
       +'<tr><td colspan="3"><hr style="border:none;border-top:1px dashed #999;margin:1px 0"/></td></tr>'
       + svcsRows
     +'</table>'
-    // Total - negrita fuerte
     +'<hr style="border:none;border-top:1px solid #000;margin:3px 0"/>'
-    +'<table style="width:100%;border-collapse:collapse;margin-bottom:4px">'
+    +'<table style="width:100%;border-collapse:collapse;margin-bottom:6px">'
       +'<tr>'
         +'<td style="font-size:13px;font-weight:bold;padding:2px 0">TOTAL ==></td>'
         +'<td style="font-size:13px;font-weight:bold;text-align:right;padding:2px 0">$'+fmt(o.total)+'</td>'
       +'</tr>'
     +'</table>'
-    // Legal - letra normal, pequeña
     +'<hr style="border:none;border-top:1px dashed #999;margin:3px 0"/>'
-    +'<p style="text-align:center;font-size:10px;margin:2px 0">Gracias por su visita</p>'
-    +'<p style="text-align:left;font-size:9px;margin:2px 0;line-height:1.4">'
+    +'<p style="text-align:center;font-size:11px;font-weight:bold;margin:2px 0">Gracias por su visita</p>'
+    +'<p style="text-align:left;font-size:10px;margin:3px 0;line-height:1.5">'
       +'Senor usuario, solicitamos respetuosamente revisar su vehiculo antes de ser retirado de la empresa, '
       +'no se aceptan reclamos posteriores despues de salir de este sitio. No se responde por objetos dejados '
       +'en su vehiculo a menos que sean dejados en custodia del administrador. Si el valor de lo cobrado es '
       +'diferente al valor de la orden de servicio, su lavado sera gratis. La entrega del vehiculo sera con '
       +'la respectiva orden de servicio.'
     +'</p>'
-    +'<p style="text-align:center;font-size:9px;margin:2px 0;line-height:1.4">'
+    +'<p style="text-align:center;font-size:10px;margin:3px 0;line-height:1.5">'
       +'(PARA AVERIGUAR POR EL PROCESO DE SU VEHICULO, COMUNIQUESE AL 3108749404) - PARA QUEJAS Y RECLAMOS 3108359883'
     +'</p>';
 
   const pa = document.getElementById('print-area');
-  pa.innerHTML = '<div style="width:56mm;font-family:Courier,monospace;color:#000;background:#fff;padding:2mm">' + ticket + '</div>';
+  pa.innerHTML = '<div style="width:56mm;font-family:Arial,Helvetica,sans-serif;color:#000;background:#fff;padding:2mm">' + ticket + '</div>';
   pa.style.display = 'block';
   setTimeout(function(){
     window.print();
