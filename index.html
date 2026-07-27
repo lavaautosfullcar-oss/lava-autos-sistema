@@ -1237,6 +1237,9 @@ function toggleCliente(){
     document.getElementById('cliente-fields').style.display=chk.checked?'block':'none';
     if(chk.checked){
       fillEmpresasSelector().catch(()=>{});
+      // Reset particular fields visibility
+      const p=document.getElementById('ord-cli-particular');
+      if(p) p.style.display='block';
     }
   },10);
 }
@@ -1302,7 +1305,7 @@ async function guardarOrden(){
         cliente_cc: cliCc,
         cliente_tel: cliTel,
         forma_pago: 'pendiente',
-        total: totalOrden,
+        total: selectedSvcs.reduce((s,x)=>s+x.precio,0),
         hora_entrada: new Date().toISOString(),
         servicios: svcsTicket
       });
@@ -2951,9 +2954,13 @@ async function guardarEmpresa(){
 async function fillEmpresasSelector(){
   const sel = document.getElementById('ord-empresa');
   if(!sel) return;
-  const emps = await api('empresas?activo=eq.true&order=nombre');
-  sel.innerHTML = '<option value="">— Cliente particular —</option>'
-    + emps.map(e=>'<option value="'+e.id+'" data-nombre="'+e.nombre+'">🏢 '+e.nombre+'</option>').join('');
+  try{
+    // Always reload from DB to ensure fresh data
+    const emps = await api('empresas?activo=eq.true&order=nombre');
+    empresas = emps; // update global
+    sel.innerHTML = '<option value="">— Cliente particular —</option>'
+      + emps.map(e=>'<option value="'+e.id+'" data-nombre="'+e.nombre+'">🏢 '+e.nombre+'</option>').join('');
+  }catch(e){ console.error('Error cargando empresas:', e.message); }
 }
 
 function selEmpresaOrden(){
