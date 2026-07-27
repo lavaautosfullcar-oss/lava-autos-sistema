@@ -1263,7 +1263,11 @@ async function guardarOrden(){
   const empNombre=chk&&empSel?.value?empSel.options[empSel.selectedIndex]?.dataset.nombre||'':'';
   const isEmpresa=empId!==null;
   const cliNombre=empNombre||(chk?(document.getElementById('ord-cli-nombre').value||'CONSUMIDOR FINAL'):'CONSUMIDOR FINAL');
-  const cliCc=chk&&!empId?(document.getElementById('ord-cli-cc').value||'222222222222'):'222222222222';
+  // Use empresa NIT if available, otherwise use input field or default
+  const empData = empId ? empresas.find(e=>e.id===empId) : null;
+  const cliCc = empData?.nit
+    ? empData.nit
+    : (chk&&!empId?(document.getElementById('ord-cli-cc').value||'222222222222'):'222222222222');
   const cliTel=chk&&!empId?document.getElementById('ord-cli-tel').value:'';
   // Check duplicate plate
   try{
