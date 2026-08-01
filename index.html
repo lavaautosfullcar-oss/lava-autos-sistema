@@ -1038,7 +1038,7 @@ const MES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Di
 const COLORS=['#C9A84C','#E8C96A','#8BA3BB','#6B7280','#4B5563','#9CA3AF'];
 
 // ── AUTH ─────────────────────────────────────────────────────────────────────
-const PINS={dueno:'2026',cajero:'0000'};
+const PINS={dueno:'1234',cajero:'0000'};
 
 function selRole(role,el){
   selRoleVal=role;
@@ -1756,45 +1756,64 @@ async function loadCierre(){
   try{
     const ords = await api('ordenes?fecha=eq.'+today());
 
-    const cerradas = ords.filter(o=>o.estado==='cerrada');
-    const pendientes = ords.filter(o=>o.estado==='pendiente_pago'||o.forma_pago==='pendiente');
-    let ef=0, qr=0;
+    // Todas las órdenes NO abiertas (cerradas + pendiente_pago)
+    const cobradas = ords.filter(o=>o.estado==='cerrada' && o.forma_pago!=='pendiente' && o.forma_pago!==null);
+    const pendientes = ords.filter(o=>o.estado==='pendiente_pago' || o.forma_pago==='pendiente');
+    const abiertas = ords.filter(o=>o.estado==='abierta');
 
-    for(const o of cerradas){
+    // Totales cobrados
+    let ef=0, qr=0;
+    for(const o of cobradas){
       const v=parseInt(o.total)||0;
-      if(o.forma_pago==='efectivo')      ef+=v;
-      else if(o.forma_pago==='qr')       qr+=v;
+      if(o.forma_pago==='efectivo')     ef+=v;
+      else if(o.forma_pago==='qr')      qr+=v;
       else if(o.forma_pago==='mixto'){
         ef+=parseInt(o.pago_efectivo)||0;
         qr+=parseInt(o.pago_qr)||0;
       }
     }
 
+    // Pendiente total
     const totPend = pendientes.reduce((s,o)=>s+(o.total||0),0);
-    const bruto = ef + qr;
-    const pagoLavadores = Math.round(bruto / 2);
-    const cajaEfectivo = ef - pagoLavadores;
+
+    // ── Lógica correcta ───────────────────────────────────────────────────────
+    // El bruto incluye TODO lo del día (cobrado + pendiente)
+    // porque el lavador se liquida aunque no hayan pagado
+    const brutoTotal = ords
+      .filter(o=>o.estado!=='abierta')
+      .reduce((s,o)=>s+(o.total||0),0);
+
+    // Pago lavadores = 50% del bruto total (cobrado + pendiente)
+    const pagoLavadores = Math.round(brutoTotal / 2);
+
+    // Tu parte bruta = 50% del bruto total
+    const tuParteBruta = brutoTotal - pagoLavadores;
+
+    // De tu parte, resta los pendientes (tú asumes el riesgo de cobro)
+    const tuParteNeta = tuParteBruta - totPend;
+
+    // Caja efectivo = efectivo cobrado - pago lavadores - pendientes
+    // (el lavador se paga del efectivo físico)
+    const cajaEfectivo = ef - pagoLavadores - totPend;
     const cuentaQR = qr;
 
     const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-    s('c-ef',    '$'+fmt(ef));
-    s('c-qr',    '$'+fmt(qr));
+    s('c-ef',        '$'+fmt(ef));
+    s('c-qr',        '$'+fmt(qr));
     s('c-pendiente', '$'+fmt(totPend));
-    s('c-neta',  '$'+fmt(cajaEfectivo+cuentaQR));
-    s('dc-bruto','$'+fmt(bruto));
-    s('dc-parte','$'+fmt(pagoLavadores));
-    s('dc-neta', '$'+fmt(cajaEfectivo+cuentaQR));
-    s('dc-ef-neta','$'+fmt(cajaEfectivo));
-    s('dc-qr-neta','$'+fmt(cuentaQR));
-    // Set arqueo expected value
+    s('c-neta',      '$'+fmt(tuParteNeta));
+    s('dc-bruto',    '$'+fmt(brutoTotal));
+    s('dc-parte',    '$'+fmt(pagoLavadores));
+    s('dc-neta',     '$'+fmt(tuParteNeta));
+    s('dc-ef-neta',  '$'+fmt(cajaEfectivo));
+    s('dc-qr-neta',  '$'+fmt(cuentaQR));
     arqueoEsperado = cajaEfectivo;
     const arqueoEl = document.getElementById('arqueo-esperado');
     if(arqueoEl) arqueoEl.textContent = '$'+fmt(cajaEfectivo);
 
-    // Mapa conceseros
+    // Mapa conceseros - incluye cobradas + pendientes (el lavador se liquida igual)
     const cm={};
-    for(const o of ords){
-      if(o.estado==='pendiente_pago') continue; // exclude pending from concesero totals
+    for(const o of ords.filter(o=>o.estado!=='abierta')){
       const n=o.concesero_nombre||'Sin asignar';
       if(!cm[n]) cm[n]={n,t:0};
       cm[n].t+=parseInt(o.total)||0;
@@ -1812,7 +1831,7 @@ async function loadCierre(){
 
     let rows='';
     if(!sorted.length){
-      rows='<tr><td colspan="4" style="text-align:center;color:#8BA3BB;padding:20px">Sin ordenes cobradas hoy</td></tr>';
+      rows='<tr><td colspan="4" style="text-align:center;color:#8BA3BB;padding:20px">Sin ordenes hoy</td></tr>';
     } else {
       for(const c of sorted){
         const pago=Math.round(c.t/2);
