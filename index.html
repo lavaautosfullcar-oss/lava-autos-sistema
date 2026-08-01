@@ -1928,6 +1928,13 @@ async function loadCierre(){
     // ── Lógica correcta ───────────────────────────────────────────────────────
     // El bruto incluye TODO lo del día (cobrado + pendiente)
     // porque el lavador se liquida aunque no hayan pagado
+    // Solo órdenes cerradas con pago real
+    const cerradas = ords.filter(o=>
+      o.estado==='cerrada' &&
+      o.forma_pago!=='pendiente' &&
+      o.forma_pago!==null
+    );
+
     // Propinas del día
     const propinas = cerradas.reduce((s,o)=>s+(o.propina||0),0);
 
