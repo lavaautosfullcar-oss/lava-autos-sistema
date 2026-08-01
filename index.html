@@ -333,10 +333,11 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         </div>
 
         <!-- KPIs -->
-        <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
-          <div class="kpi"><div class="kpi-l">💰 Ventas del día</div><div class="kpi-v" style="color:var(--gold)" id="prod-total-dia">$0</div></div>
-          <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">📦 Unidades vendidas</div><div class="kpi-v" style="color:#6EE7B7" id="prod-unidades">0</div></div>
-          <div class="kpi" style="border-left-color:#FCA5A5"><div class="kpi-l">💸 Descuentos a lavadores</div><div class="kpi-v" style="color:#FCA5A5" id="prod-descuentos">$0</div></div>
+        <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+          <div class="kpi"><div class="kpi-l">💰 Total ventas</div><div class="kpi-v" style="color:var(--gold)" id="prod-total-dia">$0</div></div>
+          <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">👤 Ventas a clientes</div><div class="kpi-v" style="color:#6EE7B7" id="prod-total-clientes">$0</div></div>
+          <div class="kpi" style="border-left-color:#FCA5A5"><div class="kpi-l">👷 Descuentos concesores</div><div class="kpi-v" style="color:#FCA5A5" id="prod-descuentos">$0</div></div>
+          <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">📦 Unidades vendidas</div><div class="kpi-v" style="color:#C4B5FD" id="prod-unidades">0</div></div>
         </div>
 
         <!-- Tabla ventas del día -->
@@ -850,6 +851,33 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
     </div>
     <div id="cobrar-mixto-check" style="padding:8px 12px;border-radius:8px;font-size:12px;text-align:center;background:rgba(255,255,255,.04)">Ingresa los valores</div>
   </div>
+  <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer" onclick="togglePropina()">
+      <input type="checkbox" id="chk-propina" style="width:16px;height:16px;accent-color:var(--gold)"/>
+      <span style="font-size:12px;color:var(--muted)">🎁 ¿El cliente dejó propina? (pagó más de la cuenta en QR)</span>
+    </div>
+    <div id="propina-fields" style="display:none">
+      <div class="field">
+        <label>Valor de la propina (se paga en efectivo al concesor)</label>
+        <input type="number" id="cobrar-propina" placeholder="0" oninput="calcPropina()"
+          style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%"/>
+      </div>
+      <div id="propina-resumen" style="background:rgba(201,168,76,.1);border:1px solid var(--gold-b);border-radius:8px;padding:10px;font-size:12px;display:none">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="color:var(--muted)">📲 QR total recibido</span>
+          <span style="font-weight:700;color:#C4B5FD" id="prop-qr-total">$0</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="color:var(--muted)">💵 Propina en efectivo al concesor</span>
+          <span style="font-weight:700;color:#FCA5A5" id="prop-valor">-$0</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--gold)">📲 QR neto a la cuenta</span>
+          <span style="font-weight:700;color:var(--gold)" id="prop-qr-neto">$0</span>
+        </div>
+      </div>
+    </div>
+  </div>
   <div style="display:flex;gap:8px;margin-top:12px">
     <button class="btn btn-gr" style="flex:1;padding:10px" onclick="confirmarCobrar()">🖨️ Cobrar e imprimir</button>
     <button class="btn btn-g" onclick="cerrarModal('modal-cobrar')">Cancelar</button>
@@ -1025,9 +1053,15 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 <div class="modal">
   <div class="modal-title">🛒 Registrar venta de producto</div>
   <input type="hidden" id="prod-edit-id"/>
-  <div class="field"><label>Lavador</label>
+  <div class="field"><label>¿A quién se vende?</label>
+    <div class="pay-toggle">
+      <button class="pt pt-ef on-ef" id="prod-tipo-concesor" onclick="selProdTipo('concesor',this)">👷 A un concesor</button>
+      <button class="pt pt-qr" id="prod-tipo-cliente" onclick="selProdTipo('cliente',this)">👤 A un cliente</button>
+    </div>
+  </div>
+  <div id="prod-concesor-fields" class="field"><label>Concesor</label>
     <select id="prod-concesero" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%">
-      <option value="">— Seleccionar lavador —</option>
+      <option value="">— Seleccionar concesor —</option>
     </select>
   </div>
   <div class="field"><label>Producto</label>
@@ -1040,6 +1074,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <option value="Desengrasante" data-precio="3000">Desengrasante — $3.000</option>
       <option value="Restaurador partes negras" data-precio="3000">Restaurador partes negras — $3.000</option>
       <option value="Trapo" data-precio="5000">Trapo — $5.000</option>
+      <option value="Ambientador" data-precio="0">Ambientador — precio variable</option>
       <option value="Extintor" data-precio="0">Extintor — precio variable</option>
       <option value="Otro" data-precio="0">Otro</option>
     </select>
@@ -1055,7 +1090,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
     </div>
   </div>
   <div style="background:var(--gold-p);border:1px solid var(--gold-b);border-radius:8px;padding:12px;text-align:center;margin-bottom:12px">
-    <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Total a descontar al lavador</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:4px" id="prod-total-label">Total a descontar al concesor</div>
     <div style="font-size:22px;font-weight:800;color:var(--gold);font-family:Georgia,serif" id="prod-total-calc">$0</div>
   </div>
   <div style="display:flex;gap:8px">
@@ -1893,6 +1928,9 @@ async function loadCierre(){
     // ── Lógica correcta ───────────────────────────────────────────────────────
     // El bruto incluye TODO lo del día (cobrado + pendiente)
     // porque el lavador se liquida aunque no hayan pagado
+    // Propinas del día
+    const propinas = cerradas.reduce((s,o)=>s+(o.propina||0),0);
+
     const brutoTotal = ords
       .filter(o=>o.estado!=='abierta')
       .reduce((s,o)=>s+(o.total||0),0);
@@ -1923,7 +1961,13 @@ async function loadCierre(){
     arqueoEsperado = cajaEfectivo;
     const arqueoElx = document.getElementById('arqueo-esperado');
     if(arqueoElx) arqueoElx.textContent = '$'+fmt(cajaEfectivo);
-    s('dc-qr-neta',  '$'+fmt(cuentaQR));
+    const qrNeto = cuentaQR - propinas;
+    s('dc-qr-neta',  '$'+fmt(qrNeto));
+    const propEl = document.getElementById('dc-propinas');
+    if(propEl){
+      propEl.closest('.cierre-row').style.display = propinas>0 ? 'flex' : 'none';
+      propEl.textContent = '-$'+fmt(propinas);
+    }
     arqueoEsperado = cajaEfectivo;
     const arqueoEl = document.getElementById('arqueo-esperado');
     if(arqueoEl) arqueoEl.textContent = '$'+fmt(cajaEfectivo);
@@ -3638,6 +3682,25 @@ async function loadProductos(){
   }catch(e){ showToast('Error: '+e.message, true); }
 }
 
+let prodTipo = 'concesor';
+
+function selProdTipo(tipo, btn){
+  prodTipo = tipo;
+  document.getElementById('prod-tipo-concesor').classList.remove('on-ef');
+  document.getElementById('prod-tipo-cliente').classList.remove('on-qr');
+  if(tipo==='concesor'){
+    btn.classList.add('on-ef');
+    document.getElementById('prod-concesor-fields').style.display='block';
+    const lbl=document.getElementById('prod-total-label');
+    if(lbl) lbl.textContent='Total a descontar al concesor';
+  } else {
+    btn.classList.add('on-qr');
+    document.getElementById('prod-concesor-fields').style.display='none';
+    const lbl=document.getElementById('prod-total-label');
+    if(lbl) lbl.textContent='Total ingreso de caja';
+  }
+}
+
 function abrirModalProducto(){
   // Fill conceseros
   const sel = document.getElementById('prod-concesero');
@@ -3648,6 +3711,12 @@ function abrirModalProducto(){
   document.getElementById('prod-precio').value = '';
   document.getElementById('prod-cantidad').value = '1';
   document.getElementById('prod-total-calc').textContent = '$0';
+  prodTipo = 'concesor';
+  document.getElementById('prod-tipo-concesor').classList.add('on-ef');
+  document.getElementById('prod-tipo-cliente').classList.remove('on-qr');
+  document.getElementById('prod-concesor-fields').style.display='block';
+  const lbl=document.getElementById('prod-total-label');
+  if(lbl) lbl.textContent='Total a descontar al concesor';
   document.getElementById('modal-producto').style.display = 'flex';
 }
 
@@ -3671,7 +3740,7 @@ async function guardarVentaProducto(){
   const producto  = document.getElementById('prod-nombre')?.value;
   const cant      = parseInt(document.getElementById('prod-cantidad')?.value)||1;
   const precio    = parseInt(document.getElementById('prod-precio')?.value)||0;
-  if(!concesero){ showToast('Selecciona el lavador', true); return; }
+  if(prodTipo==='concesor' && !concesero){ showToast('Selecciona el concesor', true); return; }
   if(!producto){  showToast('Selecciona el producto', true); return; }
   if(!precio){    showToast('Ingresa el valor', true); return; }
   const total = cant * precio;
@@ -3679,15 +3748,14 @@ async function guardarVentaProducto(){
   try{
     await api('ventas_productos','POST',{
       fecha: today(),
-      concesero,
-      producto,
-      cantidad: cant,
-      precio_unit: precio,
-      total,
-      hora
+      concesero: prodTipo==='concesor' ? concesero : null,
+      tipo_venta: prodTipo,
+      producto, cantidad: cant, precio_unit: precio, total, hora
     });
     cerrarModal('modal-producto');
-    showToast('Venta registrada ✅ — $'+fmt(total)+' descontado a '+concesero);
+    showToast(prodTipo==='concesor'
+      ? 'Venta registrada ✅ — $'+fmt(total)+' descontado a '+concesero
+      : '💰 Venta a cliente ✅ — $'+fmt(total)+' en caja');
     loadProductos();
   }catch(e){ showToast('Error: '+e.message, true); }
 }
@@ -3699,6 +3767,40 @@ async function borrarVenta(id){
     showToast('Venta eliminada');
     loadProductos();
   }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+// ── PROPINA ───────────────────────────────────────────────────────────────────
+function togglePropina(){
+  const chk = document.getElementById('chk-propina');
+  const fields = document.getElementById('propina-fields');
+  setTimeout(()=>{
+    if(fields) fields.style.display = chk.checked ? 'block' : 'none';
+    if(!chk.checked){
+      const inp = document.getElementById('cobrar-propina');
+      if(inp) inp.value='';
+      const res = document.getElementById('propina-resumen');
+      if(res) res.style.display='none';
+    }
+  },10);
+}
+
+function calcPropina(){
+  const propina = parseInt(document.getElementById('cobrar-propina')?.value)||0;
+  const totalText = document.getElementById('cobrar-total')?.textContent||'0';
+  const total = parseInt(totalText.replace(/[^0-9]/g,''))||0;
+  const qrTotal = total + propina;
+  const resEl = document.getElementById('propina-resumen');
+  if(propina>0){
+    if(resEl) resEl.style.display='block';
+    const el1=document.getElementById('prop-qr-total');
+    const el2=document.getElementById('prop-valor');
+    const el3=document.getElementById('prop-qr-neto');
+    if(el1) el1.textContent='$'+fmt(qrTotal);
+    if(el2) el2.textContent='-$'+fmt(propina);
+    if(el3) el3.textContent='$'+fmt(total);
+  } else {
+    if(resEl) resEl.style.display='none';
+  }
 }
 
 // ── UTILS ───────────────────────────────────────────────────────────────────── ─────────────────────────────────────────────────────────────────────
