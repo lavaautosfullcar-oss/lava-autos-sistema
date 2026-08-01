@@ -184,7 +184,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <div class="ni hidden" onclick="go('pendientes',this)" id="nav-pendientes"><span class="ni-ico">⏳</span>Pendientes</div>
       <div class="nav-sep hidden" id="sep-config">Configuración</div>
       <div class="ni hidden" onclick="go('saldos',this)" id="nav-saldos"><span class="ni-ico">🏦</span>Saldos</div>
-      <div class="ni hidden" onclick="go('conceseros',this)" id="nav-conceseros"><span class="ni-ico">👥</span>Conceseros</div>
+      <div class="ni hidden" onclick="go('conceseros',this)" id="nav-conceseros"><span class="ni-ico">👥</span>Concesores</div>
       <div class="ni hidden" onclick="go('servicios-cfg',this)" id="nav-servicios-cfg"><span class="ni-ico">⚙️</span>Servicios</div>
     </div>
     <div class="content">
@@ -207,7 +207,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           <div class="kpi"><div class="kpi-l">Ventas del día</div><div class="kpi-v" style="color:var(--gold)" id="kpi-ventas">$0</div><div class="kpi-s" id="kpi-split">💵 $0 · 📲 $0</div></div>
           <div class="kpi" style="border-left-color:var(--green)"><div class="kpi-l">Operación</div><div class="kpi-v" style="color:#6EE7B7" id="kpi-count">0</div><div class="kpi-s" id="kpi-estados">0 cerradas · 0 abiertas</div></div>
           <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">Vehículos</div><div class="kpi-v" style="color:#C4B5FD" id="kpi-veh">0</div></div>
-          <div class="kpi"><div class="kpi-l">Conceseros activos</div><div class="kpi-v" style="color:var(--gold)" id="kpi-conc">0</div></div>
+          <div class="kpi"><div class="kpi-l">Concesores activos</div><div class="kpi-v" style="color:var(--gold)" id="kpi-conc">0</div></div>
         </div>
         <div class="card">
           <div class="card-t"><span class="card-tg">✦ Operación de hoy</span><span class="badge ba" id="badge-abiertas">0 abiertas</span></div>
@@ -286,8 +286,8 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           <div class="cierre-row" style="border:none"><span style="color:var(--muted)">De esa ganancia en QR</span><span style="font-weight:700;color:#C4B5FD;font-family:'Georgia',serif" id="dc-qr-neta">$0</span></div>
         </div>
         <div class="card">
-          <div class="card-t"><span>Pago a conceseros</span></div>
-          <div class="tbl-wrap"><table><thead><tr><th>Concesero</th><th>Generó</th><th>Le toca (50%)</th><th>Estado</th></tr></thead><tbody id="cierre-concs"></tbody></table></div>
+          <div class="card-t"><span>Pago a concesores</span></div>
+          <div class="tbl-wrap"><table><thead><tr><th>Concesor</th><th>Generó</th><th>Le toca (50%)</th><th>Estado</th></tr></thead><tbody id="cierre-concs"></tbody></table></div>
         </div>
 
         <!-- Arqueo de caja -->
@@ -366,7 +366,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           <button class="btn btn-p" onclick="showDashTab('resumen',this)" id="dt-resumen">📊 Resumen</button>
           <button class="btn btn-g" onclick="showDashTab('diario',this)" id="dt-diario">📅 Diario</button>
           <button class="btn btn-g" onclick="showDashTab('finanzas',this)" id="dt-finanzas">📒 Libro del mes</button>
-          <button class="btn btn-g" onclick="showDashTab('conceseros',this)" id="dt-conceseros">👥 Conceseros</button>
+          <button class="btn btn-g" onclick="showDashTab('conceseros',this)" id="dt-conceseros">👥 Concesores</button>
         </div>
 
         <!-- RESUMEN -->
@@ -395,19 +395,19 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
               <div id="d-bars-labels" style="display:flex;gap:2px;margin-top:4px"></div>
             </div>
             <div class="card">
-              <div class="card-t"><span class="card-tg">✦ Mejor día semana</span></div>
+              <div class="card-t"><span class="card-tg">✦ ¿Qué día venden más?</span></div>
               <div id="d-semana"></div>
             </div>
           </div>
 
-          <!-- Ingresos por línea + Top conceseros -->
+          <!-- Ingresos por línea + Top concesores -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
             <div class="card">
               <div class="card-t"><span class="card-tg">✦ Ingresos por línea</span></div>
               <div id="d-lineas"></div>
             </div>
             <div class="card">
-              <div class="card-t"><span class="card-tg">✦ Top conceseros 🥇🥈🥉</span></div>
+              <div class="card-t"><span class="card-tg">✦ Top concesores 🥇🥈🥉</span></div>
               <div id="d-top-concs"></div>
             </div>
           </div>
@@ -427,7 +427,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           </div>
           <div class="card" id="d-dia-detalle-card" style="display:none">
             <div class="card-t"><span class="card-tg" id="d-dia-detalle-title">✦ Detalle del día</span></div>
-            <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Placa</th><th>Concesero</th><th>Servicio</th><th>Pago</th><th>Total</th></tr></thead><tbody id="d-dia-detalle-list"></tbody></table></div>
+            <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Placa</th><th>Concesor</th><th>Servicio</th><th>Pago</th><th>Total</th></tr></thead><tbody id="d-dia-detalle-list"></tbody></table></div>
             <div style="margin-top:8px;padding:10px;background:var(--gold-p);border-radius:8px;display:flex;justify-content:space-between">
               <span style="font-size:12px;color:var(--muted)">Total del día</span>
               <span style="font-weight:800;color:var(--gold)" id="d-dia-total"></span>
@@ -505,9 +505,9 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
             <div id="dc-ranking"></div>
           </div>
           <div class="card">
-            <div class="card-t"><span class="card-tg">✦ Detalle por concesero</span></div>
+            <div class="card-t"><span class="card-tg">✦ Detalle por concesor</span></div>
             <div class="tbl-wrap"><table>
-              <thead><tr><th>#</th><th>Concesero</th><th>Total</th><th>Tu parte</th><th>Vehículos</th><th>Días</th><th>Promedio/día</th></tr></thead>
+              <thead><tr><th>#</th><th>Concesor</th><th>Total</th><th>Tu parte</th><th>Vehículos</th><th>Días</th><th>Promedio/día</th></tr></thead>
               <tbody id="dc-tabla"></tbody>
             </table></div>
           </div>
@@ -702,7 +702,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         <div class="card">
           <div class="tbl-wrap">
             <table>
-              <thead><tr><th>Fecha</th><th>Placa</th><th>Concesero</th><th>Servicio</th><th>Valor</th><th>Empresa</th><th></th></tr></thead>
+              <thead><tr><th>Fecha</th><th>Placa</th><th>Concesor</th><th>Servicio</th><th>Valor</th><th>Empresa</th><th></th></tr></thead>
               <tbody id="pend-lista"></tbody>
             </table>
           </div>
@@ -711,7 +711,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 
       <!-- CONCESEROS -->
       <div id="s-conceseros" class="screen">
-        <div class="row"><div><div class="page-title">Conceseros</div></div><button class="btn btn-p" onclick="abrirModalConcesero()">+ Agregar</button></div>
+        <div class="row"><div><div class="page-title">Concesores</div></div><button class="btn btn-p" onclick="abrirModalConcesero()">+ Agregar</button></div>
         <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Nombre</th><th>Cumpleaños</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="concs-list"></tbody></table></div></div>
       </div>
 
@@ -753,7 +753,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
   <div class="modal-title">🧾 Nueva orden de servicio</div>
   <input type="hidden" autocomplete="false"/>
   <div class="form-grid" style="grid-template-columns:1fr 1fr">
-    <div class="field"><label>Concesero</label><select id="ord-conc"></select></div>
+    <div class="field"><label>Concesor</label><select id="ord-conc"></select></div>
     <div class="field"><label>Placa</label><input type="text" id="ord-placa" placeholder="ABC 123" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
   </div>
   <div class="field"><label>Tipo de vehículo</label>
@@ -856,7 +856,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
   <div class="modal-title">✏️ Editar orden #<span id="edit-ord-num"></span></div>
   <input type="hidden" id="edit-ord-id"/>
   <div class="form-grid" style="grid-template-columns:1fr 1fr">
-    <div class="field"><label>Concesero</label><select id="edit-ord-conc"></select></div>
+    <div class="field"><label>Concesor</label><select id="edit-ord-conc"></select></div>
     <div class="field"><label>Placa</label><input type="text" id="edit-ord-placa" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
   </div>
   <div class="field"><label>Tipo de vehículo</label>
@@ -948,7 +948,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 <!-- Liquidar concesero -->
 <div id="modal-liquidar" class="modal-bg" style="display:none">
 <div class="modal">
-  <div class="modal-title">💵 Liquidar concesero</div>
+  <div class="modal-title">💵 Liquidar concesor</div>
   <div style="background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);border-radius:12px;padding:16px;margin-bottom:16px">
     <div style="font-size:14px;font-weight:700;margin-bottom:10px" id="liq-nombre"></div>
     <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px">
@@ -1002,7 +1002,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 <!-- Concesero -->
 <div id="modal-conc" class="modal-bg" style="display:none">
 <div class="modal">
-  <div class="modal-title" id="conc-modal-title">👥 Concesero</div>
+  <div class="modal-title" id="conc-modal-title">👥 Concesor</div>
   <input type="hidden" id="conc-edit-id"/>
   <div class="field"><label>Nombre completo</label><input type="text" id="conc-nombre" placeholder="NOMBRE APELLIDO" oninput="this.value=this.value.toUpperCase()"/></div>
   <div class="field"><label>Fecha de nacimiento 🎂</label><input type="date" id="conc-nacimiento"/></div>
@@ -2162,14 +2162,15 @@ async function loadDashResumen(){
       semEl.innerHTML=semItems.map(([dow,d],i)=>{
         const medals=['🥇','🥈','🥉'];
         const w=Math.round((d.total/maxSem)*100);
-        return '<div style="margin:6px 0">'
-          +'<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">'
-            +'<span>'+(medals[i]||'')+'  '+DIAS_SEM[dow]+'</span>'
-            +'<span style="color:var(--gold)">$'+fmt(Math.round(d.total/d.count))+'/día</span>'
+        return '<div style="margin:8px 0">'
+          +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">'
+            +'<span style="font-weight:600">'+(medals[i]||'  ')+' '+DIAS_SEM[dow]+'</span>'
+            +'<span style="color:var(--gold);font-weight:700">$'+fmt(d.total)+'</span>'
           +'</div>'
-          +'<div style="background:rgba(255,255,255,.1);border-radius:4px;height:6px">'
+          +'<div style="background:rgba(255,255,255,.1);border-radius:4px;height:6px;margin-bottom:3px">'
             +'<div style="background:var(--gold);border-radius:4px;height:6px;width:'+w+'%"></div>'
           +'</div>'
+          +'<div style="font-size:10px;color:var(--muted)">'+d.count+' '+(d.count===1?'vez':'veces')+' este mes</div>'
           +'</div>';
       }).join('');
     }
@@ -2202,7 +2203,7 @@ async function loadDashResumen(){
 
     // ── Top conceseros ────────────────────────────────────────────────────────
     const byConc={};
-    cerradas.forEach(o=>{
+    ords.filter(o=>o.estado!=='abierta').forEach(o=>{
       const n=o.concesero_nombre||'Sin asignar';
       if(!byConc[n]) byConc[n]={total:0,count:0};
       byConc[n].total+=(o.total||0);
@@ -2977,7 +2978,7 @@ async function buscarHistorial(){
     res.innerHTML = '<div class="card">'
       +'<div style="font-size:11px;color:var(--muted);margin-bottom:8px">'+ords.length+' órdenes encontradas</div>'
       +'<div class="tbl-wrap"><table>'
-        +'<thead><tr><th>#</th><th>Fecha</th><th>Placa</th><th>Concesero</th><th>Cliente</th><th>Estado</th><th>Total</th><th>Acciones</th></tr></thead>'
+        +'<thead><tr><th>#</th><th>Fecha</th><th>Placa</th><th>Concesor</th><th>Cliente</th><th>Estado</th><th>Total</th><th>Acciones</th></tr></thead>'
         +'<tbody>'+rows+'</tbody>'
       +'</table></div>'
       +'</div>';
