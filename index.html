@@ -173,6 +173,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <div class="nav-sep">Operación</div>
       <div class="ni on" onclick="go('ordenes',this)" id="nav-ordenes"><span class="ni-ico">🧾</span>Órdenes del día</div>
       <div class="ni" onclick="go('planilla',this)" id="nav-planilla"><span class="ni-ico">📋</span>Planilla</div>
+      <div class="ni" onclick="go('productos',this)" id="nav-productos"><span class="ni-ico">🛒</span>Productos</div>
       <div class="ni hidden" onclick="go('cierre',this)" id="nav-cierre"><span class="ni-ico">💰</span>Cierre del día</div>
       <div class="ni hidden" onclick="go('gastos',this)" id="nav-gastos"><span class="ni-ico">📋</span>Gastos</div>
       <div class="nav-sep hidden" id="sep-reportes">Reportes</div>
@@ -312,6 +313,32 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 
       </div>
 
+      <!-- PRODUCTOS -->
+      <div id="s-productos" class="screen">
+        <div class="row">
+          <div><div class="page-title">🛒 Venta de productos</div><div class="page-sub" id="prod-fecha-lbl"></div></div>
+          <button class="btn btn-p" onclick="abrirModalProducto()">+ Registrar venta</button>
+        </div>
+
+        <!-- KPIs -->
+        <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+          <div class="kpi"><div class="kpi-l">💰 Ventas del día</div><div class="kpi-v" style="color:var(--gold)" id="prod-total-dia">$0</div></div>
+          <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">📦 Unidades vendidas</div><div class="kpi-v" style="color:#6EE7B7" id="prod-unidades">0</div></div>
+          <div class="kpi" style="border-left-color:#FCA5A5"><div class="kpi-l">💸 Descuentos a lavadores</div><div class="kpi-v" style="color:#FCA5A5" id="prod-descuentos">$0</div></div>
+        </div>
+
+        <!-- Tabla ventas del día -->
+        <div class="card">
+          <div class="card-t"><span class="card-tg">✦ Ventas registradas hoy</span></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Hora</th><th>Lavador</th><th>Producto</th><th>Cant</th><th>Valor unit</th><th>Total</th><th></th></tr></thead>
+              <tbody id="prod-lista"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- GASTOS -->
       <div id="s-gastos" class="screen">
         <div class="row">
@@ -344,22 +371,51 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 
         <!-- RESUMEN -->
         <div id="dt-resumen-content">
+          <!-- KPIs principales -->
           <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
-            <div class="kpi"><div class="kpi-l">Ingresos del mes</div><div class="kpi-v" style="color:var(--gold)" id="d-total">$0</div><div class="kpi-s" id="d-vs-anterior"></div></div>
-            <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">Tu ganancia (50%)</div><div class="kpi-v" style="color:#6EE7B7" id="d-gan">$0</div></div>
-            <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">Vehículos</div><div class="kpi-v" style="color:#C4B5FD" id="d-veh">0</div><div class="kpi-s" id="d-prom-dia"></div></div>
-            <div class="kpi"><div class="kpi-l">Días trabajados</div><div class="kpi-v" style="color:var(--gold)" id="d-dias">0</div></div>
+            <div class="kpi"><div class="kpi-l">💰 Ingresos del mes</div><div class="kpi-v" style="color:var(--gold)" id="d-total">$0</div><div class="kpi-s" id="d-vs-anterior"></div></div>
+            <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">✦ Tu ganancia neta</div><div class="kpi-v" style="color:#6EE7B7" id="d-gan">$0</div></div>
+            <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">🚗 Vehículos</div><div class="kpi-v" style="color:#C4B5FD" id="d-veh">0</div><div class="kpi-s" id="d-prom-dia"></div></div>
+            <div class="kpi"><div class="kpi-l">📅 Días trabajados</div><div class="kpi-v" style="color:var(--gold)" id="d-dias">0</div></div>
           </div>
-          <div class="card">
-            <div class="card-t"><span class="card-tg">✦ Ventas por día del mes</span></div>
-            <div id="d-barras" style="display:flex;align-items:flex-end;gap:3px;height:120px;padding:4px 0"></div>
-            <div id="d-barras-labels" style="display:flex;gap:3px;margin-top:4px"></div>
+
+          <!-- Segunda fila KPIs -->
+          <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+            <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">📈 Promedio diario</div><div class="kpi-v" style="color:#6EE7B7;font-size:18px" id="d-prom-valor">$0</div></div>
+            <div class="kpi" style="border-left-color:#FCD34D"><div class="kpi-l">⏳ Pendiente cobro</div><div class="kpi-v" style="color:#FCD34D;font-size:18px" id="d-pendiente">$0</div></div>
+            <div class="kpi" style="border-left-color:#FCA5A5"><div class="kpi-l">📋 Gastos del mes</div><div class="kpi-v" style="color:#FCA5A5;font-size:18px" id="d-gastos">$0</div></div>
+            <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">🛒 Ventas productos</div><div class="kpi-v" style="color:#C4B5FD;font-size:18px" id="d-productos">$0</div></div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <div class="card"><div class="card-t"><span class="card-tg">✦ Top conceseros</span></div><div id="d-concs"></div></div>
-            <div class="card"><div class="card-t"><span class="card-tg">✦ Operación recientes</span></div>
-              <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Fecha</th><th>Placa</th><th>Pago</th><th>Total</th></tr></thead><tbody id="d-recientes"></tbody></table></div>
+
+          <!-- Gráfica de barras + Día de la semana -->
+          <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px">
+            <div class="card">
+              <div class="card-t"><span class="card-tg">✦ Ingresos por día</span></div>
+              <div id="d-bars" style="display:flex;align-items:flex-end;gap:2px;height:120px;padding:8px 0"></div>
+              <div id="d-bars-labels" style="display:flex;gap:2px;margin-top:4px"></div>
             </div>
+            <div class="card">
+              <div class="card-t"><span class="card-tg">✦ Mejor día semana</span></div>
+              <div id="d-semana"></div>
+            </div>
+          </div>
+
+          <!-- Ingresos por línea + Top conceseros -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="card">
+              <div class="card-t"><span class="card-tg">✦ Ingresos por línea</span></div>
+              <div id="d-lineas"></div>
+            </div>
+            <div class="card">
+              <div class="card-t"><span class="card-tg">✦ Top conceseros 🥇🥈🥉</span></div>
+              <div id="d-top-concs"></div>
+            </div>
+          </div>
+
+          <!-- Empresas -->
+          <div class="card">
+            <div class="card-t"><span class="card-tg">✦ Ingresos por empresa</span></div>
+            <div id="d-empresas-chart"></div>
           </div>
         </div>
 
@@ -957,6 +1013,51 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 </div>
 </div>
 
+<!-- Modal venta producto -->
+<div id="modal-producto" class="modal-bg" style="display:none">
+<div class="modal">
+  <div class="modal-title">🛒 Registrar venta de producto</div>
+  <input type="hidden" id="prod-edit-id"/>
+  <div class="field"><label>Lavador</label>
+    <select id="prod-concesero" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%">
+      <option value="">— Seleccionar lavador —</option>
+    </select>
+  </div>
+  <div class="field"><label>Producto</label>
+    <select id="prod-nombre" onchange="setProdPrecio()" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%">
+      <option value="">— Seleccionar producto —</option>
+      <option value="Champú" data-precio="3000">Champú — $3.000</option>
+      <option value="Uva" data-precio="2000">Uva — $2.000</option>
+      <option value="Teflón" data-precio="3000">Teflón — $3.000</option>
+      <option value="Grafito" data-precio="3000">Grafito — $3.000</option>
+      <option value="Desengrasante" data-precio="3000">Desengrasante — $3.000</option>
+      <option value="Restaurador partes negras" data-precio="3000">Restaurador partes negras — $3.000</option>
+      <option value="Trapo" data-precio="5000">Trapo — $5.000</option>
+      <option value="Extintor" data-precio="0">Extintor — precio variable</option>
+      <option value="Otro" data-precio="0">Otro</option>
+    </select>
+  </div>
+  <div class="form-grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label>Cantidad</label>
+      <input type="number" id="prod-cantidad" value="1" min="1" oninput="calcProdTotal()"
+        style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%"/>
+    </div>
+    <div class="field"><label>Valor unitario</label>
+      <input type="number" id="prod-precio" placeholder="0" oninput="calcProdTotal()"
+        style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%"/>
+    </div>
+  </div>
+  <div style="background:var(--gold-p);border:1px solid var(--gold-b);border-radius:8px;padding:12px;text-align:center;margin-bottom:12px">
+    <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Total a descontar al lavador</div>
+    <div style="font-size:22px;font-weight:800;color:var(--gold);font-family:Georgia,serif" id="prod-total-calc">$0</div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarVentaProducto()">💾 Guardar</button>
+    <button class="btn btn-g" onclick="cerrarModal('modal-producto')">Cancelar</button>
+  </div>
+</div>
+</div>
+
 <!-- Modal empresa -->
 <div id="modal-empresa" class="modal-bg" style="display:none">
 <div class="modal">
@@ -1071,7 +1172,7 @@ function doLogout(){
   document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('sel'));
   document.querySelector('.role-btn')?.classList.add('sel');
   // Reset nav
-  ['nav-cierre','nav-gastos','nav-dashboard','nav-historial','nav-susuerte',
+  ['nav-cierre','nav-productos','nav-gastos','nav-dashboard','nav-historial','nav-susuerte',
    'nav-pendientes','nav-conceseros','nav-servicios-cfg','nav-saldos',
    'sep-reportes','sep-empresas','sep-config',
    'bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
@@ -1083,7 +1184,7 @@ function setupNav(){
   const isOwner=currentUser.rol==='dueno';
   const isCajero=currentUser.rol==='cajero';
   // Reset all first
-  ['nav-cierre','nav-gastos','nav-dashboard','nav-historial','nav-susuerte',
+  ['nav-cierre','nav-productos','nav-gastos','nav-dashboard','nav-historial','nav-susuerte',
    'nav-pendientes','nav-conceseros','nav-servicios-cfg','nav-saldos',
    'sep-reportes','sep-empresas','sep-config',
    'bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
@@ -1099,7 +1200,7 @@ function setupNav(){
   }
   // Dueño: todo
   if(isOwner){
-    ['nav-cierre','nav-gastos','nav-dashboard','nav-historial','nav-susuerte',
+    ['nav-cierre','nav-productos','nav-gastos','nav-dashboard','nav-historial','nav-susuerte',
      'nav-pendientes','nav-conceseros','nav-servicios-cfg','nav-saldos',
      'sep-reportes','sep-empresas','sep-config',
      'bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
@@ -1126,6 +1227,7 @@ function go(s,el){
   else if(s==='cierre') loadCierre();
   else if(s==='historial') initHistorial();
   else if(s==='saldos') loadSaldos();
+  else if(s==='productos') loadProductos();
   else if(s==='empresas') loadEmpresas();
   else if(s==='empresa-detalle') loadEmpresaDetalle();
   else if(s==='pendientes') loadPendientes();
@@ -1806,6 +1908,9 @@ async function loadCierre(){
     s('dc-parte',    '$'+fmt(pagoLavadores));
     s('dc-neta',     '$'+fmt(tuParteNeta));
     s('dc-ef-neta',  '$'+fmt(cajaEfectivo));
+    arqueoEsperado = cajaEfectivo;
+    const arqueoElx = document.getElementById('arqueo-esperado');
+    if(arqueoElx) arqueoElx.textContent = '$'+fmt(cajaEfectivo);
     s('dc-qr-neta',  '$'+fmt(cuentaQR));
     arqueoEsperado = cajaEfectivo;
     const arqueoEl = document.getElementById('arqueo-esperado');
@@ -1971,75 +2076,191 @@ async function loadDashResumen(){
     const [_y,_m]=dashMes.split('-');
     const _lastDay=new Date(parseInt(_y),parseInt(_m),0).getDate();
     const start=dashMes+'-01', end=dashMes+'-'+String(_lastDay).padStart(2,'0');
-    const ords=await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
-    const total=ords.reduce((s,o)=>s+(o.total||0),0);
-    const dias=new Set(ords.map(o=>o.fecha)).size;
-    const prom=dias?Math.round(total/dias):0;
 
-    // Compare with previous month
+    // Load data in parallel
+    const [ords, gastos, ordsEmp] = await Promise.all([
+      api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc'),
+      api('gastos?fecha=gte.'+start+'&fecha=lte.'+end),
+      api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&estado=eq.pendiente_pago')
+    ]);
+
+    const cerradas = ords.filter(o=>o.estado==='cerrada');
+    const total = cerradas.reduce((s,o)=>s+(o.total||0),0);
+    const dias = new Set(cerradas.map(o=>o.fecha)).size;
+    const prom = dias ? Math.round(total/dias) : 0;
+    const pendTotal = ords.filter(o=>o.estado==='pendiente_pago').reduce((s,o)=>s+(o.total||0),0);
+
+    // Gastos (excluir saldo inicial y ventas productos)
+    const gastosReales = gastos.filter(g=>g.categoria!=='🏦 Saldo inicial');
+    const gastosTotal = gastosReales.filter(g=>g.categoria!=='🛒 Venta producto').reduce((s,g)=>s+(g.valor||0),0);
+    const ventasProd = gastosReales.filter(g=>g.categoria==='🛒 Venta producto').reduce((s,g)=>s+(g.valor||0),0);
+
+    // Previous month compare
     const [y,m]=dashMes.split('-');
     const prevDate=new Date(parseInt(y),parseInt(m)-2,1);
     const prevMes=prevDate.getFullYear()+'-'+String(prevDate.getMonth()+1).padStart(2,'0');
-    const prevLastDay=new Date(parseInt(prevDate.getFullYear()),prevDate.getMonth()+1,0).getDate();
-    const ordsP=await api('ordenes?fecha=gte.'+prevMes+'-01&fecha=lte.'+prevMes+'-'+String(prevLastDay).padStart(2,'0'));
+    const prevLastDay=new Date(prevDate.getFullYear(),prevDate.getMonth()+1,0).getDate();
+    const ordsP=await api('ordenes?fecha=gte.'+prevMes+'-01&fecha=lte.'+prevMes+'-'+String(prevLastDay).padStart(2,'0')+'&estado=eq.cerrada');
     const totalP=ordsP.reduce((s,o)=>s+(o.total||0),0);
     const diff=totalP?Math.round((total-totalP)/totalP*100):0;
-    const diffStr=diff>0?'▲ +'+diff+'% vs mes anterior':diff<0?'▼ '+diff+'% vs mes anterior':'= igual al mes anterior';
+    const diffStr=diff>0?'▲ +'+diff+'% vs mes anterior':diff<0?'▼ '+diff+'% vs mes anterior':'= igual';
     const diffColor=diff>0?'#6EE7B7':diff<0?'#FCA5A5':'#8BA3BB';
 
-    document.getElementById('d-total').textContent='$'+fmt(total);
-    document.getElementById('d-gan').textContent='$'+fmt(Math.round(total/2));
-    document.getElementById('d-veh').textContent=ords.length;
-    document.getElementById('d-dias').textContent=dias;
-    document.getElementById('d-vs-anterior').innerHTML='<span style="color:'+diffColor+'">'+diffStr+'</span>';
-    document.getElementById('d-prom-dia').textContent='~'+Math.round(ords.length/(dias||1))+'/día';
+    const ganNeta = Math.round(total/2) - gastosTotal;
 
-    // Bar chart by day
+    // Update KPIs
+    const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+    s('d-total',    '$'+fmt(total));
+    s('d-gan',      '$'+fmt(ganNeta));
+    s('d-veh',      cerradas.length);
+    s('d-dias',     dias);
+    s('d-prom-dia', '~'+Math.round(cerradas.length/(dias||1))+' carros/día');
+    s('d-prom-valor','$'+fmt(prom));
+    s('d-pendiente','$'+fmt(pendTotal));
+    s('d-gastos',   '$'+fmt(gastosTotal));
+    s('d-productos','$'+fmt(ventasProd));
+    document.getElementById('d-vs-anterior').innerHTML='<span style="color:'+diffColor+'">'+diffStr+'</span>';
+
+    // ── Gráfica de barras ─────────────────────────────────────────────────────
     const byDay={};
-    ords.forEach(o=>{byDay[o.fecha]=(byDay[o.fecha]||0)+(o.total||0);});
+    cerradas.forEach(o=>{byDay[o.fecha]=(byDay[o.fecha]||0)+(o.total||0);});
     const days=Object.entries(byDay).sort((a,b)=>a[0].localeCompare(b[0]));
     const maxVal=Math.max(...days.map(d=>d[1]),1);
-    const barEl=document.getElementById('d-barras');
-    const lblEl=document.getElementById('d-barras-labels');
-    if(barEl){
-      barEl.innerHTML=days.map(([d,v])=>{
-        const pct=Math.round(v/maxVal*100);
-        const dia=d.slice(8);
-        const color=v===Math.max(...days.map(x=>x[1]))?'#C9A84C':'#234B75';
-        return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;cursor:pointer" onclick="verDiaDetalle(this.dataset.fecha)" data-fecha="'+d+'" title="$'+fmt(v)+'">'
-          +'<div style="width:100%;background:'+color+';border-radius:3px 3px 0 0;height:'+pct+'%;min-height:2px;transition:all .2s"></div>'
+    const barsEl=document.getElementById('d-bars');
+    const labelsEl=document.getElementById('d-bars-labels');
+    if(barsEl){
+      barsEl.innerHTML=days.map(([fecha,val])=>{
+        const h=Math.max(Math.round((val/maxVal)*110),4);
+        const isToday=fecha===today();
+        const color=isToday?'var(--gold)':val>=prom?'#6EE7B7':'#378ADD';
+        return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">'
+          +'<div style="font-size:8px;color:var(--muted)">$'+Math.round(val/1000)+'k</div>'
+          +'<div style="width:100%;background:'+color+';border-radius:3px 3px 0 0;height:'+h+'px;min-height:4px;opacity:.85"></div>'
           +'</div>';
       }).join('');
-      lblEl.innerHTML=days.map(([d])=>'<div style="flex:1;text-align:center;font-size:8px;color:var(--muted)">'+d.slice(8)+'</div>').join('');
+    }
+    if(labelsEl){
+      labelsEl.innerHTML=days.map(([fecha])=>{
+        const d=new Date(fecha+'T12:00:00');
+        return '<div style="flex:1;text-align:center;font-size:8px;color:var(--muted)">'+d.getDate()+'</div>';
+      }).join('');
     }
 
-    // Top conceseros
-    const cm={};
-    ords.forEach(o=>{const n=o.concesero_nombre||'?';if(!cm[n])cm[n]={n,t:0,c:0};cm[n].t+=o.total||0;cm[n].c++;});
-    const sorted=Object.values(cm).sort((a,b)=>b.t-a.t);
-    const maxT=sorted[0]?.t||1;
-    document.getElementById('d-concs').innerHTML=sorted.slice(0,6).map((c,i)=>
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
-        +'<div style="width:20px;height:20px;border-radius:50%;background:'+COLORS[i]+';display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#111;flex-shrink:0">'+(i+1)+'</div>'
-        +'<div style="flex:1"><div style="font-size:11px;font-weight:700">'+c.n+'</div>'
-          +'<div style="height:3px;background:rgba(255,255,255,.07);border-radius:2px;margin-top:2px"><div style="height:3px;border-radius:2px;background:'+COLORS[i]+';width:'+Math.round(c.t/maxT*100)+'%"></div></div>'
-        +'</div>'
-        +'<div style="text-align:right"><div style="font-weight:700;color:'+COLORS[i]+';font-size:12px">$'+fmt(c.t)+'</div>'
-          +'<div style="font-size:10px;color:#6EE7B7">$'+fmt(Math.round(c.t/2))+'</div></div>'
-      +'</div>'
-    ).join('');
+    // ── Mejor día de la semana ────────────────────────────────────────────────
+    const DIAS_SEM=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    const bySem={};
+    cerradas.forEach(o=>{
+      const dow=new Date(o.fecha+'T12:00:00').getDay();
+      if(!bySem[dow]) bySem[dow]={total:0,count:0};
+      bySem[dow].total+=(o.total||0);
+      bySem[dow].count++;
+    });
+    const semEl=document.getElementById('d-semana');
+    if(semEl){
+      const semItems=Object.entries(bySem).sort((a,b)=>b[1].total-a[1].total);
+      const maxSem=semItems[0]?semItems[0][1].total:1;
+      semEl.innerHTML=semItems.map(([dow,d],i)=>{
+        const medals=['🥇','🥈','🥉'];
+        const w=Math.round((d.total/maxSem)*100);
+        return '<div style="margin:6px 0">'
+          +'<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">'
+            +'<span>'+(medals[i]||'')+'  '+DIAS_SEM[dow]+'</span>'
+            +'<span style="color:var(--gold)">$'+fmt(Math.round(d.total/d.count))+'/día</span>'
+          +'</div>'
+          +'<div style="background:rgba(255,255,255,.1);border-radius:4px;height:6px">'
+            +'<div style="background:var(--gold);border-radius:4px;height:6px;width:'+w+'%"></div>'
+          +'</div>'
+          +'</div>';
+      }).join('');
+    }
 
-    // Recent orders
-    document.getElementById('d-recientes').innerHTML=ords.slice(-8).reverse().map(o=>
-      '<tr>'
-        +'<td style="font-family:monospace;color:var(--muted)">'+o.numero_orden+'</td>'
-        +'<td style="color:var(--muted);font-size:10px">'+o.fecha+'</td>'
-        +'<td style="color:var(--gold);font-weight:700">'+o.placa+'</td>'
-        +'<td><span class="badge '+(o.forma_pago==='qr'?'bqr':'bg')+'">'+(o.forma_pago==='qr'?'📲':'💵')+'</span></td>'
-        +'<td style="font-weight:700">$'+fmt(o.total)+'</td>'
-      +'</tr>'
-    ).join('');
-  }catch(e){showToast('Error dashboard',true);}
+    // ── Ingresos por línea ────────────────────────────────────────────────────
+    const lavadas = cerradas.filter(o=>!o.empresa_id).reduce((s,o)=>s+(o.total||0),0);
+    const empresasTotal = cerradas.filter(o=>o.empresa_id).reduce((s,o)=>s+(o.total||0),0);
+    const lineasEl=document.getElementById('d-lineas');
+    if(lineasEl){
+      const lineas=[
+        {label:'🚗 Lavadas particulares', val:lavadas, color:'#6EE7B7'},
+        {label:'🏢 Empresas con contrato', val:empresasTotal, color:'#C4B5FD'},
+        {label:'🛒 Ventas productos', val:ventasProd, color:'var(--gold)'},
+      ];
+      const maxL=Math.max(...lineas.map(l=>l.val),1);
+      lineasEl.innerHTML=lineas.map(l=>{
+        const w=Math.round((l.val/maxL)*100);
+        const pct=total?Math.round(l.val/total*100):0;
+        return '<div style="margin:8px 0">'
+          +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">'
+            +'<span>'+l.label+'</span>'
+            +'<span style="color:'+l.color+';font-weight:700">$'+fmt(l.val)+' ('+pct+'%)</span>'
+          +'</div>'
+          +'<div style="background:rgba(255,255,255,.1);border-radius:4px;height:8px">'
+            +'<div style="background:'+l.color+';border-radius:4px;height:8px;width:'+w+'%;opacity:.85"></div>'
+          +'</div>'
+          +'</div>';
+      }).join('');
+    }
+
+    // ── Top conceseros ────────────────────────────────────────────────────────
+    const byConc={};
+    cerradas.forEach(o=>{
+      const n=o.concesero_nombre||'Sin asignar';
+      if(!byConc[n]) byConc[n]={total:0,count:0};
+      byConc[n].total+=(o.total||0);
+      byConc[n].count++;
+    });
+    const topConcs=Object.entries(byConc).sort((a,b)=>b[1].total-a[1].total).slice(0,5);
+    const maxC=topConcs[0]?topConcs[0][1].total:1;
+    const medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
+    const topEl=document.getElementById('d-top-concs');
+    if(topEl){
+      topEl.innerHTML=topConcs.map(([n,d],i)=>{
+        const w=Math.round((d.total/maxC)*100);
+        const prom=Math.round(d.total/d.count);
+        return '<div style="margin:6px 0">'
+          +'<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">'
+            +'<span>'+medals[i]+' '+n+'</span>'
+            +'<span style="color:var(--gold);font-weight:700">$'+fmt(d.total)+'</span>'
+          +'</div>'
+          +'<div style="background:rgba(255,255,255,.1);border-radius:4px;height:6px">'
+            +'<div style="background:var(--gold);border-radius:4px;height:6px;width:'+w+'%;opacity:.85"></div>'
+          +'</div>'
+          +'<div style="font-size:10px;color:var(--muted);margin-top:2px">'+d.count+' carros · $'+fmt(prom)+'/carro</div>'
+          +'</div>';
+      }).join('');
+    }
+
+    // ── Empresas ──────────────────────────────────────────────────────────────
+    const byEmp={};
+    cerradas.filter(o=>o.empresa_nombre).forEach(o=>{
+      const n=o.empresa_nombre;
+      if(!byEmp[n]) byEmp[n]={total:0,count:0};
+      byEmp[n].total+=(o.total||0);
+      byEmp[n].count++;
+    });
+    const empEl=document.getElementById('d-empresas-chart');
+    if(empEl){
+      const empItems=Object.entries(byEmp).sort((a,b)=>b[1].total-a[1].total);
+      if(empItems.length){
+        const maxE=empItems[0][1].total;
+        empEl.innerHTML=empItems.map(([n,d])=>{
+          const w=Math.round((d.total/maxE)*100);
+          return '<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)">'
+            +'<div style="width:120px;font-size:12px;font-weight:600">🏢 '+n+'</div>'
+            +'<div style="flex:1;background:rgba(255,255,255,.1);border-radius:4px;height:10px">'
+              +'<div style="background:#C4B5FD;border-radius:4px;height:10px;width:'+w+'%"></div>'
+            +'</div>'
+            +'<div style="text-align:right;min-width:120px">'
+              +'<span style="font-weight:700;color:#C4B5FD">$'+fmt(d.total)+'</span>'
+              +'<span style="font-size:10px;color:var(--muted);margin-left:6px">'+d.count+' lavadas</span>'
+            +'</div>'
+            +'</div>';
+        }).join('');
+      } else {
+        empEl.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted)">Sin lavadas de empresas este mes</div>';
+      }
+    }
+
+  }catch(e){ console.error('Error resumen:', e.message); showToast('Error: '+e.message,true); }
 }
 
 // ── DIARIO ────────────────────────────────────────────────────────────────────
@@ -3305,6 +3526,103 @@ async function guardarSaldoInicial(){
     });
     showToast('Saldo inicial guardado ✅');
     loadSaldos();
+  }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+// ── PRODUCTOS ────────────────────────────────────────────────────────────────
+const PRODUCTOS_PRECIOS = {
+  'Champú': 3000, 'Uva': 2000, 'Teflón': 3000, 'Grafito': 3000,
+  'Desengrasante': 3000, 'Restaurador partes negras': 3000, 'Trapo': 5000
+};
+
+async function loadProductos(){
+  document.getElementById('prod-fecha-lbl').textContent =
+    new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
+  try{
+    const ventas = await api('gastos?fecha=eq.'+today()+'&categoria=eq.🛒 Venta producto&order=created_at.desc');
+    
+    let total=0, unidades=0;
+    const rows = ventas.map(v=>{
+      const data = JSON.parse(v.descripcion||'{}');
+      total += v.valor;
+      unidades += data.cantidad||1;
+      return '<tr>'
+        +'<td style="font-family:monospace;color:var(--muted);font-size:11px">'+(data.hora||'')+'</td>'
+        +'<td style="font-weight:600">'+( data.concesero||'')+'</td>'
+        +'<td>'+( data.producto||v.descripcion)+'</td>'
+        +'<td style="text-align:center">'+(data.cantidad||1)+'</td>'
+        +'<td>$'+fmt(data.precio_unit||0)+'</td>'
+        +'<td style="font-weight:700;color:var(--gold)">$'+fmt(v.valor)+'</td>'
+        +'<td><button class="btn btn-r" style="padding:2px 8px;font-size:10px" onclick="borrarVenta('+v.id+')">🗑️</button></td>'
+        +'</tr>';
+    }).join('');
+
+    document.getElementById('prod-lista').innerHTML = rows ||
+      '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">Sin ventas registradas hoy</td></tr>';
+    document.getElementById('prod-total-dia').textContent = '$'+fmt(total);
+    document.getElementById('prod-unidades').textContent = unidades;
+    document.getElementById('prod-descuentos').textContent = '$'+fmt(total);
+  }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+function abrirModalProducto(){
+  // Fill conceseros
+  const sel = document.getElementById('prod-concesero');
+  sel.innerHTML = '<option value="">— Seleccionar lavador —</option>'
+    + conceseros.map(c=>'<option value="'+c.nombre+'">'+c.nombre+'</option>').join('');
+  document.getElementById('prod-edit-id').value = '';
+  document.getElementById('prod-nombre').value = '';
+  document.getElementById('prod-precio').value = '';
+  document.getElementById('prod-cantidad').value = '1';
+  document.getElementById('prod-total-calc').textContent = '$0';
+  document.getElementById('modal-producto').style.display = 'flex';
+}
+
+function setProdPrecio(){
+  const sel = document.getElementById('prod-nombre');
+  const opt = sel.options[sel.selectedIndex];
+  const precio = opt?.dataset.precio||0;
+  document.getElementById('prod-precio').value = precio;
+  calcProdTotal();
+}
+
+function calcProdTotal(){
+  const cant  = parseInt(document.getElementById('prod-cantidad')?.value)||1;
+  const precio= parseInt(document.getElementById('prod-precio')?.value)||0;
+  const total = cant * precio;
+  document.getElementById('prod-total-calc').textContent = '$'+fmt(total);
+}
+
+async function guardarVentaProducto(){
+  const concesero = document.getElementById('prod-concesero')?.value;
+  const producto  = document.getElementById('prod-nombre')?.value;
+  const cant      = parseInt(document.getElementById('prod-cantidad')?.value)||1;
+  const precio    = parseInt(document.getElementById('prod-precio')?.value)||0;
+  if(!concesero){ showToast('Selecciona el lavador', true); return; }
+  if(!producto){  showToast('Selecciona el producto', true); return; }
+  if(!precio){    showToast('Ingresa el valor', true); return; }
+  const total = cant * precio;
+  const hora = new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',hour12:true});
+  try{
+    await api('gastos','POST',{
+      categoria: '🛒 Venta producto',
+      descripcion: JSON.stringify({concesero, producto, cantidad:cant, precio_unit:precio, hora}),
+      valor: total,
+      forma_pago: 'efectivo',
+      fecha: today()
+    });
+    cerrarModal('modal-producto');
+    showToast('Venta registrada ✅ — $'+fmt(total)+' descontado a '+concesero);
+    loadProductos();
+  }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+async function borrarVenta(id){
+  if(!confirm('¿Eliminar esta venta?')) return;
+  try{
+    await api('gastos?id=eq.'+id,'DELETE');
+    showToast('Venta eliminada');
+    loadProductos();
   }catch(e){ showToast('Error: '+e.message, true); }
 }
 
