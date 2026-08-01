@@ -287,7 +287,19 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         </div>
         <div class="card">
           <div class="card-t"><span>Pago a concesores</span></div>
-          <div class="tbl-wrap"><table><thead><tr><th>Concesor</th><th>Generó</th><th>Le toca (50%)</th><th>Estado</th></tr></thead><tbody id="cierre-concs"></tbody></table></div>
+          <div class="tbl-wrap"><table><thead><tr><th>Concesor</th><th>Generó</th><th>Le toca (50%)</th><th>A pagar</th><th>Estado</th></tr></thead><tbody id="cierre-concs"></tbody></table></div>
+        </div>
+
+        <!-- Ventas productos -->
+        <div class="card" id="cierre-ventas-prod" style="display:none;border-color:rgba(110,231,183,.3)">
+          <div class="card-t">
+            <span class="card-tg">🛒 Ventas de productos hoy</span>
+            <span style="font-size:18px;font-weight:800;color:#6EE7B7" id="cierre-ventas-prod-total">$0</span>
+          </div>
+          <div id="cierre-ventas-prod-items"></div>
+          <div style="margin-top:8px;padding:8px 10px;background:rgba(16,185,129,.08);border-radius:8px;font-size:12px;color:var(--muted)">
+            💡 Estos valores se descuentan del pago de cada concesor
+          </div>
         </div>
 
         <!-- Arqueo de caja -->
@@ -1911,6 +1923,32 @@ async function loadCierre(){
     const arqueoEl = document.getElementById('arqueo-esperado');
     if(arqueoEl) arqueoEl.textContent = '$'+fmt(cajaEfectivo);
 
+    // ── Ventas de productos del día ─────────────────────────────────────────
+    let ventasProdDia=0;
+    let ventasProdByConc={};
+    try{
+      const vp = await api('ventas_productos?fecha=eq.'+today());
+      ventasProdDia = vp.reduce((s,v)=>s+(v.total||0),0);
+      vp.forEach(v=>{
+        if(!ventasProdByConc[v.concesero]) ventasProdByConc[v.concesero]=0;
+        ventasProdByConc[v.concesero]+=v.total;
+      });
+      const vpEl=document.getElementById('cierre-ventas-prod');
+      if(vpEl){
+        if(ventasProdDia>0){
+          vpEl.style.display='block';
+          document.getElementById('cierre-ventas-prod-total').textContent='$'+fmt(ventasProdDia);
+          document.getElementById('cierre-ventas-prod-items').innerHTML=
+            Object.entries(ventasProdByConc).map(([n,v])=>
+              '<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px">'
+              +'<span style="color:var(--muted)">👷 '+n+'</span>'
+              +'<span style="color:#FCA5A5;font-weight:700">-$'+fmt(v)+'</span>'
+              +'</div>'
+            ).join('');
+        } else { vpEl.style.display='none'; }
+      }
+    }catch(e){ console.warn('ventas prod:', e.message); }
+
     // Mapa conceseros - incluye cobradas + pendientes (el lavador se liquida igual)
     const cm={};
     for(const o of ords.filter(o=>o.estado!=='abierta')){
@@ -1939,11 +1977,15 @@ async function loadCierre(){
         const estado=yaLiq
           ? '<span class="badge bg">&#10003; Liquidado</span>'
           : '<button class="btn btn-gr" style="padding:4px 12px;font-size:11px" onclick="liquidarConcesero(this)">&#x1F4B5; Liquidar</button>';
+        const descProd=ventasProdByConc[c.n]||0;
+        const pagoReal=pago-descProd;
         rows+='<tr>'
           +'<td style="font-weight:600">'+c.n+'</td>'
           +'<td style="font-weight:700">$'+fmt(c.t)+'</td>'
-          +'<td style="color:#C9A84C;font-weight:700">$'+fmt(pago)+'</td>'
-          +'<td data-nombre="'+c.n+'" data-total="'+c.t+'" data-pago="'+pago+'">'+estado+'</td>'
+          +'<td style="color:#C9A84C;font-weight:700">$'+fmt(pago)
+            +(descProd?'<br><span style="color:#FCA5A5;font-size:10px">-$'+fmt(descProd)+' prod</span>':'')+'</td>'
+          +'<td style="color:#6EE7B7;font-weight:800">$'+fmt(pagoReal)+'</td>'
+          +'<td data-nombre="'+c.n+'" data-total="'+c.t+'" data-pago="'+pagoReal+'">'+estado+'</td>'
           +'</tr>';
       }
     }
