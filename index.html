@@ -1498,7 +1498,12 @@ async function guardarOrden(){
     const ord=await api('ordenes','POST',{
       numero_orden:nextNum,placa,concesero_id:concId,concesero_nombre:concNombre,
       cliente_nombre:cliNombre,cliente_cc:cliCc,cliente_tel:cliTel,
-      forma_pago:'pendiente',estado:'abierta',total,
+      forma_pago:'pendiente',
+      estado: isEmpresa ? 'pendiente_pago' : 'abierta',
+      empresa_id: empId||null,
+      empresa_nombre: empNombre||null,
+      hora_entrada: new Date().toISOString(),
+      total,
       observaciones:document.getElementById('ord-obs').value
     });
     const ordId=Array.isArray(ord)?ord[0].id:ord.id;
