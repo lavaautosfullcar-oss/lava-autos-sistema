@@ -1905,14 +1905,16 @@ async function loadCierre(){
   try{
     const ords = await api('ordenes?fecha=eq.'+today());
 
-    // Todas las órdenes NO abiertas (cerradas + pendiente_pago)
-    const cobradas = ords.filter(o=>o.estado==='cerrada' && o.forma_pago!=='pendiente' && o.forma_pago!==null);
-    const pendientes = ords.filter(o=>o.estado==='pendiente_pago' || o.forma_pago==='pendiente');
-    const abiertas = ords.filter(o=>o.estado==='abierta');
+    // Cerradas con pago real
+    const cerradas = ords.filter(o=>
+      o.estado==='cerrada' &&
+      o.forma_pago!=='pendiente' &&
+      o.forma_pago!==null
+    );
+    const pendientes = ords.filter(o=>o.estado==='pendiente_pago'||o.forma_pago==='pendiente');
 
-    // Totales cobrados
     let ef=0, qr=0;
-    for(const o of cobradas){
+    for(const o of cerradas){
       const v=parseInt(o.total)||0;
       if(o.forma_pago==='efectivo')     ef+=v;
       else if(o.forma_pago==='qr')      qr+=v;
@@ -1922,96 +1924,99 @@ async function loadCierre(){
       }
     }
 
-    // Pendiente total
     const totPend = pendientes.reduce((s,o)=>s+(o.total||0),0);
-
-    // ── Lógica correcta ───────────────────────────────────────────────────────
-    // El bruto incluye TODO lo del día (cobrado + pendiente)
-    // porque el lavador se liquida aunque no hayan pagado
-    // Solo órdenes cerradas con pago real
-    const cerradas = ords.filter(o=>
-      o.estado==='cerrada' &&
-      o.forma_pago!=='pendiente' &&
-      o.forma_pago!==null
-    );
-
-    // Propinas del día
     const propinas = cerradas.reduce((s,o)=>s+(o.propina||0),0);
 
+    // Bruto total (cobrado + pendiente - el lavador se paga siempre)
     const brutoTotal = ords
       .filter(o=>o.estado!=='abierta')
       .reduce((s,o)=>s+(o.total||0),0);
 
-    // Pago lavadores = 50% del bruto total (cobrado + pendiente)
-    const pagoLavadores = Math.round(brutoTotal / 2);
+    const pagoLavadores = Math.round(brutoTotal/2);
+    const tuParteBruta  = brutoTotal - pagoLavadores;
+    const tuParteNeta   = tuParteBruta - totPend;
+    const cajaEfectivo  = ef - pagoLavadores - totPend;
+    const qrNeto        = qr - propinas;
 
-    // Tu parte bruta = 50% del bruto total
-    const tuParteBruta = brutoTotal - pagoLavadores;
+    // ── Ventas productos del día ──────────────────────────────────────────────
+    let ventasConcesores=0, ventasClientes=0;
+    let ventasProdByConc={};
+    try{
+      const vp = await api('ventas_productos?fecha=eq.'+today());
+      vp.forEach(v=>{
+        if(v.tipo_venta==='cliente'||!v.concesero){
+          ventasClientes+=v.total;
+        } else {
+          ventasConcesores+=v.total;
+          if(!ventasProdByConc[v.concesero]) ventasProdByConc[v.concesero]=0;
+          ventasProdByConc[v.concesero]+=v.total;
+        }
+      });
+    }catch(e){ console.warn('ventas prod:', e.message); }
 
-    // De tu parte, resta los pendientes (tú asumes el riesgo de cobro)
-    const tuParteNeta = tuParteBruta - totPend;
+    const totalProductos = ventasConcesores + ventasClientes;
+    // Total real del día = tu parte de lavadas + todos los productos
+    const totalDia = tuParteNeta + totalProductos;
 
-    // Caja efectivo = efectivo cobrado - pago lavadores - pendientes
-    // (el lavador se paga del efectivo físico)
-    const cajaEfectivo = ef - pagoLavadores - totPend;
-    const cuentaQR = qr;
-
+    // ── Actualizar KPIs ───────────────────────────────────────────────────────
     const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
     s('c-ef',        '$'+fmt(ef));
     s('c-qr',        '$'+fmt(qr));
     s('c-pendiente', '$'+fmt(totPend));
-    s('c-neta',      '$'+fmt(tuParteNeta));
-    s('dc-bruto',    '$'+fmt(brutoTotal));
+    s('c-neta',      '$'+fmt(totalDia));
+    s('dc-bruto',    '$'+fmt(ef+qr));
     s('dc-parte',    '$'+fmt(pagoLavadores));
     s('dc-neta',     '$'+fmt(tuParteNeta));
-    s('dc-ef-neta',  '$'+fmt(cajaEfectivo));
-    arqueoEsperado = cajaEfectivo;
-    const arqueoElx = document.getElementById('arqueo-esperado');
-    if(arqueoElx) arqueoElx.textContent = '$'+fmt(cajaEfectivo);
-    const qrNeto = cuentaQR - propinas;
+    s('dc-ef-neta',  '$'+fmt(cajaEfectivo + ventasConcesores + ventasClientes));
     s('dc-qr-neta',  '$'+fmt(qrNeto));
-    const propEl = document.getElementById('dc-propinas');
-    if(propEl){
-      propEl.closest('.cierre-row').style.display = propinas>0 ? 'flex' : 'none';
-      propEl.textContent = '-$'+fmt(propinas);
-    }
-    arqueoEsperado = cajaEfectivo;
-    const arqueoEl = document.getElementById('arqueo-esperado');
-    if(arqueoEl) arqueoEl.textContent = '$'+fmt(cajaEfectivo);
 
-    // ── Ventas de productos del día ─────────────────────────────────────────
-    let ventasProdDia=0;
-    let ventasProdByConc={};
-    try{
-      const vp = await api('ventas_productos?fecha=eq.'+today());
-      ventasProdDia = vp.reduce((s,v)=>s+(v.total||0),0);
-      vp.forEach(v=>{
-        if(!ventasProdByConc[v.concesero]) ventasProdByConc[v.concesero]=0;
-        ventasProdByConc[v.concesero]+=v.total;
-      });
-      const vpEl=document.getElementById('cierre-ventas-prod');
-      if(vpEl){
-        if(ventasProdDia>0){
-          vpEl.style.display='block';
-          document.getElementById('cierre-ventas-prod-total').textContent='$'+fmt(ventasProdDia);
-          document.getElementById('cierre-ventas-prod-items').innerHTML=
-            Object.entries(ventasProdByConc).map(([n,v])=>
-              '<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px">'
-              +'<span style="color:var(--muted)">👷 '+n+'</span>'
-              +'<span style="color:#FCA5A5;font-weight:700">-$'+fmt(v)+'</span>'
-              +'</div>'
-            ).join('');
-        } else { vpEl.style.display='none'; }
+    // Productos en cierre
+    const prodEl = document.getElementById('cierre-prod-section');
+    if(prodEl){
+      if(totalProductos>0){
+        prodEl.style.display='block';
+        s('dc-prod-total',    '$'+fmt(totalProductos));
+        s('dc-prod-concesor', '$'+fmt(ventasConcesores));
+        s('dc-prod-cliente',  '$'+fmt(ventasClientes));
+        s('dc-total-dia',     '$'+fmt(totalDia));
+      } else {
+        prodEl.style.display='none';
+        s('dc-total-dia', '$'+fmt(tuParteNeta));
       }
-    }catch(e){ console.warn('ventas prod:', e.message); }
+    }
 
-    // Mapa conceseros - incluye cobradas + pendientes (el lavador se liquida igual)
+    // Arqueo
+    arqueoEsperado = cajaEfectivo + ventasConcesores + ventasClientes;
+    const arqueoElx = document.getElementById('arqueo-esperado');
+    if(arqueoElx) arqueoElx.textContent = '$'+fmt(arqueoEsperado);
+
+    // ── Ventas prod card ──────────────────────────────────────────────────────
+    const vpEl=document.getElementById('cierre-ventas-prod');
+    if(vpEl){
+      if(totalProductos>0){
+        vpEl.style.display='block';
+        s('cierre-ventas-prod-total','$'+fmt(totalProductos));
+        document.getElementById('cierre-ventas-prod-items').innerHTML=
+          '<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px">'
+            +'<span style="color:var(--muted)">👷 Ventas a concesores (quedan en caja)</span>'
+            +'<span style="color:#6EE7B7;font-weight:700">$'+fmt(ventasConcesores)+'</span>'
+          +'</div>'
+          +'<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px">'
+            +'<span style="color:var(--muted)">👤 Ventas a clientes</span>'
+            +'<span style="color:#6EE7B7;font-weight:700">$'+fmt(ventasClientes)+'</span>'
+          +'</div>';
+      } else {
+        vpEl.style.display='none';
+      }
+    }
+
+    // ── Mapa conceseros ───────────────────────────────────────────────────────
     const cm={};
-    for(const o of ords.filter(o=>o.estado!=='abierta')){
+    ords.filter(o=>o.estado!=='abierta').forEach(o=>{
       const n=o.concesero_nombre||'Sin asignar';
       if(!cm[n]) cm[n]={n,t:0};
       cm[n].t+=parseInt(o.total)||0;
-    }
+    });
 
     let liqSet=new Set();
     try{
@@ -2025,16 +2030,16 @@ async function loadCierre(){
 
     let rows='';
     if(!sorted.length){
-      rows='<tr><td colspan="4" style="text-align:center;color:#8BA3BB;padding:20px">Sin ordenes hoy</td></tr>';
+      rows='<tr><td colspan="5" style="text-align:center;color:#8BA3BB;padding:20px">Sin ordenes hoy</td></tr>';
     } else {
       for(const c of sorted){
         const pago=Math.round(c.t/2);
+        const descProd=ventasProdByConc[c.n]||0;
+        const pagoReal=pago-descProd;
         const yaLiq=liqSet.has(c.n);
         const estado=yaLiq
           ? '<span class="badge bg">&#10003; Liquidado</span>'
           : '<button class="btn btn-gr" style="padding:4px 12px;font-size:11px" onclick="liquidarConcesero(this)">&#x1F4B5; Liquidar</button>';
-        const descProd=ventasProdByConc[c.n]||0;
-        const pagoReal=pago-descProd;
         rows+='<tr>'
           +'<td style="font-weight:600">'+c.n+'</td>'
           +'<td style="font-weight:700">$'+fmt(c.t)+'</td>'
