@@ -330,12 +330,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         <!-- Tabla ventas del día -->
         <div class="card">
           <div class="card-t"><span class="card-tg">✦ Ventas registradas hoy</span></div>
-          <div class="tbl-wrap">
-            <table>
-              <thead><tr><th>Hora</th><th>Lavador</th><th>Producto</th><th>Cant</th><th>Valor unit</th><th>Total</th><th></th></tr></thead>
-              <tbody id="prod-lista"></tbody>
-            </table>
-          </div>
+          <div id="prod-lista"></div>
         </div>
       </div>
 
@@ -2093,7 +2088,12 @@ async function loadDashResumen(){
     // Gastos (excluir saldo inicial y ventas productos)
     const gastosReales = gastos.filter(g=>g.categoria!=='🏦 Saldo inicial');
     const gastosTotal = gastosReales.filter(g=>g.categoria!=='🛒 Venta producto').reduce((s,g)=>s+(g.valor||0),0);
-    const ventasProd = gastosReales.filter(g=>g.categoria==='🛒 Venta producto').reduce((s,g)=>s+(g.valor||0),0);
+    // Load ventas productos from dedicated table
+    let ventasProd = 0;
+    try{
+      const vp = await api('ventas_productos?fecha=gte.'+start+'&fecha=lte.'+end);
+      ventasProd = vp.reduce((s,v)=>s+(v.total||0),0);
+    }catch{}
 
     // Previous month compare
     const [y,m]=dashMes.split('-');
@@ -3540,26 +3540,51 @@ async function loadProductos(){
   document.getElementById('prod-fecha-lbl').textContent =
     new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
   try{
-    const ventas = await api('gastos?fecha=eq.'+today()+'&categoria=eq.🛒 Venta producto&order=created_at.desc');
+    const ventas = await api('ventas_productos?fecha=eq.'+today()+'&order=created_at.asc');
     
     let total=0, unidades=0;
-    const rows = ventas.map(v=>{
-      const data = JSON.parse(v.descripcion||'{}');
-      total += v.valor;
-      unidades += data.cantidad||1;
-      return '<tr>'
-        +'<td style="font-family:monospace;color:var(--muted);font-size:11px">'+(data.hora||'')+'</td>'
-        +'<td style="font-weight:600">'+( data.concesero||'')+'</td>'
-        +'<td>'+( data.producto||v.descripcion)+'</td>'
-        +'<td style="text-align:center">'+(data.cantidad||1)+'</td>'
-        +'<td>$'+fmt(data.precio_unit||0)+'</td>'
-        +'<td style="font-weight:700;color:var(--gold)">$'+fmt(v.valor)+'</td>'
-        +'<td><button class="btn btn-r" style="padding:2px 8px;font-size:10px" onclick="borrarVenta('+v.id+')">🗑️</button></td>'
-        +'</tr>';
+    
+    // Group by lavador
+    const byLavador = {};
+    ventas.forEach(v=>{
+      const nombre = v.concesero||'Sin nombre';
+      if(!byLavador[nombre]) byLavador[nombre] = {total:0, items:[]};
+      byLavador[nombre].total += v.total;
+      byLavador[nombre].items.push({
+        producto: v.producto,
+        cantidad: v.cantidad,
+        precio_unit: v.precio_unit,
+        valor: v.total,
+        hora: v.hora,
+        id: v.id
+      });
+      total += v.total;
+      unidades += v.cantidad||1;
+    });
+
+    // Render by lavador
+    const sorted = Object.entries(byLavador).sort((a,b)=>b[1].total-a[1].total);
+    const html = sorted.map(([nombre, d])=>{
+      const items = d.items.map(item=>
+        '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0 5px 16px;border-bottom:1px solid rgba(255,255,255,.05)">'
+          +'<span style="font-size:12px;color:var(--muted)">'+(item.hora?'<span style=\"color:var(--muted);margin-right:8px\">'+item.hora+'</span>':'')+item.producto+' x'+(item.cantidad||1)+'</span>'
+          +'<div style="display:flex;align-items:center;gap:8px">'
+            +'<span style="font-size:12px;color:var(--gold)">$'+fmt(item.valor)+'</span>'
+            +'<button class="btn btn-r" style="padding:2px 6px;font-size:10px" onclick="borrarVenta('+item.id+')">🗑️</button>'
+          +'</div>'
+        +'</div>'
+      ).join('');
+      return '<div style="border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,.04)">'
+          +'<span style="font-weight:700;font-size:13px">👷 '+nombre+'</span>'
+          +'<span style="font-weight:800;color:#FCA5A5;font-size:13px">-$'+fmt(d.total)+'</span>'
+        +'</div>'
+        + items
+        +'</div>';
     }).join('');
 
-    document.getElementById('prod-lista').innerHTML = rows ||
-      '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">Sin ventas registradas hoy</td></tr>';
+    document.getElementById('prod-lista').innerHTML = html ||
+      '<div style="text-align:center;color:var(--muted);padding:30px">Sin ventas registradas hoy</div>';
     document.getElementById('prod-total-dia').textContent = '$'+fmt(total);
     document.getElementById('prod-unidades').textContent = unidades;
     document.getElementById('prod-descuentos').textContent = '$'+fmt(total);
@@ -3605,12 +3630,14 @@ async function guardarVentaProducto(){
   const total = cant * precio;
   const hora = new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',hour12:true});
   try{
-    await api('gastos','POST',{
-      categoria: '🛒 Venta producto',
-      descripcion: JSON.stringify({concesero, producto, cantidad:cant, precio_unit:precio, hora}),
-      valor: total,
-      forma_pago: 'efectivo',
-      fecha: today()
+    await api('ventas_productos','POST',{
+      fecha: today(),
+      concesero,
+      producto,
+      cantidad: cant,
+      precio_unit: precio,
+      total,
+      hora
     });
     cerrarModal('modal-producto');
     showToast('Venta registrada ✅ — $'+fmt(total)+' descontado a '+concesero);
@@ -3621,7 +3648,7 @@ async function guardarVentaProducto(){
 async function borrarVenta(id){
   if(!confirm('¿Eliminar esta venta?')) return;
   try{
-    await api('gastos?id=eq.'+id,'DELETE');
+    await api('ventas_productos?id=eq.'+id,'DELETE');
     showToast('Venta eliminada');
     loadProductos();
   }catch(e){ showToast('Error: '+e.message, true); }
