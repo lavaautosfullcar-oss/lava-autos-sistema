@@ -246,69 +246,87 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <!-- CIERRE -->
       <div id="s-cierre" class="screen">
         <div class="row">
-          <div><div class="page-title">Cierre del día</div><div class="page-sub" id="cierre-fecha"></div></div>
-          <button class="btn btn-g" onclick="window.print()">📄 Imprimir</button>
+          <div><div class="page-title">Cierre del día</div><div class="page-sub" id="cierre-fecha-lbl"></div></div>
+          <button class="btn btn-g" onclick="imprimirCierre()">🖨️ Imprimir</button>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+
+        <!-- KPIs -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px">
           <div class="card" style="background:rgba(16,185,129,.07);border-color:rgba(16,185,129,.2)">
-            <div style="font-size:9px;color:#6EE7B7;text-transform:uppercase;font-weight:700;margin-bottom:5px">💵 Cobrado en efectivo</div>
+            <div style="font-size:9px;color:#6EE7B7;text-transform:uppercase;font-weight:700;margin-bottom:5px">💵 Efectivo cobrado</div>
             <div style="font-size:22px;font-weight:700;font-family:'Georgia',serif;color:#6EE7B7" id="c-ef">$0</div>
           </div>
           <div class="card" style="background:rgba(139,92,246,.07);border-color:rgba(139,92,246,.2)">
-            <div style="font-size:9px;color:#C4B5FD;text-transform:uppercase;font-weight:700;margin-bottom:5px">📲 Cobrado por QR</div>
+            <div style="font-size:9px;color:#C4B5FD;text-transform:uppercase;font-weight:700;margin-bottom:5px">📲 QR cobrado</div>
             <div style="font-size:22px;font-weight:700;font-family:'Georgia',serif;color:#C4B5FD" id="c-qr">$0</div>
           </div>
           <div class="card" style="background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.2)">
             <div style="font-size:9px;color:#FCD34D;text-transform:uppercase;font-weight:700;margin-bottom:5px">⏳ Pendiente por cobrar</div>
             <div style="font-size:22px;font-weight:700;font-family:'Georgia',serif;color:#FCD34D" id="c-pendiente">$0</div>
           </div>
-          <div class="card" style="background:rgba(239,68,68,.07);border-color:rgba(239,68,68,.2)">
-            <div style="font-size:9px;color:#FCA5A5;text-transform:uppercase;font-weight:700;margin-bottom:5px">📋 Gastos del día</div>
-            <div style="font-size:22px;font-weight:700;font-family:'Georgia',serif;color:#FCA5A5" id="c-gastos">$0</div>
-          </div>
-        </div>
-        <div class="card" style="background:var(--gold-p);border-color:var(--gold-b);margin-bottom:12px">
-          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-            <div>
-              <div style="font-size:9px;color:var(--gold);text-transform:uppercase;font-weight:700;margin-bottom:4px">✦ Ganancia neta del día (solo cobrado)</div>
-              <div style="font-size:28px;font-weight:800;font-family:'Georgia',serif;color:var(--gold)" id="c-neta">$0</div>
-            </div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-t"><span class="card-tg">✦ Desglose del cierre</span></div>
-          <div class="cierre-row"><span style="color:var(--muted)">Total cobrado (ef + QR)</span><span style="font-weight:700;font-family:'Georgia',serif" id="dc-bruto">$0</span></div>
-          <div class="cierre-row"><span style="color:var(--muted)">— Pago lavadores en efectivo (50% del total)</span><span style="font-weight:700;color:var(--gold);font-family:'Georgia',serif" id="dc-parte">$0</span></div>
-          <div class="cierre-row"><span style="color:var(--muted)">— Gastos del día</span><span style="font-weight:700;color:#FCA5A5;font-family:'Georgia',serif" id="dc-gastos">$0</span></div>
-          <div class="cierre-row" style="border:none"><span style="font-weight:700">= Tu ganancia neta</span><span style="font-size:20px;font-weight:800;color:#6EE7B7;font-family:'Georgia',serif" id="dc-neta">$0</span></div>
-          <div class="divider"></div>
-          <div class="cierre-row"><span style="color:var(--muted)">De esa ganancia en efectivo</span><span style="font-weight:700;color:#6EE7B7;font-family:'Georgia',serif" id="dc-ef-neta">$0</span></div>
-          <div class="cierre-row" style="border:none"><span style="color:var(--muted)">De esa ganancia en QR</span><span style="font-weight:700;color:#C4B5FD;font-family:'Georgia',serif" id="dc-qr-neta">$0</span></div>
-        </div>
-        <div class="card">
-          <div class="card-t"><span>Pago a concesores</span></div>
-          <div class="tbl-wrap"><table><thead><tr><th>Concesor</th><th>Generó</th><th>Le toca (50%)</th><th>A pagar</th><th>Estado</th></tr></thead><tbody id="cierre-concs"></tbody></table></div>
         </div>
 
-        <!-- Ventas productos -->
+        <!-- Ganancia total -->
+        <div class="card" style="background:var(--gold-p);border-color:var(--gold-b);margin-bottom:12px">
+          <div style="font-size:9px;color:var(--gold);text-transform:uppercase;font-weight:700;margin-bottom:4px">✦ Tu parte total del día</div>
+          <div style="font-size:32px;font-weight:900;font-family:'Georgia',serif;color:var(--gold)" id="c-neta">$0</div>
+        </div>
+
+        <!-- Desglose -->
+        <div class="card">
+          <div class="card-t"><span class="card-tg">✦ Desglose del cierre</span></div>
+
+          <div class="cierre-row"><span style="color:var(--muted)">📋 Total del día (planilla)</span><span style="font-weight:700;font-family:'Georgia',serif" id="dc-total-dia">$0</span></div>
+          <div class="cierre-row"><span style="color:var(--muted)">÷ 2 — Pago lavadores (50%)</span><span style="font-weight:700;color:#FCA5A5;font-family:'Georgia',serif" id="dc-mitad-lav">$0</span></div>
+          <div class="cierre-row" style="border-bottom:2px solid var(--border)"><span style="font-weight:700">= Tu mitad</span><span style="font-size:18px;font-weight:800;color:var(--gold);font-family:'Georgia',serif" id="dc-tu-mitad">$0</span></div>
+
+          <div class="cierre-row"><span style="color:var(--muted)">— Pendientes por cobrar</span><span style="font-weight:700;color:#FCD34D;font-family:'Georgia',serif" id="dc-pendientes">$0</span></div>
+          <div class="cierre-row" style="border-bottom:2px solid var(--border)"><span style="font-weight:700">= Tu parte de lavadas</span><span style="font-size:18px;font-weight:800;color:#6EE7B7;font-family:'Georgia',serif" id="dc-tu-neta">$0</span></div>
+
+          <!-- Productos -->
+          <div id="cierre-prod-section" style="display:none">
+            <div class="cierre-row"><span style="color:var(--muted)">🛒 Productos a concesores</span><span style="font-weight:700;color:#6EE7B7;font-family:'Georgia',serif" id="dc-prod-concesor">$0</span></div>
+            <div class="cierre-row"><span style="color:var(--muted)">🛒 Productos a clientes</span><span style="font-weight:700;color:#6EE7B7;font-family:'Georgia',serif" id="dc-prod-cliente">$0</span></div>
+            <div class="cierre-row" style="border-bottom:2px solid var(--border)"><span style="color:var(--muted)">🛒 Total productos</span><span style="font-weight:700;color:#6EE7B7;font-family:'Georgia',serif" id="dc-prod-total">$0</span></div>
+          </div>
+
+          <!-- Total final -->
+          <div style="background:var(--gold-p);border:1px solid var(--gold-b);border-radius:8px;padding:12px;margin-top:10px;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-weight:700;color:var(--gold)">✦ TOTAL TUYO DEL DÍA</span>
+            <span style="font-size:24px;font-weight:900;color:var(--gold);font-family:'Georgia',serif" id="dc-total-final">$0</span>
+          </div>
+
+          <div class="divider"></div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">¿Dónde está tu plata?</div>
+          <div class="cierre-row"><span style="color:var(--muted)">💵 En caja (efectivo)</span><span style="font-weight:700;color:#6EE7B7;font-family:'Georgia',serif" id="dc-caja-ef">$0</span></div>
+          <div class="cierre-row" style="border:none"><span style="color:var(--muted)">📲 En cuenta (QR — intacto)</span><span style="font-weight:700;color:#C4B5FD;font-family:'Georgia',serif" id="dc-cuenta-qr">$0</span></div>
+        </div>
+
+        <!-- Ventas productos card -->
         <div class="card" id="cierre-ventas-prod" style="display:none;border-color:rgba(110,231,183,.3)">
           <div class="card-t">
             <span class="card-tg">🛒 Ventas de productos hoy</span>
             <span style="font-size:18px;font-weight:800;color:#6EE7B7" id="cierre-ventas-prod-total">$0</span>
           </div>
           <div id="cierre-ventas-prod-items"></div>
-          <div style="margin-top:8px;padding:8px 10px;background:rgba(16,185,129,.08);border-radius:8px;font-size:12px;color:var(--muted)">
-            💡 Estos valores se descuentan del pago de cada concesor
-          </div>
         </div>
 
-        <!-- Arqueo de caja -->
+        <!-- Pago conceseros -->
+        <div class="card">
+          <div class="card-t">
+            <span>Pago a concesores</span>
+            <span id="liq-resumen" style="font-size:11px;color:var(--muted)"></span>
+          </div>
+          <div class="tbl-wrap"><table><thead><tr><th>Concesor</th><th>Generó</th><th>Le toca (50%)</th><th>A pagar</th><th>Estado</th></tr></thead><tbody id="cierre-concs"></tbody></table></div>
+        </div>
+
+        <!-- Arqueo -->
         <div class="card" style="border-color:rgba(245,158,11,.3)">
           <div class="card-t"><span class="card-tg">🔐 Arqueo de caja</span><span id="arqueo-estado" style="font-size:11px"></span></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
             <div>
               <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Lo que debería haber en caja</div>
-              <div style="font-size:22px;font-weight:800;color:#6EE7B7;font-family:'Georgia',serif" id="arqueo-esperado">$0</div>
+              <div style="font-size:20px;font-weight:800;color:#6EE7B7;font-family:'Georgia',serif" id="arqueo-esperado">$0</div>
             </div>
             <div>
               <div style="font-size:10px;color:var(--muted);margin-bottom:4px">¿Cuánto hay físicamente?</div>
@@ -323,28 +341,6 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           <button class="btn btn-p" style="width:100%;padding:10px" onclick="guardarArqueo()">💾 Guardar arqueo del día</button>
         </div>
 
-      </div>
-
-      <!-- PRODUCTOS -->
-      <div id="s-productos" class="screen">
-        <div class="row">
-          <div><div class="page-title">🛒 Venta de productos</div><div class="page-sub" id="prod-fecha-lbl"></div></div>
-          <button class="btn btn-p" onclick="abrirModalProducto()">+ Registrar venta</button>
-        </div>
-
-        <!-- KPIs -->
-        <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
-          <div class="kpi"><div class="kpi-l">💰 Total ventas</div><div class="kpi-v" style="color:var(--gold)" id="prod-total-dia">$0</div></div>
-          <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">👤 Ventas a clientes</div><div class="kpi-v" style="color:#6EE7B7" id="prod-total-clientes">$0</div></div>
-          <div class="kpi" style="border-left-color:#FCA5A5"><div class="kpi-l">👷 Descuentos concesores</div><div class="kpi-v" style="color:#FCA5A5" id="prod-descuentos">$0</div></div>
-          <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">📦 Unidades vendidas</div><div class="kpi-v" style="color:#C4B5FD" id="prod-unidades">0</div></div>
-        </div>
-
-        <!-- Tabla ventas del día -->
-        <div class="card">
-          <div class="card-t"><span class="card-tg">✦ Ventas registradas hoy</span></div>
-          <div id="prod-lista"></div>
-        </div>
       </div>
 
       <!-- GASTOS -->
@@ -464,12 +460,10 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
                 <thead>
                   <tr>
                     <th>Fecha</th>
-                    <th>💵 Efectivo</th>
-                    <th>📲 QR</th>
-                    <th>Total día</th>
-                    <th>Pago lavadores</th>
-                    <th>💵 Caja</th>
-                    <th>📲 Cuenta</th>
+                    <th>⏳ Pendiente</th>
+                    <th>💰 Mi mitad</th>
+                    <th>💵 En caja</th>
+                    <th>📲 En cuenta</th>
                   </tr>
                 </thead>
                 <tbody id="fin-ingresos-rows"></tbody>
@@ -1231,12 +1225,13 @@ function setupNav(){
    'sep-reportes','sep-empresas','sep-config',
    'bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
     document.getElementById(id)?.classList.add('hidden'));
-  // Administrador: ordenes + cierre + historial + pendientes
+  // Administrador: ordenes + productos + cierre + historial + pendientes
   if(isCajero){
     document.getElementById('nav-cierre')?.classList.remove('hidden');
     document.getElementById('bn-cierre')?.classList.remove('hidden');
     document.getElementById('nav-historial')?.classList.remove('hidden');
     document.getElementById('nav-pendientes')?.classList.remove('hidden');
+    document.getElementById('nav-productos')?.classList.remove('hidden');
     document.getElementById('sep-reportes')?.classList.remove('hidden');
     document.getElementById('sep-empresas')?.classList.remove('hidden');
   }
@@ -1905,15 +1900,13 @@ async function loadCierre(){
   try{
     const ords = await api('ordenes?fecha=eq.'+today());
 
-    // Cerradas con pago real
-    const cerradas = ords.filter(o=>
-      o.estado==='cerrada' &&
-      o.forma_pago!=='pendiente' &&
-      o.forma_pago!==null
-    );
+    // ── Todas las órdenes excepto abiertas ────────────────────────────────────
+    const todasMenosAbiertas = ords.filter(o=>o.estado!=='abierta');
     const pendientes = ords.filter(o=>o.estado==='pendiente_pago'||o.forma_pago==='pendiente');
 
+    // Totales por forma de pago (solo cerradas cobradas)
     let ef=0, qr=0;
+    const cerradas = ords.filter(o=>o.estado==='cerrada'&&o.forma_pago!=='pendiente'&&o.forma_pago!==null);
     for(const o of cerradas){
       const v=parseInt(o.total)||0;
       if(o.forma_pago==='efectivo')     ef+=v;
@@ -1925,22 +1918,26 @@ async function loadCierre(){
     }
 
     const totPend = pendientes.reduce((s,o)=>s+(o.total||0),0);
-    const propinas = cerradas.reduce((s,o)=>s+(o.propina||0),0);
 
-    // Bruto total (cobrado + pendiente - el lavador se paga siempre)
-    const brutoTotal = ords
-      .filter(o=>o.estado!=='abierta')
-      .reduce((s,o)=>s+(o.total||0),0);
+    // ── Lógica del cierre ─────────────────────────────────────────────────────
+    // Total del día = TODO (cerrado + pendiente)
+    const totalDia = todasMenosAbiertas.reduce((s,o)=>s+(o.total||0),0);
 
-    const pagoLavadores = Math.round(brutoTotal/2);
-    const tuParteBruta  = brutoTotal - pagoLavadores;
-    const tuParteNeta   = tuParteBruta - totPend;
-    const cajaEfectivo  = ef - pagoLavadores - totPend;
-    const qrNeto        = qr - propinas;
+    // Dividir en 2
+    const mitadLavadores = Math.round(totalDia / 2);
+    const tuMitad        = totalDia - mitadLavadores;
 
-    // ── Ventas productos del día ──────────────────────────────────────────────
-    let ventasConcesores=0, ventasClientes=0;
-    let ventasProdByConc={};
+    // De tu mitad: restar pendientes
+    const tuParteNeta = tuMitad - totPend;
+
+    // Caja = efectivo − pago lavadores
+    const cajaEf = ef - mitadLavadores;
+
+    // QR intacto
+    const cuentaQR = qr;
+
+    // ── Ventas productos ──────────────────────────────────────────────────────
+    let ventasConcesores=0, ventasClientes=0, ventasProdByConc={};
     try{
       const vp = await api('ventas_productos?fecha=eq.'+today());
       vp.forEach(v=>{
@@ -1953,66 +1950,45 @@ async function loadCierre(){
         }
       });
     }catch(e){ console.warn('ventas prod:', e.message); }
-
     const totalProductos = ventasConcesores + ventasClientes;
-    // Total real del día = tu parte de lavadas + todos los productos
-    const totalDia = tuParteNeta + totalProductos;
 
-    // ── Actualizar KPIs ───────────────────────────────────────────────────────
+    // ── Total final tuyo ──────────────────────────────────────────────────────
+    const totalFinal = tuParteNeta + totalProductos;
+
+    // ── Actualizar UI ─────────────────────────────────────────────────────────
     const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+
+    // KPIs arriba
     s('c-ef',        '$'+fmt(ef));
     s('c-qr',        '$'+fmt(qr));
     s('c-pendiente', '$'+fmt(totPend));
-    s('c-neta',      '$'+fmt(totalDia));
-    s('dc-bruto',    '$'+fmt(ef+qr));
-    s('dc-parte',    '$'+fmt(pagoLavadores));
-    s('dc-neta',     '$'+fmt(tuParteNeta));
-    s('dc-ef-neta',  '$'+fmt(cajaEfectivo + ventasConcesores + ventasClientes));
-    s('dc-qr-neta',  '$'+fmt(qrNeto));
+    s('c-neta',      '$'+fmt(totalFinal));
 
-    // Productos en cierre
-    const prodEl = document.getElementById('cierre-prod-section');
-    if(prodEl){
-      if(totalProductos>0){
-        prodEl.style.display='block';
-        s('dc-prod-total',    '$'+fmt(totalProductos));
-        s('dc-prod-concesor', '$'+fmt(ventasConcesores));
-        s('dc-prod-cliente',  '$'+fmt(ventasClientes));
-        s('dc-total-dia',     '$'+fmt(totalDia));
-      } else {
-        prodEl.style.display='none';
-        s('dc-total-dia', '$'+fmt(tuParteNeta));
-      }
-    }
+    // Desglose
+    s('dc-total-dia',     '$'+fmt(totalDia));
+    s('dc-mitad-lav',     '$'+fmt(mitadLavadores));
+    s('dc-tu-mitad',      '$'+fmt(tuMitad));
+    s('dc-pendientes',    '$'+fmt(totPend));
+    s('dc-tu-neta',       '$'+fmt(tuParteNeta));
+    s('dc-prod-concesor', '$'+fmt(ventasConcesores));
+    s('dc-prod-cliente',  '$'+fmt(ventasClientes));
+    s('dc-prod-total',    '$'+fmt(totalProductos));
+    s('dc-total-final',   '$'+fmt(totalFinal));
+    s('dc-caja-ef',       '$'+fmt(cajaEf + totalProductos));
+    s('dc-cuenta-qr',     '$'+fmt(cuentaQR));
+
+    // Mostrar/ocultar sección productos
+    const prodSec = document.getElementById('cierre-prod-section');
+    if(prodSec) prodSec.style.display = totalProductos>0 ? 'block' : 'none';
 
     // Arqueo
-    arqueoEsperado = cajaEfectivo + ventasConcesores + ventasClientes;
+    arqueoEsperado = cajaEf + totalProductos;
     const arqueoElx = document.getElementById('arqueo-esperado');
     if(arqueoElx) arqueoElx.textContent = '$'+fmt(arqueoEsperado);
 
-    // ── Ventas prod card ──────────────────────────────────────────────────────
-    const vpEl=document.getElementById('cierre-ventas-prod');
-    if(vpEl){
-      if(totalProductos>0){
-        vpEl.style.display='block';
-        s('cierre-ventas-prod-total','$'+fmt(totalProductos));
-        document.getElementById('cierre-ventas-prod-items').innerHTML=
-          '<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px">'
-            +'<span style="color:var(--muted)">👷 Ventas a concesores (quedan en caja)</span>'
-            +'<span style="color:#6EE7B7;font-weight:700">$'+fmt(ventasConcesores)+'</span>'
-          +'</div>'
-          +'<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px">'
-            +'<span style="color:var(--muted)">👤 Ventas a clientes</span>'
-            +'<span style="color:#6EE7B7;font-weight:700">$'+fmt(ventasClientes)+'</span>'
-          +'</div>';
-      } else {
-        vpEl.style.display='none';
-      }
-    }
-
-    // ── Mapa conceseros ───────────────────────────────────────────────────────
+    // ── Conceseros ────────────────────────────────────────────────────────────
     const cm={};
-    ords.filter(o=>o.estado!=='abierta').forEach(o=>{
+    todasMenosAbiertas.forEach(o=>{
       const n=o.concesero_nombre||'Sin asignar';
       if(!cm[n]) cm[n]={n,t:0};
       cm[n].t+=parseInt(o.total)||0;
@@ -2434,15 +2410,18 @@ async function loadDashFinanzas(){
     const _lastDay=new Date(parseInt(_y),parseInt(_m),0).getDate();
     const start=dashMes+'-01', end=dashMes+'-'+String(_lastDay).padStart(2,'0');
 
-    const ords=await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&estado=eq.cerrada&order=fecha.asc');
-    const gastos=await api('gastos?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
+    const ords=await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
 
-    // ── Agrupar órdenes por día ───────────────────────────────────
+    // Agrupar por día - TODAS menos abiertas
     const byDay={};
-    for(const o of ords){
-      if(!byDay[o.fecha]) byDay[o.fecha]={fecha:o.fecha,ef:0,qr:0};
-      if(o.forma_pago==='efectivo')     byDay[o.fecha].ef+=parseInt(o.total)||0;
-      else if(o.forma_pago==='qr')      byDay[o.fecha].qr+=parseInt(o.total)||0;
+    for(const o of ords.filter(o=>o.estado!=='abierta')){
+      if(!byDay[o.fecha]) byDay[o.fecha]={fecha:o.fecha,ef:0,qr:0,pend:0,total:0};
+      const v=parseInt(o.total)||0;
+      byDay[o.fecha].total+=v;
+      if(o.estado==='pendiente_pago'||o.forma_pago==='pendiente'){
+        byDay[o.fecha].pend+=v;
+      } else if(o.forma_pago==='efectivo') byDay[o.fecha].ef+=v;
+      else if(o.forma_pago==='qr')         byDay[o.fecha].qr+=v;
       else if(o.forma_pago==='mixto'){
         byDay[o.fecha].ef+=parseInt(o.pago_efectivo)||0;
         byDay[o.fecha].qr+=parseInt(o.pago_qr)||0;
@@ -2450,65 +2429,72 @@ async function loadDashFinanzas(){
     }
     const days=Object.values(byDay).sort((a,b)=>a.fecha.localeCompare(b.fecha));
 
-    // ── Totales mes ───────────────────────────────────────────────
-    let totEf=0,totQr=0,totGastos=0,totGastosEf=0,totGastosQr=0;
-    days.forEach(d=>{totEf+=d.ef;totQr+=d.qr;});
-    gastos.forEach(g=>{
-      totGastos+=parseInt(g.valor)||0;
+    // Totales mes
+    let totEf=0,totQr=0,totPend=0,totTotal=0;
+    days.forEach(d=>{totEf+=d.ef;totQr+=d.qr;totPend+=d.pend;totTotal+=d.total;});
+
+    // Lógica correcta: total ÷ 2
+    const mitadLavadores = Math.round(totTotal/2);
+    const tuMitad        = totTotal - mitadLavadores;
+    const tuParteNeta    = tuMitad - totPend;
+
+    // Ventas productos del mes
+    let ventasProdMes=0;
+    try{
+      const vp=await api('ventas_productos?fecha=gte.'+start+'&fecha=lte.'+end);
+      ventasProdMes=vp.reduce((s,v)=>s+(v.total||0),0);
+    }catch{}
+
+    // Gastos del mes
+    const gastos=await api('gastos?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
+    const gastosReales=gastos.filter(g=>g.categoria!=='🏦 Saldo inicial');
+    const totGastos=gastosReales.reduce((s,g)=>s+(g.valor||0),0);
+    let totGastosEf=0,totGastosQr=0;
+    gastosReales.forEach(g=>{
       if(g.forma_pago==='efectivo') totGastosEf+=parseInt(g.valor)||0;
       else totGastosQr+=parseInt(g.valor)||0;
     });
 
-    const totBruto=totEf+totQr;
-    const pagoLavadores=Math.round(totBruto/2);
-    const cajaEf=totEf-pagoLavadores-totGastosEf;
-    const cuentaQr=totQr-totGastosQr;
-    const neta=cajaEf+cuentaQr;
+    const totalFinalMes = tuParteNeta + ventasProdMes - totGastos;
 
-    // ── KPIs ──────────────────────────────────────────────────────
+    // KPIs
     const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-    s('fin-ef','$'+fmt(totEf));
-    s('fin-qr','$'+fmt(totQr));
-    s('fin-gastos','$'+fmt(totGastos));
-    s('fin-neta','$'+fmt(neta));
+    s('fin-ef',     '$'+fmt(totEf));
+    s('fin-qr',     '$'+fmt(totQr));
+    s('fin-gastos', '$'+fmt(totGastos));
+    s('fin-neta',   '$'+fmt(totalFinalMes));
 
-    // ── Tabla ingresos ────────────────────────────────────────────
+    // Tabla ingresos diarios
     let ingRows='';
-    let acumEf=0, acumQr=0;
     for(const d of days){
-      const total=d.ef+d.qr;
-      const pago=Math.round(total/2);
-      const caja=d.ef-pago;
-      acumEf+=d.ef; acumQr+=d.qr;
+      const mitad=Math.round(d.total/2);
+      const tuParte=d.total-mitad-d.pend;
+      const caja=d.ef-mitad;
       ingRows+='<tr>'
         +'<td style="font-family:monospace;color:var(--muted)">'+d.fecha.split('-').reverse().join('/')+'</td>'
-        +'<td style="color:#6EE7B7;font-weight:700">$'+fmt(d.ef)+'</td>'
-        +'<td style="color:#C4B5FD;font-weight:700">$'+fmt(d.qr)+'</td>'
-        +'<td style="font-weight:700">$'+fmt(total)+'</td>'
-        +'<td style="color:#FCA5A5">-$'+fmt(pago)+'</td>'
+        +'<td style="color:#FCD34D">'+(d.pend?'$'+fmt(d.pend):'-')+'</td>'
+        +'<td style="color:var(--gold);font-weight:800">$'+fmt(tuParte)+'</td>'
         +'<td style="color:#6EE7B7;font-weight:700">$'+fmt(caja)+'</td>'
         +'<td style="color:#C4B5FD;font-weight:700">$'+fmt(d.qr)+'</td>'
         +'</tr>';
     }
-    const ingTotBody=document.getElementById('fin-ingresos-rows');
-    if(ingTotBody) ingTotBody.innerHTML=ingRows||'<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">Sin ingresos registrados</td></tr>';
+    const ingBody=document.getElementById('fin-ingresos-rows');
+    if(ingBody) ingBody.innerHTML=ingRows||'<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">Sin ingresos</td></tr>';
 
-    // Footer totales ingresos
-    const totCaja=totEf-pagoLavadores-totGastosEf;
+    // Footer
+    const cajaTotal=totEf-mitadLavadores-totPend;
     const ingFoot=document.getElementById('fin-ingresos-total');
     if(ingFoot) ingFoot.innerHTML='<tr style="background:var(--gold-p);font-weight:800">'
       +'<td style="color:var(--gold)">TOTAL MES</td>'
-      +'<td style="color:#6EE7B7">$'+fmt(totEf)+'</td>'
+      +'<td style="color:#FCD34D">$'+fmt(totPend)+'</td>'
+      +'<td style="color:var(--gold)">$'+fmt(tuParteNeta)+'</td>'
+      +'<td style="color:#6EE7B7">$'+fmt(cajaTotal)+'</td>'
       +'<td style="color:#C4B5FD">$'+fmt(totQr)+'</td>'
-      +'<td style="color:var(--gold)">$'+fmt(totBruto)+'</td>'
-      +'<td style="color:#FCA5A5">-$'+fmt(pagoLavadores)+'</td>'
-      +'<td style="color:#6EE7B7">$'+fmt(cajaEf)+'</td>'
-      +'<td style="color:#C4B5FD">$'+fmt(cuentaQr)+'</td>'
       +'</tr>';
 
-    // ── Tabla gastos ──────────────────────────────────────────────
+    // Tabla gastos
     let gasRows='';
-    for(const g of gastos){
+    for(const g of gastosReales){
       const ef=g.forma_pago==='efectivo'?g.valor:0;
       const qr=g.forma_pago==='qr'?g.valor:0;
       gasRows+='<tr>'
@@ -2521,9 +2507,8 @@ async function loadDashFinanzas(){
         +'</tr>';
     }
     const gasBody=document.getElementById('fin-gastos-rows');
-    if(gasBody) gasBody.innerHTML=gasRows||'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Sin gastos registrados</td></tr>';
+    if(gasBody) gasBody.innerHTML=gasRows||'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Sin gastos</td></tr>';
 
-    // Footer totales gastos
     const gasFoot=document.getElementById('fin-gastos-total');
     if(gasFoot) gasFoot.innerHTML='<tr style="background:rgba(239,68,68,.1);font-weight:800">'
       +'<td colspan="3" style="color:#FCA5A5">TOTAL GASTOS</td>'
@@ -2532,26 +2517,30 @@ async function loadDashFinanzas(){
       +'<td style="color:#FCA5A5">$'+fmt(totGastos)+'</td>'
       +'</tr>';
 
-    // ── Resumen final ─────────────────────────────────────────────
+    // Resumen final
     const resEl=document.getElementById('fin-resumen-final');
     if(resEl) resEl.innerHTML=''
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
         +'<div>'
-          +'<div style="font-size:11px;color:var(--muted);margin-bottom:4px">Total ingresos del mes</div>'
-          +'<div style="font-size:20px;font-weight:800;font-family:Georgia,serif;color:var(--gold)">$'+fmt(totBruto)+'</div>'
-          +'<div style="font-size:11px;color:var(--muted);margin-top:8px;margin-bottom:4px">— Pago lavadores (50%)</div>'
-          +'<div style="font-size:16px;font-weight:700;color:#FCA5A5">- $'+fmt(pagoLavadores)+'</div>'
-          +'<div style="font-size:11px;color:var(--muted);margin-top:8px;margin-bottom:4px">— Gastos del mes</div>'
-          +'<div style="font-size:16px;font-weight:700;color:#FCA5A5">- $'+fmt(totGastos)+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-bottom:4px">Total planilla del mes</div>'
+          +'<div style="font-size:20px;font-weight:800;font-family:Georgia,serif;color:var(--gold)">$'+fmt(totTotal)+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-top:8px;margin-bottom:4px">÷ 2 — Pago lavadores</div>'
+          +'<div style="font-size:16px;font-weight:700;color:#FCA5A5">-$'+fmt(mitadLavadores)+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:4px">— Pendientes por cobrar</div>'
+          +'<div style="font-size:16px;font-weight:700;color:#FCD34D">-$'+fmt(totPend)+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:4px">+ Ventas productos</div>'
+          +'<div style="font-size:16px;font-weight:700;color:#6EE7B7">+$'+fmt(ventasProdMes)+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:4px">— Gastos del mes</div>'
+          +'<div style="font-size:16px;font-weight:700;color:#FCA5A5">-$'+fmt(totGastos)+'</div>'
         +'</div>'
         +'<div style="border-left:1px solid var(--border);padding-left:16px">'
-          +'<div style="font-size:11px;color:var(--muted);margin-bottom:4px">💵 Caja efectivo neta</div>'
-          +'<div style="font-size:18px;font-weight:800;color:#6EE7B7">$'+fmt(cajaEf)+'</div>'
-          +'<div style="font-size:11px;color:var(--muted);margin-top:8px;margin-bottom:4px">📲 Cuenta QR neta</div>'
-          +'<div style="font-size:18px;font-weight:800;color:#C4B5FD">$'+fmt(cuentaQr)+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-bottom:4px">💵 Caja efectivo</div>'
+          +'<div style="font-size:18px;font-weight:800;color:#6EE7B7">$'+fmt(cajaTotal)+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-top:8px;margin-bottom:4px">📲 Cuenta QR</div>'
+          +'<div style="font-size:18px;font-weight:800;color:#C4B5FD">$'+fmt(totQr)+'</div>'
           +'<div style="border-top:1px solid var(--gold-b);margin-top:10px;padding-top:10px">'
-            +'<div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">✦ Ganancia neta total</div>'
-            +'<div style="font-size:24px;font-weight:900;font-family:Georgia,serif;color:var(--gold)">$'+fmt(neta)+'</div>'
+            +'<div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">✦ Total tuyo del mes</div>'
+            +'<div style="font-size:24px;font-weight:900;font-family:Georgia,serif;color:var(--gold)">$'+fmt(totalFinalMes)+'</div>'
           +'</div>'
         +'</div>'
       +'</div>';
