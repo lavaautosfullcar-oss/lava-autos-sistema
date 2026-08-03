@@ -343,6 +343,24 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 
       </div>
 
+      <!-- PRODUCTOS -->
+      <div id="s-productos" class="screen">
+        <div class="row">
+          <div><div class="page-title">🛒 Venta de productos</div><div class="page-sub" id="prod-fecha-lbl"></div></div>
+          <button class="btn btn-p" onclick="abrirModalProducto()">+ Registrar venta</button>
+        </div>
+        <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+          <div class="kpi"><div class="kpi-l">💰 Total ventas</div><div class="kpi-v" style="color:var(--gold)" id="prod-total-dia">$0</div></div>
+          <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">👤 Ventas a clientes</div><div class="kpi-v" style="color:#6EE7B7" id="prod-total-clientes">$0</div></div>
+          <div class="kpi" style="border-left-color:#FCA5A5"><div class="kpi-l">👷 Descuentos concesores</div><div class="kpi-v" style="color:#FCA5A5" id="prod-descuentos">$0</div></div>
+          <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">📦 Unidades vendidas</div><div class="kpi-v" style="color:#C4B5FD" id="prod-unidades">0</div></div>
+        </div>
+        <div class="card">
+          <div class="card-t"><span class="card-tg">✦ Ventas registradas hoy</span></div>
+          <div id="prod-lista"></div>
+        </div>
+      </div>
+
       <!-- GASTOS -->
       <div id="s-gastos" class="screen">
         <div class="row">
@@ -1400,7 +1418,14 @@ function updateKpis(ords){
 }
 
 // ── NUEVA ORDEN ───────────────────────────────────────────────────────────────
-function abrirModalOrden(){
+async function abrirModalOrden(){
+  // Reload conceseros if empty
+  if(!conceseros.length){
+    try{ conceseros=await api('conceseros?activo=eq.true&order=nombre'); }catch{}
+  }
+  if(!empresas.length){
+    try{ empresas=await api('empresas?activo=eq.true&order=nombre'); }catch{}
+  }
   const sel=document.getElementById('ord-conc');
   sel.innerHTML=conceseros.map(c=>`<option value="${c.id}" data-nombre="${c.nombre}">${c.nombre}</option>`).join('');
   document.getElementById('ord-placa').value='';
