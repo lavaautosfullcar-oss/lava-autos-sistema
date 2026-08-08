@@ -176,6 +176,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <div class="ni" onclick="go('productos',this)" id="nav-productos"><span class="ni-ico">🛒</span>Productos</div>
       <div class="ni hidden" onclick="go('cierre',this)" id="nav-cierre"><span class="ni-ico">💰</span>Cierre del día</div>
       <div class="ni hidden" onclick="go('gastos',this)" id="nav-gastos"><span class="ni-ico">📋</span>Gastos</div>
+      <div class="ni hidden" onclick="go('inversiones',this)" id="nav-inversiones"><span class="ni-ico">🏗️</span>Inversiones</div>
       <div class="nav-sep hidden" id="sep-reportes">Reportes</div>
       <div class="ni hidden" onclick="go('dashboard',this)" id="nav-dashboard"><span class="ni-ico">📊</span>Dashboard</div>
       <div class="ni hidden" onclick="go('historial',this)" id="nav-historial"><span class="ni-ico">📅</span>Historial</div>
@@ -396,6 +397,31 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         </div>
         <div class="card">
           <div class="tbl-wrap"><table><thead><tr><th>Fecha</th><th>Categoría</th><th>Descripción</th><th>Pago</th><th>Valor</th><th></th></tr></thead><tbody id="gastos-list"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- INVERSIONES -->
+      <div id="s-inversiones" class="screen">
+        <div class="row">
+          <div><div class="page-title">🏗️ Inversiones</div><div class="page-sub">Ampliación y mejoras del lavadero — separado de los gastos operativos</div></div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <select id="inv-filtro-cat" onchange="renderInversionesFiltrado()"
+              style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none">
+              <option value="">Todas las categorías</option>
+            </select>
+            <button class="btn btn-p" onclick="abrirModalInversion()">+ Registrar inversión</button>
+          </div>
+        </div>
+        <div class="kpis" style="grid-template-columns:1fr 1fr 1fr">
+          <div class="kpi" style="border-left-color:#8B5CF6"><div class="kpi-l">Total invertido</div><div class="kpi-v" style="color:#C4B5FD;font-size:15px" id="inv-total-acum">$0</div></div>
+          <div class="kpi" style="border-left-color:#6366F1"><div class="kpi-l">Invertido este mes</div><div class="kpi-v" style="color:#A5B4FC;font-size:15px" id="inv-total-mes">$0</div></div>
+          <div class="kpi"><div class="kpi-l">Mayor categoría</div><div class="kpi-v" style="color:var(--gold);font-size:13px" id="inv-cat-top">—</div></div>
+        </div>
+        <div class="card" style="border-color:rgba(139,92,246,.3);background:rgba(139,92,246,.05)">
+          <div style="font-size:12px;color:var(--muted)">💡 Estas inversiones (ampliación, obra civil, equipos, etc.) no se cuentan como gastos operativos ni afectan la ganancia neta del día — son capital invertido en el negocio, no un egreso del día a día.</div>
+        </div>
+        <div class="card">
+          <div class="tbl-wrap"><table><thead><tr><th>Fecha</th><th>Categoría</th><th>Descripción</th><th>Pago</th><th>Valor</th><th></th></tr></thead><tbody id="inversiones-list"></tbody></table></div>
         </div>
       </div>
 
@@ -1080,6 +1106,39 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 </div>
 </div>
 
+<!-- Inversión -->
+<div id="modal-inversion" class="modal-bg" style="display:none">
+<div class="modal">
+  <div class="modal-title">🏗️ Registrar inversión</div>
+  <div class="form-grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label>Categoría</label>
+      <select id="inv-cat" onchange="onInvCatChange()">
+        <option>🧱 Obra civil / remodelación</option><option>🛠️ Equipos y maquinaria</option>
+        <option>🪑 Mobiliario y decoración</option><option>🚗 Vehículos</option>
+        <option>💻 Tecnología / software</option><option>📋 Otras inversiones</option>
+        <option value="__nueva__">➕ Nueva categoría...</option>
+      </select>
+    </div>
+    <div class="field"><label>Valor</label><input type="number" id="inv-valor" placeholder="0"/></div>
+  </div>
+  <div class="field" id="inv-cat-nueva-field" style="display:none">
+    <label>Nombre de la nueva categoría</label>
+    <input type="text" id="inv-cat-nueva" placeholder="Ej: 🏗️ Ampliación segundo piso"/>
+  </div>
+  <div class="field"><label>Descripción</label><input type="text" id="inv-desc" placeholder="Ej: Compra de compresor"/></div>
+  <div class="field"><label>Forma de pago</label>
+    <div class="pay-toggle">
+      <button class="pt pt-ef on-ef" onclick="selInvPay(this,'efectivo')" id="i-ef">💵 Efectivo</button>
+      <button class="pt pt-qr" onclick="selInvPay(this,'qr')" id="i-qr">📲 QR</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarInversion()">💾 Guardar</button>
+    <button class="btn btn-g" onclick="cerrarModal('modal-inversion')">Cancelar</button>
+  </div>
+</div>
+</div>
+
 <!-- Concesero -->
 <div id="modal-conc" class="modal-bg" style="display:none">
 <div class="modal">
@@ -1260,7 +1319,7 @@ function doLogout(){
   document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('sel'));
   document.querySelector('.role-btn')?.classList.add('sel');
   // Reset nav
-  ['nav-cierre','nav-productos','nav-gastos','nav-dashboard','nav-historial','nav-susuerte',
+  ['nav-cierre','nav-productos','nav-gastos','nav-inversiones','nav-dashboard','nav-historial','nav-susuerte',
    'nav-pendientes','nav-conceseros','nav-servicios-cfg','nav-saldos',
    'sep-reportes','sep-empresas','sep-config',
    'bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
@@ -1272,7 +1331,7 @@ function setupNav(){
   const isOwner=currentUser.rol==='dueno';
   const isCajero=currentUser.rol==='cajero';
   // Reset all first
-  ['nav-cierre','nav-productos','nav-gastos','nav-dashboard','nav-historial','nav-susuerte',
+  ['nav-cierre','nav-productos','nav-gastos','nav-inversiones','nav-dashboard','nav-historial','nav-susuerte',
    'nav-pendientes','nav-conceseros','nav-servicios-cfg','nav-saldos',
    'sep-reportes','sep-empresas','sep-config',
    'bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
@@ -1289,7 +1348,7 @@ function setupNav(){
   }
   // Dueño: todo
   if(isOwner){
-    ['nav-cierre','nav-productos','nav-gastos','nav-dashboard','nav-historial','nav-susuerte',
+    ['nav-cierre','nav-productos','nav-gastos','nav-inversiones','nav-dashboard','nav-historial','nav-susuerte',
      'nav-pendientes','nav-conceseros','nav-servicios-cfg','nav-saldos',
      'sep-reportes','sep-empresas','sep-config',
      'bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
@@ -1322,6 +1381,7 @@ function go(s,el){
   else if(s==='pendientes') loadPendientes();
   else if(s==='susuerte') initSusuerte();
   else if(s==='gastos') loadGastos();
+  else if(s==='inversiones') loadInversiones();
   else if(s==='dashboard') loadDashboard();
   else if(s==='conceseros') loadConcsLista();
   else if(s==='servicios-cfg') loadSvcsCfg();
@@ -2220,6 +2280,123 @@ async function guardarGasto(){
 async function borrarGasto(id){
   if(!confirm('¿Borrar este gasto?')) return;
   try{await api('gastos?id=eq.'+id,'DELETE');showToast('Gasto eliminado');loadGastos();}catch{showToast('Error',true);}
+}
+
+// ── INVERSIONES ───────────────────────────────────────────────────────────────
+// Tabla separada de "gastos": la ampliación/mejoras del lavadero es capital
+// invertido, no un gasto operativo, así que nunca debe sumarse a "Gastos del
+// mes" ni restar de la ganancia neta del día.
+const CATEGORIAS_INVERSION_FIJAS = [
+  '🧱 Obra civil / remodelación','🛠️ Equipos y maquinaria','🪑 Mobiliario y decoración',
+  '🚗 Vehículos','💻 Tecnología / software','📋 Otras inversiones'
+];
+
+let gastoPayModeInv = 'efectivo';
+let inversionesTodas = [];
+
+async function loadInversiones(){
+  try{
+    const inv = await api('inversiones?order=fecha.desc,id.desc');
+    inversionesTodas = inv;
+
+    const filtroSel = document.getElementById('inv-filtro-cat');
+    if(filtroSel){
+      const usadas = new Set(inv.map(i=>i.categoria));
+      const todasCats = [...new Set([...CATEGORIAS_INVERSION_FIJAS, ...usadas])];
+      const valorActual = filtroSel.value;
+      filtroSel.innerHTML = '<option value="">Todas las categorías</option>'
+        + todasCats.map(c=>'<option value="'+c+'">'+c+'</option>').join('');
+      filtroSel.value = todasCats.includes(valorActual) ? valorActual : '';
+    }
+    renderInversionesFiltrado();
+  }catch(e){
+    showToast('No se pudo cargar Inversiones — puede que falte crear la tabla en Supabase',true);
+    document.getElementById('inversiones-list').innerHTML =
+      '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">⚠️ No se pudo conectar con la tabla "inversiones". Pídele a Claude que te ayude a crearla en Supabase.</td></tr>';
+  }
+}
+
+function renderInversionesFiltrado(){
+  try{
+    const filtro = document.getElementById('inv-filtro-cat')?.value || '';
+    const inv = filtro ? inversionesTodas.filter(i=>i.categoria===filtro) : inversionesTodas;
+    const mesActual = today().slice(0,7);
+    const invMes = inv.filter(i=>i.fecha.slice(0,7)===mesActual);
+
+    const totalAcum = inv.reduce((s,i)=>s+(i.valor||0),0);
+    const totalMes = invMes.reduce((s,i)=>s+(i.valor||0),0);
+    document.getElementById('inv-total-acum').textContent = '$'+fmt(totalAcum);
+    document.getElementById('inv-total-mes').textContent = '$'+fmt(totalMes);
+
+    const cm={}; inv.forEach(i=>{cm[i.categoria]=(cm[i.categoria]||0)+i.valor;});
+    const top=Object.entries(cm).sort((a,b)=>b[1]-a[1])[0];
+    document.getElementById('inv-cat-top').textContent = filtro ? filtro : (top?top[0]:'—');
+
+    document.getElementById('inversiones-list').innerHTML = inv.length ? inv.map(i=>`
+      <tr>
+        <td style="color:var(--muted);font-family:monospace;font-size:11px">${i.fecha}</td>
+        <td style="font-size:11px">${i.categoria}</td>
+        <td>${i.descripcion}</td>
+        <td><span class="badge ${i.forma_pago==='qr'?'bqr':'bg'}">${i.forma_pago==='qr'?'📲':'💵'}</span></td>
+        <td style="color:#C4B5FD;font-weight:700">$${fmt(i.valor)}</td>
+        <td><button class="btn btn-r" style="padding:3px 8px;font-size:10px" onclick="borrarInversion(${i.id})">🗑️</button></td>
+      </tr>`).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Sin inversiones registradas'+(filtro?' en esta categoría':'')+'</td></tr>';
+  }catch(e){showToast('Error',true);}
+}
+
+function abrirModalInversion(){
+  document.getElementById('inv-desc').value='';
+  document.getElementById('inv-valor').value='';
+  document.getElementById('inv-cat-nueva').value='';
+  document.getElementById('inv-cat-nueva-field').style.display='none';
+  gastoPayModeInv='efectivo';
+  document.getElementById('i-ef').classList.add('on-ef');
+  document.getElementById('i-qr').classList.remove('on-qr');
+
+  const sel = document.getElementById('inv-cat');
+  Array.from(sel.querySelectorAll('option[data-extra="1"]')).forEach(o=>o.remove());
+  const extras = [...new Set(inversionesTodas.map(i=>i.categoria))].filter(c=>!CATEGORIAS_INVERSION_FIJAS.includes(c));
+  const nuevaOpt = sel.querySelector('option[value="__nueva__"]');
+  extras.forEach(c=>{
+    const opt=document.createElement('option');
+    opt.textContent=c; opt.dataset.extra='1';
+    sel.insertBefore(opt, nuevaOpt);
+  });
+  document.getElementById('inv-cat').value = CATEGORIAS_INVERSION_FIJAS[0];
+
+  document.getElementById('modal-inversion').style.display='flex';
+}
+
+function onInvCatChange(){
+  const esNueva = document.getElementById('inv-cat').value === '__nueva__';
+  document.getElementById('inv-cat-nueva-field').style.display = esNueva ? 'block' : 'none';
+}
+
+function selInvPay(btn,type){
+  gastoPayModeInv=type;
+  document.getElementById('i-ef').classList.remove('on-ef');
+  document.getElementById('i-qr').classList.remove('on-qr');
+  btn.classList.add(type==='efectivo'?'on-ef':'on-qr');
+}
+
+async function guardarInversion(){
+  let cat=document.getElementById('inv-cat').value;
+  if(cat==='__nueva__'){
+    cat=document.getElementById('inv-cat-nueva').value.trim();
+    if(!cat){showToast('Escribe el nombre de la nueva categoría',true);return;}
+  }
+  const desc=document.getElementById('inv-desc').value.trim();
+  const val=parseInt(document.getElementById('inv-valor').value);
+  if(!desc||!val){showToast('Completa todos los campos',true);return;}
+  try{
+    await api('inversiones','POST',{categoria:cat,descripcion:desc,valor:val,forma_pago:gastoPayModeInv,fecha:today()});
+    cerrarModal('modal-inversion');showToast('Inversión registrada ✅');loadInversiones();
+  }catch(e){showToast('Error: '+e.message,true);}
+}
+
+async function borrarInversion(id){
+  if(!confirm('¿Borrar esta inversión?')) return;
+  try{await api('inversiones?id=eq.'+id,'DELETE');showToast('Inversión eliminada');loadInversiones();}catch{showToast('Error',true);}
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────────
