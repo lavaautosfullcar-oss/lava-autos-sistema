@@ -3548,13 +3548,13 @@ async function loadSaldos(){
     const start = mes+'-01';
     const end   = mes+'-'+String(lastDay).padStart(2,'0');
 
-    // Load saldo inicial from gastos (stored as special category)
-    let salInitCaja = 0, salInitBanco = 0;
+    // ── Saldo inicial ─────────────────────────────────────────────────────────
+    let salInitCaja=0, salInitBanco=0;
     try{
       const inits = await api("gastos?categoria=eq.🏦 Saldo inicial&order=fecha.desc&limit=2");
       inits.forEach(g=>{
-        if(g.descripcion.includes('caja'))   salInitCaja  = g.valor;
-        if(g.descripcion.includes('banco'))  salInitBanco = g.valor;
+        if(g.descripcion.includes('caja'))  salInitCaja  = g.valor;
+        if(g.descripcion.includes('banco')) salInitBanco = g.valor;
       });
       const el = document.getElementById('sal-init-actual');
       if(el && inits.length){
@@ -3564,56 +3564,64 @@ async function loadSaldos(){
       }
     }catch{}
 
-    // Load ordenes del mes
+    // ── KPIs principales — solo saldo inicial ─────────────────────────────────
+    const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+    s('sal-caja',  '$'+fmt(salInitCaja));
+    s('sal-banco', '$'+fmt(salInitBanco));
+    s('sal-total', '$'+fmt(salInitCaja+salInitBanco));
+    s('sal-caja-sub',  'Saldo actual en caja');
+    s('sal-banco-sub', 'Saldo actual en banco');
+
+    // ── Resumen del mes ───────────────────────────────────────────────────────
     const ords = await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
-    const cerradas  = ords.filter(o=>o.estado==='cerrada');
+    const todasMenosAbiertas = ords.filter(o=>o.estado!=='abierta');
     const pendientes = ords.filter(o=>o.estado==='pendiente_pago'||o.forma_pago==='pendiente');
 
     let ef=0, qr=0;
+    const cerradas=ords.filter(o=>o.estado==='cerrada'&&o.forma_pago!=='pendiente'&&o.forma_pago!==null);
     for(const o of cerradas){
-      if(o.forma_pago==='efectivo')  ef+=parseInt(o.total)||0;
-      else if(o.forma_pago==='qr')   qr+=parseInt(o.total)||0;
+      if(o.forma_pago==='efectivo')     ef+=parseInt(o.total)||0;
+      else if(o.forma_pago==='qr')      qr+=parseInt(o.total)||0;
       else if(o.forma_pago==='mixto'){
         ef+=parseInt(o.pago_efectivo)||0;
         qr+=parseInt(o.pago_qr)||0;
       }
     }
-    const bruto = ef+qr;
-    const pagoLavadores = Math.round(bruto/2);
-    const pendTotal = pendientes.reduce((s,o)=>s+(o.total||0),0);
 
-    // Load gastos del mes
-    const gastos = await api('gastos?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
-    let gasEf=0, gasQr=0;
-    gastos.forEach(g=>{
-      if(g.categoria==='🏦 Saldo inicial') return; // skip saldo inicial
-      if(g.forma_pago==='efectivo') gasEf+=parseInt(g.valor)||0;
-      else gasQr+=parseInt(g.valor)||0;
-    });
-    const totGastos = gasEf+gasQr;
+    const totalMes = todasMenosAbiertas.reduce((s,o)=>s+(o.total||0),0);
+    const mitadLav = Math.round(totalMes/2);
+    const tuMitad  = totalMes - mitadLav;
+    const totPend  = pendientes.reduce((s,o)=>s+(o.total||0),0);
+    const tuNeta   = tuMitad - totPend;
 
-    // ── Cálculo saldos actuales ───────────────────────────────────────────────
-    // Caja = saldo inicial + efectivo cobrado − pago lavadores − gastos efectivo
-    const cajaActual  = salInitCaja + ef - pagoLavadores - gasEf;
-    // Banco = saldo inicial + QR cobrado − gastos QR
-    const bancoActual = salInitBanco + qr - gasQr;
-    const totalDisp   = cajaActual + bancoActual;
-    const netaMes     = bruto - pagoLavadores - totGastos;
+    // Ventas productos
+    let ventasProd=0;
+    try{
+      const vp=await api('ventas_productos?fecha=gte.'+start+'&fecha=lte.'+end);
+      ventasProd=vp.reduce((s,v)=>s+(v.total||0),0);
+    }catch{}
 
-    // ── Actualizar UI ─────────────────────────────────────────────────────────
-    const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-    s('sal-caja',   '$'+fmt(cajaActual));
-    s('sal-banco',  '$'+fmt(bancoActual));
-    s('sal-total',  '$'+fmt(totalDisp));
-    s('sal-ef-mes', '$'+fmt(ef));
-    s('sal-qr-mes', '$'+fmt(qr));
-    s('sal-pend-mes','$'+fmt(pendTotal));
-    s('sal-lavadores-mes','$'+fmt(pagoLavadores));
-    s('sal-gastos-mes',   '$'+fmt(totGastos));
-    s('sal-neta-mes',     '$'+fmt(netaMes));
-    s('inv-caja',   '$'+fmt(cajaActual));
-    s('inv-banco',  '$'+fmt(bancoActual));
-    s('inv-total',  '$'+fmt(totalDisp));
+    // Gastos
+    const gastos=await api('gastos?fecha=gte.'+start+'&fecha=lte.'+end);
+    const gastosReales=gastos.filter(g=>g.categoria!=='🏦 Saldo inicial');
+    const totGastos=gastosReales.reduce((s,g)=>s+(g.valor||0),0);
+
+    const netaMes = tuNeta + ventasProd - totGastos;
+
+    s('sal-ef-mes',        '$'+fmt(ef));
+    s('sal-qr-mes',        '$'+fmt(qr));
+    s('sal-pend-mes',      '$'+fmt(totPend));
+    s('sal-lavadores-mes', '$'+fmt(mitadLav));
+    s('sal-gastos-mes',    '$'+fmt(totGastos));
+    s('sal-neta-mes',      '$'+fmt(netaMes));
+
+    // Disponible para inversión = saldo inicial + ganancia neta del mes
+    const dispCaja  = salInitCaja + (ef - mitadLav) + ventasProd - totGastos;
+    const dispBanco = salInitBanco + qr;
+    const dispTotal = dispCaja + dispBanco;
+    s('inv-caja',  '$'+fmt(dispCaja));
+    s('inv-banco', '$'+fmt(dispBanco));
+    s('inv-total', '$'+fmt(dispTotal));
 
   }catch(e){ showToast('Error cargando saldos: '+e.message, true); }
 }
