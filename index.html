@@ -347,7 +347,23 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <div id="s-productos" class="screen">
         <div class="row">
           <div><div class="page-title">🛒 Venta de productos</div><div class="page-sub" id="prod-fecha-lbl"></div></div>
-          <button class="btn btn-p" onclick="abrirModalProducto()">+ Registrar venta</button>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <select id="prod-filtro" onchange="renderProductosFiltrado()"
+              style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none">
+              <option value="">Todos los productos</option>
+              <option value="Champú">Champú</option>
+              <option value="Uva">Uva</option>
+              <option value="Teflón">Teflón</option>
+              <option value="Grafito">Grafito</option>
+              <option value="Desengrasante">Desengrasante</option>
+              <option value="Restaurador partes negras">Restaurador partes negras</option>
+              <option value="Trapo">Trapo</option>
+              <option value="Ambientador">Ambientador</option>
+              <option value="Extintor">Extintor</option>
+              <option value="Otro">Otro</option>
+            </select>
+            <button class="btn btn-p" onclick="abrirModalProducto()">+ Registrar venta</button>
+          </div>
         </div>
         <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
           <div class="kpi"><div class="kpi-l">💰 Total ventas</div><div class="kpi-v" style="color:var(--gold)" id="prod-total-dia">$0</div></div>
@@ -365,7 +381,13 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <div id="s-gastos" class="screen">
         <div class="row">
           <div><div class="page-title">Gastos</div><div class="page-sub">Egresos del lavadero</div></div>
-          <button class="btn btn-p" onclick="abrirModalGasto()">+ Registrar gasto</button>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <select id="gastos-filtro-cat" onchange="renderGastosFiltrado()"
+              style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none">
+              <option value="">Todas las categorías</option>
+            </select>
+            <button class="btn btn-p" onclick="abrirModalGasto()">+ Registrar gasto</button>
+          </div>
         </div>
         <div class="kpis" style="grid-template-columns:1fr 1fr 1fr">
           <div class="kpi" style="border-left-color:#EF4444"><div class="kpi-l">Gastos del mes</div><div class="kpi-v" style="color:#FCA5A5;font-size:15px" id="kg-mes">$0</div></div>
@@ -713,7 +735,14 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <div id="s-pendientes" class="screen">
         <div class="row">
           <div><div class="page-title">⏳ Pendientes de cobro</div><div class="page-sub">Órdenes que aún no han sido pagadas</div></div>
-          <button class="btn btn-g" onclick="loadPendientes()">🔄 Actualizar</button>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <select id="pend-filtro" onchange="renderPendientesFiltrado()"
+              style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none">
+              <option value="">Todas</option>
+              <option value="__consumidor__">Consumidor final</option>
+            </select>
+            <button class="btn btn-g" onclick="loadPendientes()">🔄 Actualizar</button>
+          </div>
         </div>
         <div class="kpis" style="grid-template-columns:1fr 1fr">
           <div class="kpi" style="border-left-color:#FCD34D"><div class="kpi-l">Total pendiente</div><div class="kpi-v" style="color:#FCD34D" id="pend-total">$0</div></div>
@@ -1023,14 +1052,19 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
   <div class="modal-title">📋 Registrar gasto</div>
   <div class="form-grid" style="grid-template-columns:1fr 1fr">
     <div class="field"><label>Categoría</label>
-      <select id="gasto-cat">
+      <select id="gasto-cat" onchange="onGastoCatChange()">
         <option>🧴 Productos de limpieza</option><option>💧 Agua / servicios públicos</option>
         <option>🔧 Mantenimiento y reparaciones</option><option>👕 Dotación del personal</option>
         <option>🏠 Arriendo / local</option><option>📦 Insumos varios</option>
         <option>💰 Nómina</option><option>🚗 Combustible</option><option>📋 Otros gastos</option>
+        <option value="__nueva__">➕ Nueva categoría...</option>
       </select>
     </div>
     <div class="field"><label>Valor</label><input type="number" id="gasto-valor" placeholder="0"/></div>
+  </div>
+  <div class="field" id="gasto-cat-nueva-field" style="display:none">
+    <label>Nombre de la nueva categoría</label>
+    <input type="text" id="gasto-cat-nueva" placeholder="Ej: 🚕 Transporte"/>
   </div>
   <div class="field"><label>Descripción</label><input type="text" id="gasto-desc" placeholder="Ej: Shampoo x10"/></div>
   <div class="field"><label>Forma de pago</label>
@@ -1936,7 +1970,9 @@ async function loadCierre(){
 
     // ── Todas las órdenes excepto abiertas ────────────────────────────────────
     const todasMenosAbiertas = ords.filter(o=>o.estado!=='abierta');
-    const pendientes = ords.filter(o=>o.estado==='pendiente_pago'||o.forma_pago==='pendiente');
+    // Pendientes = solo de las que ya no están "abiertas" (carro aún en lavado
+    // no es una deuda pendiente, es un trabajo sin terminar).
+    const pendientes = todasMenosAbiertas.filter(o=>o.estado==='pendiente_pago'||o.forma_pago==='pendiente');
 
     // Totales por forma de pago (solo cerradas cobradas)
     let ef=0, qr=0;
@@ -2070,21 +2106,49 @@ async function loadCierre(){
 }
 
 // ── GASTOS ────────────────────────────────────────────────────────────────────
+const CATEGORIAS_GASTO_FIJAS = [
+  '🧴 Productos de limpieza','💧 Agua / servicios públicos','🔧 Mantenimiento y reparaciones',
+  '👕 Dotación del personal','🏠 Arriendo / local','📦 Insumos varios','💰 Nómina',
+  '🚗 Combustible','📋 Otros gastos'
+];
+
+let gastosMesActual = [];
+
 async function loadGastos(){
   try{
     const mesStart=today().slice(0,7)+'-01';
     const gmAll=await api('gastos?fecha=gte.'+mesStart+'&order=fecha.desc,id.desc');
     // El saldo inicial no es un gasto real: se excluye de totales y del listado,
     // sin borrar los registros (se siguen usando para calcular el saldo en Configuración > Saldos).
-    const gm=gmAll.filter(g=>g.categoria!=='🏦 Saldo inicial');
-    const gh=gm.filter(g=>g.fecha===today());
-    const tm=gm.reduce((s,g)=>s+(g.valor||0),0);
-    const th=gh.reduce((s,g)=>s+(g.valor||0),0);
+    gastosMesActual=gmAll.filter(g=>g.categoria!=='🏦 Saldo inicial');
+
+    // Poblar el filtro de categorías: las fijas + cualquier categoría personalizada
+    // que ya se haya usado (para que no se pierdan las que agreguen los socios).
+    const filtroSel = document.getElementById('gastos-filtro-cat');
+    if(filtroSel){
+      const usadas = new Set(gastosMesActual.map(g=>g.categoria));
+      const todasCats = [...new Set([...CATEGORIAS_GASTO_FIJAS, ...usadas])];
+      const valorActual = filtroSel.value;
+      filtroSel.innerHTML = '<option value="">Todas las categorías</option>'
+        + todasCats.map(c=>'<option value="'+c+'">'+c+'</option>').join('');
+      filtroSel.value = todasCats.includes(valorActual) ? valorActual : '';
+    }
+    renderGastosFiltrado();
+  }catch(e){showToast('Error',true);}
+}
+
+function renderGastosFiltrado(){
+  try{
+    const filtro = document.getElementById('gastos-filtro-cat')?.value || '';
+    const gm = filtro ? gastosMesActual.filter(g=>g.categoria===filtro) : gastosMesActual;
+    const gh = gm.filter(g=>g.fecha===today());
+    const tm = gm.reduce((s,g)=>s+(g.valor||0),0);
+    const th = gh.reduce((s,g)=>s+(g.valor||0),0);
     document.getElementById('kg-mes').textContent='$'+fmt(tm);
     document.getElementById('kg-hoy').textContent='$'+fmt(th);
     const cm={};gm.forEach(g=>{cm[g.categoria]=(cm[g.categoria]||0)+g.valor;});
     const top=Object.entries(cm).sort((a,b)=>b[1]-a[1])[0];
-    document.getElementById('kg-cat').textContent=top?top[0]:'—';
+    document.getElementById('kg-cat').textContent = filtro ? filtro : (top?top[0]:'—');
     document.getElementById('gastos-list').innerHTML=gm.length?gm.map(g=>`
       <tr>
         <td style="color:var(--muted);font-family:monospace;font-size:11px">${g.fecha}</td>
@@ -2093,17 +2157,42 @@ async function loadGastos(){
         <td><span class="badge ${g.forma_pago==='qr'?'bqr':'bg'}">${g.forma_pago==='qr'?'📲':'💵'}</span></td>
         <td style="color:#FCA5A5;font-weight:700">$${fmt(g.valor)}</td>
         <td><button class="btn btn-r" style="padding:3px 8px;font-size:10px" onclick="borrarGasto(${g.id})">🗑️</button></td>
-      </tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Sin gastos</td></tr>';
+      </tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Sin gastos'+(filtro?' en esta categoría':'')+'</td></tr>';
   }catch(e){showToast('Error',true);}
 }
 
-function abrirModalGasto(){
+async function abrirModalGasto(){
   document.getElementById('gasto-desc').value='';
   document.getElementById('gasto-valor').value='';
+  document.getElementById('gasto-cat-nueva').value='';
+  document.getElementById('gasto-cat-nueva-field').style.display='none';
   gastoPayMode='efectivo';
   document.getElementById('g-ef').classList.add('on-ef');
   document.getElementById('g-qr').classList.remove('on-qr');
+
+  // Agregar al select las categorías personalizadas que ya se hayan usado antes,
+  // para que no toque volver a escribirlas cada vez.
+  try{
+    const historicas = await api('gastos?categoria=neq.🏦 Saldo inicial&order=id.desc&limit=500');
+    const extras = [...new Set(historicas.map(g=>g.categoria))].filter(c=>!CATEGORIAS_GASTO_FIJAS.includes(c));
+    const sel = document.getElementById('gasto-cat');
+    // Quitar extras agregadas en una apertura anterior del modal (evita duplicados)
+    Array.from(sel.querySelectorAll('option[data-extra="1"]')).forEach(o=>o.remove());
+    const nuevaOpt = sel.querySelector('option[value="__nueva__"]');
+    extras.forEach(c=>{
+      const opt=document.createElement('option');
+      opt.textContent=c; opt.dataset.extra='1';
+      sel.insertBefore(opt, nuevaOpt);
+    });
+  }catch{}
+
+  document.getElementById('gasto-cat').value = CATEGORIAS_GASTO_FIJAS[0];
   document.getElementById('modal-gasto').style.display='flex';
+}
+
+function onGastoCatChange(){
+  const esNueva = document.getElementById('gasto-cat').value === '__nueva__';
+  document.getElementById('gasto-cat-nueva-field').style.display = esNueva ? 'block' : 'none';
 }
 
 function selGastoPay(btn,type){
@@ -2114,7 +2203,11 @@ function selGastoPay(btn,type){
 }
 
 async function guardarGasto(){
-  const cat=document.getElementById('gasto-cat').value;
+  let cat=document.getElementById('gasto-cat').value;
+  if(cat==='__nueva__'){
+    cat=document.getElementById('gasto-cat-nueva').value.trim();
+    if(!cat){showToast('Escribe el nombre de la nueva categoría',true);return;}
+  }
   const desc=document.getElementById('gasto-desc').value.trim();
   const val=parseInt(document.getElementById('gasto-valor').value);
   if(!desc||!val){showToast('Completa todos los campos',true);return;}
@@ -2519,7 +2612,9 @@ async function loadDashFinanzas(){
     if(ingBody) ingBody.innerHTML=ingRows||'<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">Sin ingresos</td></tr>';
 
     // Footer
-    const cajaTotal=totEf-mitadLavadores-totPend;
+    // Sin restar pendientes: el lavador ya se pagó en efectivo por todo el mes,
+    // igual que en cada fila diaria (caja = ef - mitad).
+    const cajaTotal=totEf-mitadLavadores;
     const ingFoot=document.getElementById('fin-ingresos-total');
     if(ingFoot) ingFoot.innerHTML='<tr style="background:var(--gold-p);font-weight:800">'
       +'<td style="color:var(--gold)">TOTAL MES</td>'
@@ -3271,7 +3366,8 @@ async function loadEmpresaDetalle(){
 
     allOrds.sort((a,b)=>a.fecha.localeCompare(b.fecha));
 
-    const pendientes = allOrds.filter(o=>o.estado==='pendiente_pago'||o.forma_pago==='pendiente');
+    // Un carro "abierto" (aún en lavado) no es una deuda pendiente del cliente.
+    const pendientes = allOrds.filter(o=>o.estado!=='abierta'&&(o.estado==='pendiente_pago'||o.forma_pago==='pendiente'));
     const cobradas   = allOrds.filter(o=>o.estado==='cerrada'&&o.forma_pago!=='pendiente');
 
     const totPend = pendientes.reduce((s,o)=>s+(o.total||0),0);
@@ -3290,7 +3386,7 @@ async function loadEmpresaDetalle(){
     document.getElementById('emp-tabla').innerHTML = withSvcs.length
       ? withSvcs.map(o=>{
           const svc = o.servicios?.[0]?.servicio_nombre||'—';
-          const isPend = o.estado==='pendiente_pago'||o.forma_pago==='pendiente';
+          const isPend = o.estado!=='abierta'&&(o.estado==='pendiente_pago'||o.forma_pago==='pendiente');
           return '<tr>'
             +'<td style="font-family:monospace;color:var(--muted)">'+o.fecha.split('-').reverse().join('/')+'</td>'
             +'<td style="font-weight:700;color:var(--gold)">'+o.placa+'</td>'
@@ -3315,7 +3411,8 @@ async function generarFacturaEmpresa(){
     const start = mes+'-01', end = mes+'-'+String(lastDay).padStart(2,'0');
     const ords = await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end
       +'&empresa_nombre=eq.'+encodeURIComponent(empresaActual.nombre)+'&order=fecha.asc');
-    const pendientes = ords.filter(o=>o.estado==='pendiente_pago'||o.forma_pago==='pendiente');
+    // Un carro "abierto" (aún en lavado) no se factura: no es una lavada terminada.
+    const pendientes = ords.filter(o=>o.estado!=='abierta'&&(o.estado==='pendiente_pago'||o.forma_pago==='pendiente'));
     if(!pendientes.length){ showToast('No hay lavadas pendientes este mes', true); return; }
 
     const withSvcs = await Promise.all(pendientes.map(async o=>{
@@ -3456,20 +3553,44 @@ function selEmpresaOrden(){
 }
 
 // ── PENDIENTES ────────────────────────────────────────────────────────────────
+let pendientesConSvcs = [];
+
 async function loadPendientes(){
   try{
     const pends = await api('ordenes?estado=eq.pendiente_pago&order=fecha.desc&limit=100');
-    const total = pends.reduce((s,o)=>s+(o.total||0),0);
-    document.getElementById('pend-total').textContent = '$'+fmt(total);
-    document.getElementById('pend-count').textContent = pends.length;
 
-    const withSvcs = await Promise.all(pends.map(async o=>{
+    pendientesConSvcs = await Promise.all(pends.map(async o=>{
       const svcs = await api('orden_servicios?orden_id=eq.'+o.id);
       return {...o, servicios:svcs};
     }));
 
-    document.getElementById('pend-lista').innerHTML = withSvcs.length
-      ? withSvcs.map(o=>{
+    // Poblar el filtro: "Todas", "Consumidor final" y cada empresa presente en los pendientes.
+    const filtroSel = document.getElementById('pend-filtro');
+    if(filtroSel){
+      const empresasPend = [...new Set(pendientesConSvcs.filter(o=>o.empresa_nombre).map(o=>o.empresa_nombre))].sort();
+      const valorActual = filtroSel.value;
+      filtroSel.innerHTML = '<option value="">Todas</option><option value="__consumidor__">Consumidor final</option>'
+        + empresasPend.map(e=>'<option value="'+e+'">'+e+'</option>').join('');
+      const opciones = ['', '__consumidor__', ...empresasPend];
+      filtroSel.value = opciones.includes(valorActual) ? valorActual : '';
+    }
+    renderPendientesFiltrado();
+  }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+function renderPendientesFiltrado(){
+  try{
+    const filtro = document.getElementById('pend-filtro')?.value || '';
+    let lista = pendientesConSvcs;
+    if(filtro==='__consumidor__') lista = pendientesConSvcs.filter(o=>!o.empresa_nombre);
+    else if(filtro) lista = pendientesConSvcs.filter(o=>o.empresa_nombre===filtro);
+
+    const total = lista.reduce((s,o)=>s+(o.total||0),0);
+    document.getElementById('pend-total').textContent = '$'+fmt(total);
+    document.getElementById('pend-count').textContent = lista.length;
+
+    document.getElementById('pend-lista').innerHTML = lista.length
+      ? lista.map(o=>{
           const svc = o.servicios?.[0]?.servicio_nombre||'—';
           return '<tr>'
             +'<td style="font-family:monospace;color:var(--muted)">'+o.fecha.split('-').reverse().join('/')+'</td>'
@@ -3481,7 +3602,7 @@ async function loadPendientes(){
             +'<td><button class="btn btn-gr" style="padding:3px 8px;font-size:10px" onclick="abrirCobrar('+o.id+')">💰 Cobrar</button></td>'
             +'</tr>';
         }).join('')
-      : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:30px">✅ No hay órdenes pendientes de cobro</td></tr>';
+      : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:30px">✅ No hay órdenes pendientes de cobro'+(filtro?' con este filtro':'')+'</td></tr>';
   }catch(e){ showToast('Error: '+e.message, true); }
 }
 
@@ -3588,7 +3709,8 @@ async function loadSaldos(){
     // ── Resumen del mes ───────────────────────────────────────────────────────
     const ords = await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
     const todasMenosAbiertas = ords.filter(o=>o.estado!=='abierta');
-    const pendientes = ords.filter(o=>o.estado==='pendiente_pago'||o.forma_pago==='pendiente');
+    // Igual que en el cierre: un carro "abierto" no es una deuda pendiente.
+    const pendientes = todasMenosAbiertas.filter(o=>o.estado==='pendiente_pago'||o.forma_pago==='pendiente');
 
     let ef=0, qr=0;
     const cerradas=ords.filter(o=>o.estado==='cerrada'&&o.forma_pago!=='pendiente'&&o.forma_pago!==null);
@@ -3708,12 +3830,22 @@ const PRODUCTOS_PRECIOS = {
   'Desengrasante': 3000, 'Restaurador partes negras': 3000, 'Trapo': 5000
 };
 
+let ventasProductosHoy = [];
+
 async function loadProductos(){
   document.getElementById('prod-fecha-lbl').textContent =
     new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
   try{
-    const ventas = await api('ventas_productos?fecha=eq.'+today()+'&order=created_at.asc');
-    
+    ventasProductosHoy = await api('ventas_productos?fecha=eq.'+today()+'&order=created_at.asc');
+    renderProductosFiltrado();
+  }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+function renderProductosFiltrado(){
+  try{
+    const filtro = document.getElementById('prod-filtro')?.value || '';
+    const ventas = filtro ? ventasProductosHoy.filter(v=>v.producto===filtro) : ventasProductosHoy;
+
     let total=0, unidades=0;
     
     // Group by lavador
