@@ -3569,8 +3569,8 @@ async function loadSaldos(){
     s('sal-caja',  '$'+fmt(salInitCaja));
     s('sal-banco', '$'+fmt(salInitBanco));
     s('sal-total', '$'+fmt(salInitCaja+salInitBanco));
-    s('sal-caja-sub',  'Saldo actual en caja');
-    s('sal-banco-sub', 'Saldo actual en banco');
+    s('sal-caja-sub',  'Saldo actual registrado');
+    s('sal-banco-sub', 'Saldo actual registrado');
 
     // ── Resumen del mes ───────────────────────────────────────────────────────
     const ords = await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
@@ -3615,16 +3615,10 @@ async function loadSaldos(){
     s('sal-gastos-mes',    '$'+fmt(totGastos));
     s('sal-neta-mes',      '$'+fmt(netaMes));
 
-    // Disponible para inversión = saldo inicial + acumulado del mes
-    // Caja = saldo inicial + tu parte de lavadas + productos - gastos en efectivo
-    const gastosEf = gastosReales.filter(g=>g.forma_pago==='efectivo').reduce((s,g)=>s+(g.valor||0),0);
-    const gastosQr = gastosReales.filter(g=>g.forma_pago==='qr').reduce((s,g)=>s+(g.valor||0),0);
-    const dispCaja  = salInitCaja + (ef - mitadLav) + ventasProd - gastosEf;
-    const dispBanco = salInitBanco + qr - gastosQr;
-    const dispTotal = dispCaja + dispBanco;
-    s('inv-caja',  '$'+fmt(dispCaja));
-    s('inv-banco', '$'+fmt(dispBanco));
-    s('inv-total', '$'+fmt(dispTotal));
+    // Disponible para inversión = solo saldo inicial (ya incluye lo acumulado)
+    s('inv-caja',  '$'+fmt(salInitCaja));
+    s('inv-banco', '$'+fmt(salInitBanco));
+    s('inv-total', '$'+fmt(salInitCaja+salInitBanco));
 
   }catch(e){ showToast('Error cargando saldos: '+e.message, true); }
 }
