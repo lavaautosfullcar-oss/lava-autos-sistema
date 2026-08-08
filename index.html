@@ -2069,7 +2069,10 @@ async function loadCierre(){
 async function loadGastos(){
   try{
     const mesStart=today().slice(0,7)+'-01';
-    const gm=await api('gastos?fecha=gte.'+mesStart+'&order=fecha.desc,id.desc');
+    const gmAll=await api('gastos?fecha=gte.'+mesStart+'&order=fecha.desc,id.desc');
+    // El saldo inicial no es un gasto real: se excluye de totales y del listado,
+    // sin borrar los registros (se siguen usando para calcular el saldo en Configuración > Saldos).
+    const gm=gmAll.filter(g=>g.categoria!=='🏦 Saldo inicial');
     const gh=gm.filter(g=>g.fecha===today());
     const tm=gm.reduce((s,g)=>s+(g.valor||0),0);
     const th=gh.reduce((s,g)=>s+(g.valor||0),0);
@@ -2589,7 +2592,8 @@ async function exportarExcel(){
     const _lastDay=new Date(parseInt(_y),parseInt(_m),0).getDate();
     const start=dashMes+'-01', end=dashMes+'-'+String(_lastDay).padStart(2,'0');
     const ords=await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&estado=eq.cerrada&order=fecha.asc');
-    const gastos=await api('gastos?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
+    const gastosAll=await api('gastos?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
+    const gastos=gastosAll.filter(g=>g.categoria!=='🏦 Saldo inicial');
 
     // Build CSV
     let csv='INGRESOS '+dashMes+'\n';
