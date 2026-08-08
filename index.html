@@ -1302,10 +1302,15 @@ function goMobile(s,el){
 // ── INIT ─────────────────────────────────────────────────────────────────────
 async function initApp(){
   try{
-    conceseros=await api('conceseros?activo=eq.true&order=nombre');
+    // Load conceseros with retry
+    for(let i=0;i<3;i++){
+      try{
+        conceseros=await api('conceseros?activo=eq.true&order=nombre');
+        if(conceseros.length) break;
+      }catch(e){ if(i===2) throw e; await new Promise(r=>setTimeout(r,500)); }
+    }
     const dbSvcs=await api('servicios?activo=eq.true&order=tipo,nombre');
     servicios=dbSvcs.length>0?dbSvcs:SERVICIOS_ALL;
-    // Load empresas for all users (needed in nueva orden modal)
     try{ empresas=await api('empresas?activo=eq.true&order=nombre'); }catch{}
     loadOrdenes();
     checkBday();
