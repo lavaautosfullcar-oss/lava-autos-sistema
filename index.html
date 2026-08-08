@@ -3615,13 +3615,10 @@ async function loadSaldos(){
     s('sal-gastos-mes',    '$'+fmt(totGastos));
     s('sal-neta-mes',      '$'+fmt(netaMes));
 
-    // Disponible para inversión = saldo inicial + ganancia neta del mes
-    const dispCaja  = salInitCaja + (ef - mitadLav) + ventasProd - totGastos;
-    const dispBanco = salInitBanco + qr;
-    const dispTotal = dispCaja + dispBanco;
-    s('inv-caja',  '$'+fmt(dispCaja));
-    s('inv-banco', '$'+fmt(dispBanco));
-    s('inv-total', '$'+fmt(dispTotal));
+    // Disponible para inversión = mismo que saldo inicial
+    s('inv-caja',  '$'+fmt(salInitCaja));
+    s('inv-banco', '$'+fmt(salInitBanco));
+    s('inv-total', '$'+fmt(salInitCaja+salInitBanco));
 
   }catch(e){ showToast('Error cargando saldos: '+e.message, true); }
 }
