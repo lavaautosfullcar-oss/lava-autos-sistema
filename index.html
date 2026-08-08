@@ -3660,7 +3660,10 @@ async function loadSaldos(){
     const gastosEfNuevo=gastosNuevos.filter(g=>g.forma_pago==='efectivo').reduce((s,g)=>s+(g.valor||0),0);
     const gastosQrNuevo=gastosNuevos.filter(g=>g.forma_pago==='qr').reduce((s,g)=>s+(g.valor||0),0);
     
-    const dispCaja  = salInitCaja + efNuevo - mitadNuevo + vpNuevo - gastosEfNuevo - totPendNuevo;
+    // Nota: no se resta totPendNuevo aquí — el dinero de órdenes pendientes nunca
+    // se sumó a efNuevo (no se ha cobrado), así que restarlo de nuevo duplicaba el descuento.
+    // Misma lógica que usa "Cierre del día": caja = efectivo cobrado − pago lavadores.
+    const dispCaja  = salInitCaja + efNuevo - mitadNuevo + vpNuevo - gastosEfNuevo;
     const dispBanco = salInitBanco + qrNuevo - gastosQrNuevo;
     const dispTotal = dispCaja + dispBanco;
     s('inv-caja',  '$'+fmt(dispCaja));
