@@ -1695,6 +1695,10 @@ async function reimprimir(id){
 // ── EDITAR ORDEN ──────────────────────────────────────────────────────────────
 async function abrirEditarOrd(id){
   try{
+    // Reload conceseros if empty (misma protección que abrirModalOrden)
+    if(!conceseros.length){
+      try{ conceseros=await api('conceseros?activo=eq.true&order=nombre'); }catch{}
+    }
     const ords=await api('ordenes?id=eq.'+id);
     const o=ords[0];
     const svcs=await api('orden_servicios?orden_id=eq.'+id);
@@ -3775,7 +3779,11 @@ function selProdTipo(tipo, btn){
   }
 }
 
-function abrirModalProducto(){
+async function abrirModalProducto(){
+  // Reload conceseros if empty (misma protección que abrirModalOrden)
+  if(!conceseros.length){
+    try{ conceseros=await api('conceseros?activo=eq.true&order=nombre'); }catch{}
+  }
   // Fill conceseros
   const sel = document.getElementById('prod-concesero');
   sel.innerHTML = '<option value="">— Seleccionar lavador —</option>'
