@@ -70,6 +70,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 .ba{background:var(--gold-p);color:var(--gold)}
 .br{background:rgba(239,68,68,.15);color:#FCA5A5}
 .bqr{background:rgba(139,92,246,.15);color:#C4B5FD}
+.bmx{background:rgba(245,158,11,.15);color:#FCD34D}
 .field{margin-bottom:8px}
 .field label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:3px}
 .field input,.field select,.field textarea{width:100%;background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;font-family:'Segoe UI',sans-serif;outline:none}
@@ -174,6 +175,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <div class="ni on" onclick="go('ordenes',this)" id="nav-ordenes"><span class="ni-ico">🧾</span>Órdenes del día</div>
       <div class="ni" onclick="go('planilla',this)" id="nav-planilla"><span class="ni-ico">📋</span>Planilla</div>
       <div class="ni" onclick="go('productos',this)" id="nav-productos"><span class="ni-ico">🛒</span>Productos</div>
+      <div class="ni hidden" onclick="go('detailing',this)" id="nav-detailing"><span class="ni-ico">✨</span>Detailing</div>
       <div class="ni hidden" onclick="go('cierre',this)" id="nav-cierre"><span class="ni-ico">💰</span>Cierre del día</div>
       <div class="ni hidden" onclick="go('gastos',this)" id="nav-gastos"><span class="ni-ico">📋</span>Gastos</div>
       <div class="ni hidden" onclick="go('inversiones',this)" id="nav-inversiones"><span class="ni-ico">🏗️</span>Inversiones</div>
@@ -375,6 +377,28 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         <div class="card">
           <div class="card-t"><span class="card-tg">✦ Ventas registradas hoy</span></div>
           <div id="prod-lista"></div>
+        </div>
+      </div>
+
+      <!-- DETAILING -->
+      <div id="s-detailing" class="screen">
+        <div class="row">
+          <div><div class="page-title">✨ Detailing</div><div class="page-sub">Servicios agendados de detailing</div></div>
+          <button class="btn btn-p" onclick="abrirModalDetailing()">+ Agendar detailing</button>
+        </div>
+        <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+          <div class="kpi"><div class="kpi-l">💰 Facturado (mes)</div><div class="kpi-v" style="color:var(--gold);font-size:15px" id="det-total-mes">$0</div></div>
+          <div class="kpi" style="border-left-color:#FCA5A5"><div class="kpi-l">🧴 Insumos (mes)</div><div class="kpi-v" style="color:#FCA5A5;font-size:15px" id="det-insumos-mes">$0</div></div>
+          <div class="kpi" style="border-left-color:#93C5FD"><div class="kpi-l">👷 Bonificaciones (mes)</div><div class="kpi-v" style="color:#93C5FD;font-size:15px" id="det-bonif-mes">$0</div></div>
+          <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">✦ Ganancia neta (mes)</div><div class="kpi-v" style="color:#6EE7B7;font-size:15px" id="det-neta-mes">$0</div></div>
+        </div>
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Fecha / hora</th><th>Placa</th><th>Cliente</th><th>Lavador que ayudó</th><th>Valor</th><th>Insumos</th><th>Bonificación</th><th>Ganancia neta</th><th>Pago</th><th></th></tr></thead>
+              <tbody id="detailing-list"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -1139,6 +1163,58 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 </div>
 </div>
 
+<!-- Detailing -->
+<div id="modal-detailing" class="modal-bg" style="display:none">
+<div class="modal">
+  <div class="modal-title">✨ Agendar detailing</div>
+  <div class="form-grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label>Fecha</label><input type="date" id="det-fecha"/></div>
+    <div class="field"><label>Hora acordada</label><input type="time" id="det-hora"/></div>
+  </div>
+  <div class="form-grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label>Placa</label><input type="text" id="det-placa" placeholder="ABC 123" oninput="this.value=this.value.toUpperCase()"/></div>
+    <div class="field"><label>Cliente</label><input type="text" id="det-cliente" placeholder="Nombre del cliente"/></div>
+  </div>
+  <div class="field"><label>Lavador que ayuda (opcional)</label>
+    <select id="det-concesero"><option value="">— Ninguno / se hace aparte —</option></select>
+  </div>
+  <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="field"><label>Valor a cobrar</label><input type="number" id="det-valor" placeholder="0" oninput="calcDetNeta()"/></div>
+    <div class="field"><label>Costo insumos</label><input type="number" id="det-insumos" placeholder="0" oninput="calcDetNeta()"/></div>
+    <div class="field"><label>Bonificación lavador</label><input type="number" id="det-bonif" placeholder="0" oninput="calcDetNeta()"/></div>
+  </div>
+  <div style="background:rgba(255,255,255,.04);border-radius:8px;padding:10px 12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+    <span style="font-size:12px;color:var(--muted)">✦ Ganancia neta estimada</span>
+    <span style="font-weight:800;color:#6EE7B7;font-size:16px" id="det-neta-preview">$0</span>
+  </div>
+  <div class="field"><label>¿Cómo se paga?</label>
+    <div class="pay-toggle" style="margin-bottom:10px">
+      <button class="pt pt-ef on-ef" onclick="selDetTipo('simple',this)" id="det-tipo-simple">💵/📲 Un solo pago</button>
+      <button class="pt pt-qr" onclick="selDetTipo('mixto',this)" id="det-tipo-mixto">🔀 Pago mixto</button>
+    </div>
+  </div>
+  <div id="det-simple-fields">
+    <div class="field"><label>Forma de pago</label>
+      <div class="pay-toggle">
+        <button class="pt pt-ef on-ef" onclick="selDetPay(this,'efectivo')" id="d-ef">💵 Efectivo</button>
+        <button class="pt pt-qr" onclick="selDetPay(this,'qr')" id="d-qr">📲 QR</button>
+      </div>
+    </div>
+  </div>
+  <div id="det-mixto-fields" style="display:none">
+    <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-bottom:6px">
+      <div class="field"><label>💵 Efectivo</label><input type="number" id="det-mixto-ef" placeholder="0" oninput="calcDetMixto()"/></div>
+      <div class="field"><label>📲 QR</label><input type="number" id="det-mixto-qr" placeholder="0" oninput="calcDetMixto()"/></div>
+    </div>
+    <div id="det-mixto-check" style="padding:8px 12px;border-radius:8px;font-size:12px;text-align:center;background:rgba(255,255,255,.04)">Ingresa los valores</div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarDetailing()">💾 Guardar</button>
+    <button class="btn btn-g" onclick="cerrarModal('modal-detailing')">Cancelar</button>
+  </div>
+</div>
+</div>
+
 <!-- Concesero -->
 <div id="modal-conc" class="modal-bg" style="display:none">
 <div class="modal">
@@ -1319,7 +1395,7 @@ function doLogout(){
   document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('sel'));
   document.querySelector('.role-btn')?.classList.add('sel');
   // Reset nav
-  ['nav-cierre','nav-productos','nav-gastos','nav-inversiones','nav-dashboard','nav-historial','nav-susuerte',
+  ['nav-cierre','nav-productos','nav-detailing','nav-gastos','nav-inversiones','nav-dashboard','nav-historial','nav-susuerte',
    'nav-pendientes','nav-conceseros','nav-servicios-cfg','nav-saldos',
    'sep-reportes','sep-empresas','sep-config',
    'bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
@@ -1331,7 +1407,7 @@ function setupNav(){
   const isOwner=currentUser.rol==='dueno';
   const isCajero=currentUser.rol==='cajero';
   // Reset all first
-  ['nav-cierre','nav-productos','nav-gastos','nav-inversiones','nav-dashboard','nav-historial','nav-susuerte',
+  ['nav-cierre','nav-productos','nav-detailing','nav-gastos','nav-inversiones','nav-dashboard','nav-historial','nav-susuerte',
    'nav-pendientes','nav-conceseros','nav-servicios-cfg','nav-saldos',
    'sep-reportes','sep-empresas','sep-config',
    'bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
@@ -1348,7 +1424,7 @@ function setupNav(){
   }
   // Dueño: todo
   if(isOwner){
-    ['nav-cierre','nav-productos','nav-gastos','nav-inversiones','nav-dashboard','nav-historial','nav-susuerte',
+    ['nav-cierre','nav-productos','nav-detailing','nav-gastos','nav-inversiones','nav-dashboard','nav-historial','nav-susuerte',
      'nav-pendientes','nav-conceseros','nav-servicios-cfg','nav-saldos',
      'sep-reportes','sep-empresas','sep-config',
      'bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
@@ -1382,6 +1458,7 @@ function go(s,el){
   else if(s==='susuerte') initSusuerte();
   else if(s==='gastos') loadGastos();
   else if(s==='inversiones') loadInversiones();
+  else if(s==='detailing') loadDetailing();
   else if(s==='dashboard') loadDashboard();
   else if(s==='conceseros') loadConcsLista();
   else if(s==='servicios-cfg') loadSvcsCfg();
@@ -2397,6 +2474,169 @@ async function guardarInversion(){
 async function borrarInversion(id){
   if(!confirm('¿Borrar esta inversión?')) return;
   try{await api('inversiones?id=eq.'+id,'DELETE');showToast('Inversión eliminada');loadInversiones();}catch{showToast('Error',true);}
+}
+
+// ── DETAILING ─────────────────────────────────────────────────────────────────
+// Tabla separada, propia: no pasa por "ordenes" ni se reparte 50/50 con el
+// lavador — se le da una bonificación (monto libre) por ayudar, y el resto
+// (valor - insumos - bonificación) es ganancia neta del negocio.
+let gastoPayModeDet = 'efectivo';
+let detTipo = 'simple';
+let detailingTodos = [];
+
+function calcDetNeta(){
+  const valor = parseInt(document.getElementById('det-valor').value)||0;
+  const insumos = parseInt(document.getElementById('det-insumos').value)||0;
+  const bonif = parseInt(document.getElementById('det-bonif').value)||0;
+  document.getElementById('det-neta-preview').textContent = '$'+fmt(valor-insumos-bonif);
+}
+
+async function abrirModalDetailing(){
+  document.getElementById('det-fecha').value = today();
+  document.getElementById('det-hora').value = '';
+  document.getElementById('det-placa').value = '';
+  document.getElementById('det-cliente').value = '';
+  document.getElementById('det-valor').value = '';
+  document.getElementById('det-insumos').value = '';
+  document.getElementById('det-bonif').value = '';
+  document.getElementById('det-neta-preview').textContent = '$0';
+  gastoPayModeDet = 'efectivo';
+  document.getElementById('d-ef').classList.add('on-ef');
+  document.getElementById('d-qr').classList.remove('on-qr');
+  detTipo = 'simple';
+  document.getElementById('det-tipo-simple').classList.add('on-ef');
+  document.getElementById('det-tipo-mixto').classList.remove('on-qr');
+  document.getElementById('det-simple-fields').style.display='block';
+  document.getElementById('det-mixto-fields').style.display='none';
+  document.getElementById('det-mixto-ef').value='';
+  document.getElementById('det-mixto-qr').value='';
+  document.getElementById('det-mixto-check').textContent='Ingresa los valores';
+  document.getElementById('det-mixto-check').style.background='rgba(255,255,255,.04)';
+
+  if(!conceseros.length){
+    try{ conceseros=await api('conceseros?activo=eq.true&order=nombre'); }catch{}
+  }
+  const sel = document.getElementById('det-concesero');
+  sel.innerHTML = '<option value="">— Ninguno / se hace aparte —</option>'
+    + conceseros.map(c=>'<option value="'+c.nombre+'">'+c.nombre+'</option>').join('');
+
+  document.getElementById('modal-detailing').style.display='flex';
+}
+
+function selDetPay(btn,type){
+  gastoPayModeDet=type;
+  document.getElementById('d-ef').classList.remove('on-ef');
+  document.getElementById('d-qr').classList.remove('on-qr');
+  btn.classList.add(type==='efectivo'?'on-ef':'on-qr');
+}
+
+function selDetTipo(tipo, btn){
+  detTipo = tipo;
+  document.getElementById('det-tipo-simple').classList.remove('on-ef');
+  document.getElementById('det-tipo-mixto').classList.remove('on-qr');
+  btn.classList.add(tipo==='simple'?'on-ef':'on-qr');
+  document.getElementById('det-simple-fields').style.display = tipo==='simple'?'block':'none';
+  document.getElementById('det-mixto-fields').style.display = tipo==='mixto'?'block':'none';
+  if(tipo==='mixto') calcDetMixto();
+}
+
+function calcDetMixto(){
+  const valor = parseInt(document.getElementById('det-valor').value)||0;
+  const ef = parseInt(document.getElementById('det-mixto-ef').value)||0;
+  const qr = parseInt(document.getElementById('det-mixto-qr').value)||0;
+  const suma = ef+qr;
+  const check = document.getElementById('det-mixto-check');
+  if(suma===valor && valor>0){
+    check.style.background='rgba(16,185,129,.15)';
+    check.style.color='#6EE7B7';
+    check.textContent='✅ Cuadra perfectamente — $'+fmt(ef)+' ef + $'+fmt(qr)+' QR = $'+fmt(suma);
+  } else if(suma>valor){
+    check.style.background='rgba(239,68,68,.15)';
+    check.style.color='#FCA5A5';
+    check.textContent='⚠️ Excede el valor por $'+fmt(suma-valor);
+  } else {
+    check.style.background='rgba(245,158,11,.15)';
+    check.style.color='#FCD34D';
+    check.textContent='Faltan $'+fmt(valor-suma)+' por asignar (valor: $'+fmt(valor)+')';
+  }
+}
+
+async function guardarDetailing(){
+  const fecha = document.getElementById('det-fecha').value;
+  const hora = document.getElementById('det-hora').value;
+  const placa = document.getElementById('det-placa').value.trim();
+  const cliente = document.getElementById('det-cliente').value.trim();
+  const concesero = document.getElementById('det-concesero').value;
+  const valor = parseInt(document.getElementById('det-valor').value)||0;
+  const insumos = parseInt(document.getElementById('det-insumos').value)||0;
+  const bonif = parseInt(document.getElementById('det-bonif').value)||0;
+  if(!fecha||!placa||!cliente||!valor){showToast('Completa fecha, placa, cliente y valor',true);return;}
+
+  let formaPago = gastoPayModeDet, pagoEf = 0, pagoQr = 0;
+  if(detTipo==='mixto'){
+    pagoEf = parseInt(document.getElementById('det-mixto-ef').value)||0;
+    pagoQr = parseInt(document.getElementById('det-mixto-qr').value)||0;
+    if(pagoEf+pagoQr!==valor){showToast('El pago mixto no cuadra con el valor',true);return;}
+    formaPago = 'mixto';
+  } else {
+    pagoEf = gastoPayModeDet==='efectivo'?valor:0;
+    pagoQr = gastoPayModeDet==='qr'?valor:0;
+  }
+
+  try{
+    await api('detailing','POST',{
+      fecha, hora: hora||null, placa, cliente_nombre: cliente,
+      concesero_nombre: concesero||null,
+      valor, costo_insumos: insumos, bonificacion_lavador: bonif,
+      forma_pago: formaPago, pago_efectivo: pagoEf, pago_qr: pagoQr
+    });
+    cerrarModal('modal-detailing'); showToast('Detailing agendado ✅'); loadDetailing();
+  }catch(e){
+    showToast('No se pudo guardar — puede que falte crear la tabla "detailing" en Supabase',true);
+  }
+}
+
+async function loadDetailing(){
+  try{
+    const rows = await api('detailing?order=fecha.desc,hora.desc');
+    detailingTodos = rows;
+    const mesActual = today().slice(0,7);
+    const delMes = rows.filter(d=>d.fecha.slice(0,7)===mesActual);
+
+    const totalMes = delMes.reduce((s,d)=>s+(d.valor||0),0);
+    const insumosMes = delMes.reduce((s,d)=>s+(d.costo_insumos||0),0);
+    const bonifMes = delMes.reduce((s,d)=>s+(d.bonificacion_lavador||0),0);
+    const netaMes = totalMes - insumosMes - bonifMes;
+    document.getElementById('det-total-mes').textContent = '$'+fmt(totalMes);
+    document.getElementById('det-insumos-mes').textContent = '$'+fmt(insumosMes);
+    document.getElementById('det-bonif-mes').textContent = '$'+fmt(bonifMes);
+    document.getElementById('det-neta-mes').textContent = '$'+fmt(netaMes);
+
+    document.getElementById('detailing-list').innerHTML = rows.length ? rows.map(d=>{
+      const neta = (d.valor||0)-(d.costo_insumos||0)-(d.bonificacion_lavador||0);
+      return '<tr>'
+        +'<td style="color:var(--muted);font-family:monospace;font-size:11px">'+d.fecha+(d.hora?' '+d.hora:'')+'</td>'
+        +'<td style="font-weight:700;color:var(--gold)">'+d.placa+'</td>'
+        +'<td style="font-size:11px">'+d.cliente_nombre+'</td>'
+        +'<td style="font-size:11px">'+(d.concesero_nombre||'—')+'</td>'
+        +'<td style="font-weight:700">$'+fmt(d.valor)+'</td>'
+        +'<td style="color:#FCA5A5">$'+fmt(d.costo_insumos)+'</td>'
+        +'<td style="color:#93C5FD">$'+fmt(d.bonificacion_lavador)+'</td>'
+        +'<td style="color:#6EE7B7;font-weight:700">$'+fmt(neta)+'</td>'
+        +'<td><span class="badge '+(d.forma_pago==='mixto'?'bmx':d.forma_pago==='qr'?'bqr':'bg')+'">'+(d.forma_pago==='mixto'?'🔀 Mixto':d.forma_pago==='qr'?'📲 QR':'💵 Ef')+'</span></td>'
+        +'<td><button class="btn btn-r" style="padding:3px 8px;font-size:10px" onclick="borrarDetailing('+d.id+')">🗑️</button></td>'
+        +'</tr>';
+    }).join('') : '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:20px">Sin detailing agendados</td></tr>';
+  }catch(e){
+    showToast('No se pudo cargar Detailing — puede que falte crear la tabla en Supabase',true);
+    document.getElementById('detailing-list').innerHTML =
+      '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:20px">⚠️ No se pudo conectar con la tabla "detailing". Pídele a Claude que te ayude a crearla en Supabase.</td></tr>';
+  }
+}
+
+async function borrarDetailing(id){
+  if(!confirm('¿Borrar este detailing?')) return;
+  try{await api('detailing?id=eq.'+id,'DELETE');showToast('Detailing eliminado');loadDetailing();}catch{showToast('Error',true);}
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────────
