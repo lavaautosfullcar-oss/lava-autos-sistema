@@ -383,19 +383,19 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <!-- DETAILING -->
       <div id="s-detailing" class="screen">
         <div class="row">
-          <div><div class="page-title">✨ Detailing</div><div class="page-sub">Servicios agendados de detailing</div></div>
-          <button class="btn btn-p" onclick="abrirModalDetailing()">+ Agendar detailing</button>
+          <div><div class="page-title">✨ Detailing</div><div class="page-sub">Ingresos extra por detailing (los hace Mateo)</div></div>
+          <button class="btn btn-p" onclick="abrirModalDetailing()">+ Registrar detailing</button>
         </div>
         <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
           <div class="kpi"><div class="kpi-l">💰 Facturado (mes)</div><div class="kpi-v" style="color:var(--gold);font-size:15px" id="det-total-mes">$0</div></div>
           <div class="kpi" style="border-left-color:#FCA5A5"><div class="kpi-l">🧴 Insumos (mes)</div><div class="kpi-v" style="color:#FCA5A5;font-size:15px" id="det-insumos-mes">$0</div></div>
-          <div class="kpi" style="border-left-color:#93C5FD"><div class="kpi-l">👷 Bonificaciones (mes)</div><div class="kpi-v" style="color:#93C5FD;font-size:15px" id="det-bonif-mes">$0</div></div>
+          <div class="kpi" style="border-left-color:#93C5FD"><div class="kpi-l">👷 Comisión Mateo (mes)</div><div class="kpi-v" style="color:#93C5FD;font-size:15px" id="det-bonif-mes">$0</div></div>
           <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">✦ Ganancia neta (mes)</div><div class="kpi-v" style="color:#6EE7B7;font-size:15px" id="det-neta-mes">$0</div></div>
         </div>
         <div class="card">
           <div class="tbl-wrap">
             <table>
-              <thead><tr><th>Fecha / hora</th><th>Placa</th><th>Cliente</th><th>Lavador que ayudó</th><th>Valor</th><th>Insumos</th><th>Bonificación</th><th>Ganancia neta</th><th>Pago</th><th></th></tr></thead>
+              <thead><tr><th>Fecha</th><th>Placa</th><th>Tipo</th><th>Valor</th><th>Insumos</th><th>Comisión Mateo</th><th>Ganancia neta</th><th>Pago</th><th></th></tr></thead>
               <tbody id="detailing-list"></tbody>
             </table>
           </div>
@@ -761,7 +761,16 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
             <div class="page-sub">Lavadas del mes</div>
           </div>
           <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <div class="pay-toggle" style="margin:0">
+              <button class="pt pt-ef on-ef" id="emp-modo-mes" onclick="selEmpModo('mes')">📅 Mes</button>
+              <button class="pt pt-qr" id="emp-modo-rango" onclick="selEmpModo('rango')">🔀 Rango</button>
+            </div>
             <select id="emp-mes" onchange="loadEmpresaDetalle()" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none"></select>
+            <span id="emp-rango-fields" style="display:none;gap:6px;align-items:center">
+              <input type="date" id="emp-desde" onchange="loadEmpresaDetalle()" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none"/>
+              <span style="color:var(--muted);font-size:11px">a</span>
+              <input type="date" id="emp-hasta" onchange="loadEmpresaDetalle()" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none"/>
+            </span>
             <button class="btn btn-p" onclick="generarFacturaEmpresa()">📄 Generar factura</button>
           </div>
         </div>
@@ -1166,22 +1175,22 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 <!-- Detailing -->
 <div id="modal-detailing" class="modal-bg" style="display:none">
 <div class="modal">
-  <div class="modal-title">✨ Agendar detailing</div>
+  <div class="modal-title">✨ Registrar detailing</div>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Este servicio siempre lo hace <b style="color:var(--gold)">Mateo</b> — registra el trabajo ya hecho, como un ingreso extra.</div>
   <div class="form-grid" style="grid-template-columns:1fr 1fr">
     <div class="field"><label>Fecha</label><input type="date" id="det-fecha"/></div>
-    <div class="field"><label>Hora acordada</label><input type="time" id="det-hora"/></div>
-  </div>
-  <div class="form-grid" style="grid-template-columns:1fr 1fr">
     <div class="field"><label>Placa</label><input type="text" id="det-placa" placeholder="ABC 123" oninput="this.value=this.value.toUpperCase()"/></div>
-    <div class="field"><label>Cliente</label><input type="text" id="det-cliente" placeholder="Nombre del cliente"/></div>
   </div>
-  <div class="field"><label>Lavador que ayuda (opcional)</label>
-    <select id="det-concesero"><option value="">— Ninguno / se hace aparte —</option></select>
+  <div class="field"><label>Tipo de vehículo (referencia)</label>
+    <select id="det-tipo-veh">
+      <option value="carro">🚗 Carro</option>
+      <option value="camioneta">🚙 Camioneta</option>
+    </select>
   </div>
   <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr">
-    <div class="field"><label>Valor a cobrar</label><input type="number" id="det-valor" placeholder="0" oninput="calcDetNeta()"/></div>
+    <div class="field"><label>Valor cobrado</label><input type="number" id="det-valor" placeholder="0" oninput="calcDetNeta()"/></div>
     <div class="field"><label>Costo insumos</label><input type="number" id="det-insumos" placeholder="0" oninput="calcDetNeta()"/></div>
-    <div class="field"><label>Bonificación lavador</label><input type="number" id="det-bonif" placeholder="0" oninput="calcDetNeta()"/></div>
+    <div class="field"><label>Comisión Mateo</label><input type="number" id="det-bonif" placeholder="0" oninput="calcDetNeta()"/></div>
   </div>
   <div style="background:rgba(255,255,255,.04);border-radius:8px;padding:10px 12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
     <span style="font-size:12px;color:var(--muted)">✦ Ganancia neta estimada</span>
@@ -2477,9 +2486,10 @@ async function borrarInversion(id){
 }
 
 // ── DETAILING ─────────────────────────────────────────────────────────────────
-// Tabla separada, propia: no pasa por "ordenes" ni se reparte 50/50 con el
-// lavador — se le da una bonificación (monto libre) por ayudar, y el resto
-// (valor - insumos - bonificación) es ganancia neta del negocio.
+// Ingreso extra: registro del trabajo ya hecho (no una cita a futuro).
+// Tabla separada, propia: no pasa por "ordenes" ni se reparte 50/50 — el
+// servicio siempre lo hace Mateo, y se le da una comisión (monto libre) por
+// hacerlo. El resto (valor - insumos - comisión) es ganancia neta del negocio.
 let gastoPayModeDet = 'efectivo';
 let detTipo = 'simple';
 let detailingTodos = [];
@@ -2493,9 +2503,8 @@ function calcDetNeta(){
 
 async function abrirModalDetailing(){
   document.getElementById('det-fecha').value = today();
-  document.getElementById('det-hora').value = '';
   document.getElementById('det-placa').value = '';
-  document.getElementById('det-cliente').value = '';
+  document.getElementById('det-tipo-veh').value = 'carro';
   document.getElementById('det-valor').value = '';
   document.getElementById('det-insumos').value = '';
   document.getElementById('det-bonif').value = '';
@@ -2512,13 +2521,6 @@ async function abrirModalDetailing(){
   document.getElementById('det-mixto-qr').value='';
   document.getElementById('det-mixto-check').textContent='Ingresa los valores';
   document.getElementById('det-mixto-check').style.background='rgba(255,255,255,.04)';
-
-  if(!conceseros.length){
-    try{ conceseros=await api('conceseros?activo=eq.true&order=nombre'); }catch{}
-  }
-  const sel = document.getElementById('det-concesero');
-  sel.innerHTML = '<option value="">— Ninguno / se hace aparte —</option>'
-    + conceseros.map(c=>'<option value="'+c.nombre+'">'+c.nombre+'</option>').join('');
 
   document.getElementById('modal-detailing').style.display='flex';
 }
@@ -2563,14 +2565,12 @@ function calcDetMixto(){
 
 async function guardarDetailing(){
   const fecha = document.getElementById('det-fecha').value;
-  const hora = document.getElementById('det-hora').value;
   const placa = document.getElementById('det-placa').value.trim();
-  const cliente = document.getElementById('det-cliente').value.trim();
-  const concesero = document.getElementById('det-concesero').value;
+  const tipoVeh = document.getElementById('det-tipo-veh').value;
   const valor = parseInt(document.getElementById('det-valor').value)||0;
   const insumos = parseInt(document.getElementById('det-insumos').value)||0;
   const bonif = parseInt(document.getElementById('det-bonif').value)||0;
-  if(!fecha||!placa||!cliente||!valor){showToast('Completa fecha, placa, cliente y valor',true);return;}
+  if(!fecha||!placa||!valor){showToast('Completa fecha, placa y valor',true);return;}
 
   let formaPago = gastoPayModeDet, pagoEf = 0, pagoQr = 0;
   if(detTipo==='mixto'){
@@ -2585,12 +2585,12 @@ async function guardarDetailing(){
 
   try{
     await api('detailing','POST',{
-      fecha, hora: hora||null, placa, cliente_nombre: cliente,
-      concesero_nombre: concesero||null,
-      valor, costo_insumos: insumos, bonificacion_lavador: bonif,
+      fecha, placa, tipo_vehiculo: tipoVeh,
+      ayudante_nombre: 'Mateo',
+      valor, costo_insumos: insumos, comision_ayudante: bonif,
       forma_pago: formaPago, pago_efectivo: pagoEf, pago_qr: pagoQr
     });
-    cerrarModal('modal-detailing'); showToast('Detailing agendado ✅'); loadDetailing();
+    cerrarModal('modal-detailing'); showToast('Detailing registrado ✅'); loadDetailing();
   }catch(e){
     showToast('No se pudo guardar — puede que falte crear la tabla "detailing" en Supabase',true);
   }
@@ -2605,7 +2605,7 @@ async function loadDetailing(){
 
     const totalMes = delMes.reduce((s,d)=>s+(d.valor||0),0);
     const insumosMes = delMes.reduce((s,d)=>s+(d.costo_insumos||0),0);
-    const bonifMes = delMes.reduce((s,d)=>s+(d.bonificacion_lavador||0),0);
+    const bonifMes = delMes.reduce((s,d)=>s+(d.comision_ayudante||0),0);
     const netaMes = totalMes - insumosMes - bonifMes;
     document.getElementById('det-total-mes').textContent = '$'+fmt(totalMes);
     document.getElementById('det-insumos-mes').textContent = '$'+fmt(insumosMes);
@@ -2613,24 +2613,23 @@ async function loadDetailing(){
     document.getElementById('det-neta-mes').textContent = '$'+fmt(netaMes);
 
     document.getElementById('detailing-list').innerHTML = rows.length ? rows.map(d=>{
-      const neta = (d.valor||0)-(d.costo_insumos||0)-(d.bonificacion_lavador||0);
+      const neta = (d.valor||0)-(d.costo_insumos||0)-(d.comision_ayudante||0);
       return '<tr>'
-        +'<td style="color:var(--muted);font-family:monospace;font-size:11px">'+d.fecha+(d.hora?' '+d.hora:'')+'</td>'
+        +'<td style="color:var(--muted);font-family:monospace;font-size:11px">'+d.fecha+'</td>'
         +'<td style="font-weight:700;color:var(--gold)">'+d.placa+'</td>'
-        +'<td style="font-size:11px">'+d.cliente_nombre+'</td>'
-        +'<td style="font-size:11px">'+(d.concesero_nombre||'—')+'</td>'
+        +'<td style="font-size:11px">'+(d.tipo_vehiculo==='camioneta'?'🚙 Camioneta':'🚗 Carro')+'</td>'
         +'<td style="font-weight:700">$'+fmt(d.valor)+'</td>'
         +'<td style="color:#FCA5A5">$'+fmt(d.costo_insumos)+'</td>'
-        +'<td style="color:#93C5FD">$'+fmt(d.bonificacion_lavador)+'</td>'
+        +'<td style="color:#93C5FD">$'+fmt(d.comision_ayudante)+'</td>'
         +'<td style="color:#6EE7B7;font-weight:700">$'+fmt(neta)+'</td>'
         +'<td><span class="badge '+(d.forma_pago==='mixto'?'bmx':d.forma_pago==='qr'?'bqr':'bg')+'">'+(d.forma_pago==='mixto'?'🔀 Mixto':d.forma_pago==='qr'?'📲 QR':'💵 Ef')+'</span></td>'
         +'<td><button class="btn btn-r" style="padding:3px 8px;font-size:10px" onclick="borrarDetailing('+d.id+')">🗑️</button></td>'
         +'</tr>';
-    }).join('') : '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:20px">Sin detailing agendados</td></tr>';
+    }).join('') : '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">Sin detailing registrados</td></tr>';
   }catch(e){
     showToast('No se pudo cargar Detailing — puede que falte crear la tabla en Supabase',true);
     document.getElementById('detailing-list').innerHTML =
-      '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:20px">⚠️ No se pudo conectar con la tabla "detailing". Pídele a Claude que te ayude a crearla en Supabase.</td></tr>';
+      '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">⚠️ No se pudo conectar con la tabla "detailing". Pídele a Claude que te ayude a crearla en Supabase.</td></tr>';
   }
 }
 
@@ -3696,6 +3695,49 @@ async function marcarPendientePago(id){
 // ── EMPRESAS ─────────────────────────────────────────────────────────────────
 let empresas = [];
 let empresaActual = null;
+let empModo = 'mes'; // 'mes' | 'rango'
+
+function selEmpModo(modo){
+  empModo = modo;
+  document.getElementById('emp-modo-mes').classList.remove('on-ef');
+  document.getElementById('emp-modo-rango').classList.remove('on-qr');
+  document.getElementById(modo==='mes'?'emp-modo-mes':'emp-modo-rango').classList.add(modo==='mes'?'on-ef':'on-qr');
+  document.getElementById('emp-mes').style.display = modo==='mes'?'inline-block':'none';
+  document.getElementById('emp-rango-fields').style.display = modo==='rango'?'inline-flex':'none';
+  if(modo==='rango' && empresaActual && !document.getElementById('emp-desde').value){
+    // Sugerir el siguiente periodo con base en el último ciclo facturado a esta empresa
+    try{
+      const guardado = localStorage.getItem('lava_ciclo_emp_'+empresaActual.id);
+      if(guardado){
+        const {hasta} = JSON.parse(guardado);
+        const h = new Date(hasta+'T00:00:00');
+        const desde = new Date(h); desde.setDate(desde.getDate()+1);
+        const hastaSig = new Date(h); hastaSig.setMonth(hastaSig.getMonth()+1);
+        document.getElementById('emp-desde').value = desde.toISOString().slice(0,10);
+        document.getElementById('emp-hasta').value = hastaSig.toISOString().slice(0,10);
+      }
+    }catch{}
+  }
+  loadEmpresaDetalle();
+}
+
+// Devuelve {start, end, label} según el modo activo (mes calendario o rango libre)
+function getEmpRango(){
+  if(empModo==='rango'){
+    const start = document.getElementById('emp-desde')?.value;
+    const end = document.getElementById('emp-hasta')?.value;
+    if(!start||!end) return null;
+    const label = start.split('-').reverse().join('/')+' – '+end.split('-').reverse().join('/');
+    return {start, end, label};
+  }
+  const mes = document.getElementById('emp-mes')?.value;
+  if(!mes) return null;
+  const [y,m] = mes.split('-');
+  const lastDay = new Date(parseInt(y),parseInt(m),0).getDate();
+  const start = mes+'-01', end = mes+'-'+String(lastDay).padStart(2,'0');
+  const label = MES[parseInt(m)-1]+' '+y;
+  return {start, end, label};
+}
 
 async function loadEmpresas(){
   try{
@@ -3740,19 +3782,19 @@ function verEmpresa(id, nombre){
       sel.innerHTML += '<option value="'+val+'">'+MES[d.getMonth()]+' '+d.getFullYear()+'</option>';
     }
   }
+  // Reiniciar el selector de rango cada vez que se abre una empresa
+  document.getElementById('emp-desde').value = '';
+  document.getElementById('emp-hasta').value = '';
   go('empresa-detalle', document.getElementById('nav-susuerte'));
-  loadEmpresaDetalle();
+  selEmpModo('mes'); // ya llama loadEmpresaDetalle()
 }
 
 async function loadEmpresaDetalle(){
   if(!empresaActual) return;
-  const mes = document.getElementById('emp-mes')?.value;
-  if(!mes) return;
+  const rango = getEmpRango();
+  if(!rango) return;
+  const {start, end} = rango;
   try{
-    const [y,m] = mes.split('-');
-    const lastDay = new Date(parseInt(y),parseInt(m),0).getDate();
-    const start = mes+'-01', end = mes+'-'+String(lastDay).padStart(2,'0');
-
     // Query by empresa_id OR empresa_nombre OR pendiente_pago with matching name
     let allOrds = [];
     try{
@@ -3814,23 +3856,21 @@ async function loadEmpresaDetalle(){
             +'<td>'+(isPend?'<button class="btn btn-gr" style="padding:3px 8px;font-size:10px" onclick="abrirCobrar('+o.id+')">💰 Cobrar</button>':'')+'</td>'
             +'</tr>';
         }).join('')
-      : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Sin lavadas este mes</td></tr>';
+      : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Sin lavadas en este periodo</td></tr>';
   }catch(e){ showToast('Error: '+e.message, true); }
 }
 
 async function generarFacturaEmpresa(){
   if(!empresaActual) return;
-  const mes = document.getElementById('emp-mes')?.value;
-  if(!mes) return;
+  const rango = getEmpRango();
+  if(!rango) return;
+  const {start, end, label} = rango;
   try{
-    const [y,m] = mes.split('-');
-    const lastDay = new Date(parseInt(y),parseInt(m),0).getDate();
-    const start = mes+'-01', end = mes+'-'+String(lastDay).padStart(2,'0');
     const ords = await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end
       +'&empresa_nombre=eq.'+encodeURIComponent(empresaActual.nombre)+'&order=fecha.asc');
     // Un carro "abierto" (aún en lavado) no se factura: no es una lavada terminada.
     const pendientes = ords.filter(o=>o.estado!=='abierta'&&(o.estado==='pendiente_pago'||o.forma_pago==='pendiente'));
-    if(!pendientes.length){ showToast('No hay lavadas pendientes este mes', true); return; }
+    if(!pendientes.length){ showToast('No hay lavadas pendientes en este periodo', true); return; }
 
     const withSvcs = await Promise.all(pendientes.map(async o=>{
       const svcs = await api('orden_servicios?orden_id=eq.'+o.id);
@@ -3838,8 +3878,11 @@ async function generarFacturaEmpresa(){
     }));
 
     const total = withSvcs.reduce((s,o)=>s+(o.total||0),0);
-    const mesLabel = MES[parseInt(m)-1]+' '+y;
+    const mesLabel = label;
     const emp = empresas.find(e=>e.id===empresaActual.id)||{};
+
+    // Recordar este ciclo para sugerir el siguiente periodo la próxima vez
+    try{ localStorage.setItem('lava_ciclo_emp_'+empresaActual.id, JSON.stringify({desde:start,hasta:end})); }catch{}
 
     const w = window.open('','_blank','width=850,height=750');
     const rows = withSvcs.map((o,i)=>{
