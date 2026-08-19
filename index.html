@@ -2598,7 +2598,7 @@ async function guardarDetailing(){
 
 async function loadDetailing(){
   try{
-    const rows = await api('detailing?order=fecha.desc,hora.desc');
+    const rows = await api('detailing?order=fecha.desc,id.desc');
     detailingTodos = rows;
     const mesActual = today().slice(0,7);
     const delMes = rows.filter(d=>d.fecha.slice(0,7)===mesActual);
