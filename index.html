@@ -772,6 +772,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
               <input type="date" id="emp-hasta" onchange="loadEmpresaDetalle()" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none"/>
             </span>
             <button class="btn btn-p" onclick="generarFacturaEmpresa()">📄 Generar factura</button>
+            <button class="btn btn-gr" onclick="abrirPagoEmpresaFactura()">✅ Marcar factura pagada</button>
           </div>
         </div>
         <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
@@ -785,6 +786,15 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
             <table>
               <thead><tr><th>Fecha</th><th>Placa</th><th>Servicio</th><th>Valor</th><th>Estado</th><th></th></tr></thead>
               <tbody id="emp-tabla"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-t"><span class="card-tg">🧾 Historial de pagos de factura</span></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Fecha de pago</th><th>Periodo facturado</th><th>Total</th><th>Forma de pago</th><th>Nota</th></tr></thead>
+              <tbody id="emp-pagos-list"></tbody>
             </table>
           </div>
         </div>
@@ -1309,6 +1319,47 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
   <div style="display:flex;gap:8px;margin-top:12px">
     <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarEmpresa()">💾 Guardar</button>
     <button class="btn btn-g" onclick="cerrarModal('modal-empresa')">Cancelar</button>
+  </div>
+</div>
+</div>
+
+<!-- Marcar factura de empresa como pagada -->
+<div id="modal-pago-empresa" class="modal-bg" style="display:none">
+<div class="modal">
+  <div class="modal-title">✅ Marcar factura pagada</div>
+  <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--muted)">Empresa:</span><span style="font-weight:700;color:var(--gold)" id="pe-empresa"></span></div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--muted)">Periodo:</span><span id="pe-periodo"></span></div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--muted)">Lavadas incluidas:</span><span id="pe-count"></span></div>
+    <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Total a marcar como pagado:</span><span style="font-weight:700;font-size:18px;color:var(--gold)" id="pe-total"></span></div>
+  </div>
+  <div class="field"><label>¿Cómo pagó la empresa?</label>
+    <div class="pay-toggle" style="margin-bottom:10px">
+      <button class="pt pt-ef on-ef" onclick="selPagoEmpTipo('simple',this)" id="pe-tipo-simple">💵/📲 Un solo pago</button>
+      <button class="pt pt-qr" onclick="selPagoEmpTipo('mixto',this)" id="pe-tipo-mixto">🔀 Pago mixto</button>
+    </div>
+  </div>
+  <div id="pe-simple-fields">
+    <div class="field"><label>Forma de pago</label>
+      <div class="pay-toggle">
+        <button class="pt pt-ef on-ef" onclick="selPagoEmpPay(this,'efectivo')" id="pe-ef">💵 Efectivo</button>
+        <button class="pt pt-qr" onclick="selPagoEmpPay(this,'qr')" id="pe-qr">📲 QR</button>
+      </div>
+    </div>
+  </div>
+  <div id="pe-mixto-fields" style="display:none">
+    <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-bottom:6px">
+      <div class="field"><label>💵 Efectivo</label><input type="number" id="pe-mixto-ef" placeholder="0" oninput="calcPagoEmpMixto()"/></div>
+      <div class="field"><label>📲 QR</label><input type="number" id="pe-mixto-qr" placeholder="0" oninput="calcPagoEmpMixto()"/></div>
+    </div>
+    <div id="pe-mixto-check" style="padding:8px 12px;border-radius:8px;font-size:12px;text-align:center;background:rgba(255,255,255,.04)">Ingresa los valores</div>
+  </div>
+  <div class="field"><label>Nota / comprobante (opcional)</label>
+    <input type="text" id="pe-nota" placeholder="Ej: Transferencia #4521, consignación..."/>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button class="btn btn-p" style="flex:1;padding:10px" onclick="confirmarPagoEmpresaFactura()">✅ Confirmar pago</button>
+    <button class="btn btn-g" onclick="cerrarModal('modal-pago-empresa')">Cancelar</button>
   </div>
 </div>
 </div>
@@ -3787,6 +3838,7 @@ function verEmpresa(id, nombre){
   document.getElementById('emp-hasta').value = '';
   go('empresa-detalle', document.getElementById('nav-susuerte'));
   selEmpModo('mes'); // ya llama loadEmpresaDetalle()
+  loadPagosEmpresa();
 }
 
 async function loadEmpresaDetalle(){
@@ -3943,6 +3995,177 @@ async function generarFacturaEmpresa(){
       +'</body></html>');
     w.document.close();
   }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+// ── MARCAR FACTURA DE EMPRESA COMO PAGADA (pago masivo) ─────────────────────
+// Cuando la empresa paga toda la factura del periodo de una sola vez: marca
+// todas las lavadas pendientes de ese rango como cobradas y deja un registro
+// aparte (tabla "pagos_empresa") como dato de soporte, consultable después.
+let empPagoTipo = 'simple';
+let empPagoMode = 'efectivo';
+let empPagoPendientesCache = null;
+
+async function abrirPagoEmpresaFactura(){
+  if(!empresaActual) return;
+  const rango = getEmpRango();
+  if(!rango) return;
+  const {start, end, label} = rango;
+  try{
+    const ords = await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end
+      +'&empresa_nombre=eq.'+encodeURIComponent(empresaActual.nombre)+'&order=fecha.asc');
+    const pendientes = ords.filter(o=>o.estado!=='abierta'&&(o.estado==='pendiente_pago'||o.forma_pago==='pendiente'));
+    if(!pendientes.length){ showToast('No hay lavadas pendientes en este periodo', true); return; }
+
+    empPagoPendientesCache = {ordenes: pendientes, start, end, label};
+    const total = pendientes.reduce((s,o)=>s+(o.total||0),0);
+
+    document.getElementById('pe-empresa').textContent = empresaActual.nombre;
+    document.getElementById('pe-periodo').textContent = label;
+    document.getElementById('pe-count').textContent = pendientes.length+' lavada'+(pendientes.length===1?'':'s');
+    document.getElementById('pe-total').textContent = '$'+fmt(total);
+    document.getElementById('pe-nota').value = '';
+
+    empPagoTipo = 'simple';
+    document.getElementById('pe-tipo-simple').classList.add('on-ef');
+    document.getElementById('pe-tipo-mixto').classList.remove('on-qr');
+    document.getElementById('pe-simple-fields').style.display = 'block';
+    document.getElementById('pe-mixto-fields').style.display = 'none';
+    empPagoMode = 'efectivo';
+    document.getElementById('pe-ef').classList.add('on-ef');
+    document.getElementById('pe-qr').classList.remove('on-qr');
+    document.getElementById('pe-mixto-ef').value = '';
+    document.getElementById('pe-mixto-qr').value = '';
+    document.getElementById('pe-mixto-check').textContent = 'Ingresa los valores';
+    document.getElementById('pe-mixto-check').style.background = 'rgba(255,255,255,.04)';
+
+    document.getElementById('modal-pago-empresa').style.display = 'flex';
+  }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+function selPagoEmpTipo(tipo, btn){
+  empPagoTipo = tipo;
+  document.getElementById('pe-tipo-simple').classList.remove('on-ef');
+  document.getElementById('pe-tipo-mixto').classList.remove('on-qr');
+  btn.classList.add(tipo==='simple'?'on-ef':'on-qr');
+  document.getElementById('pe-simple-fields').style.display = tipo==='simple'?'block':'none';
+  document.getElementById('pe-mixto-fields').style.display = tipo==='mixto'?'block':'none';
+  if(tipo==='mixto') calcPagoEmpMixto();
+}
+
+function selPagoEmpPay(btn, type){
+  empPagoMode = type;
+  document.getElementById('pe-ef').classList.remove('on-ef');
+  document.getElementById('pe-qr').classList.remove('on-qr');
+  btn.classList.add(type==='efectivo'?'on-ef':'on-qr');
+}
+
+function calcPagoEmpMixto(){
+  const total = empPagoPendientesCache ? empPagoPendientesCache.ordenes.reduce((s,o)=>s+(o.total||0),0) : 0;
+  const ef = parseInt(document.getElementById('pe-mixto-ef').value)||0;
+  const qr = parseInt(document.getElementById('pe-mixto-qr').value)||0;
+  const suma = ef+qr;
+  const check = document.getElementById('pe-mixto-check');
+  if(suma===total && total>0){
+    check.style.background='rgba(16,185,129,.15)';
+    check.style.color='#6EE7B7';
+    check.textContent='✅ Cuadra perfectamente — $'+fmt(ef)+' ef + $'+fmt(qr)+' QR = $'+fmt(suma);
+  } else if(suma>total){
+    check.style.background='rgba(239,68,68,.15)';
+    check.style.color='#FCA5A5';
+    check.textContent='⚠️ Excede el total por $'+fmt(suma-total);
+  } else {
+    check.style.background='rgba(245,158,11,.15)';
+    check.style.color='#FCD34D';
+    check.textContent='Faltan $'+fmt(total-suma)+' por asignar (total: $'+fmt(total)+')';
+  }
+}
+
+async function confirmarPagoEmpresaFactura(){
+  if(!empresaActual || !empPagoPendientesCache || !empPagoPendientesCache.ordenes.length) return;
+  const {ordenes, start, end} = empPagoPendientesCache;
+  const total = ordenes.reduce((s,o)=>s+(o.total||0),0);
+  const nota = document.getElementById('pe-nota').value.trim();
+
+  let formaPago = empPagoMode, efTotal = 0, qrTotal = 0;
+  if(empPagoTipo==='mixto'){
+    efTotal = parseInt(document.getElementById('pe-mixto-ef').value)||0;
+    qrTotal = parseInt(document.getElementById('pe-mixto-qr').value)||0;
+    if(efTotal+qrTotal!==total){ showToast('El pago mixto no cuadra con el total', true); return; }
+    formaPago = 'mixto';
+  } else {
+    efTotal = empPagoMode==='efectivo' ? total : 0;
+    qrTotal = empPagoMode==='qr' ? total : 0;
+  }
+
+  try{
+    // Marca cada lavada pendiente como cobrada. Si el pago fue mixto, se
+    // reparte proporcionalmente al valor de cada lavada, y el residuo del
+    // redondeo se ajusta en la última para que la suma quede exacta.
+    let efAsignado = 0, qrAsignado = 0;
+    for(let i=0; i<ordenes.length; i++){
+      const o = ordenes[i];
+      const esUltima = i===ordenes.length-1;
+      let efOrden, qrOrden;
+      if(formaPago==='mixto' && total>0){
+        if(esUltima){
+          efOrden = efTotal - efAsignado;
+          qrOrden = qrTotal - qrAsignado;
+        } else {
+          efOrden = Math.round((o.total||0) * (efTotal/total));
+          qrOrden = (o.total||0) - efOrden;
+        }
+        efAsignado += efOrden; qrAsignado += qrOrden;
+      } else {
+        efOrden = formaPago==='efectivo' ? (o.total||0) : 0;
+        qrOrden = formaPago==='qr' ? (o.total||0) : 0;
+      }
+      await api('ordenes?id=eq.'+o.id, 'PATCH', {
+        estado: 'cerrada',
+        hora_salida: o.hora_salida || new Date().toISOString(),
+        forma_pago: formaPago,
+        pago_efectivo: efOrden,
+        pago_qr: qrOrden
+      });
+    }
+
+    await api('pagos_empresa', 'POST', {
+      empresa_id: empresaActual.id, empresa_nombre: empresaActual.nombre,
+      periodo_desde: start, periodo_hasta: end,
+      total, forma_pago: formaPago, pago_efectivo: efTotal, pago_qr: qrTotal,
+      nota: nota||null, fecha_pago: today()
+    });
+
+    try{ localStorage.setItem('lava_ciclo_emp_'+empresaActual.id, JSON.stringify({desde:start,hasta:end})); }catch{}
+
+    cerrarModal('modal-pago-empresa');
+    showToast('Factura marcada como pagada ✅');
+    loadEmpresaDetalle();
+    loadPagosEmpresa();
+  }catch(e){
+    showToast('No se pudo guardar — puede que falte crear la tabla "pagos_empresa" en Supabase', true);
+  }
+}
+
+async function loadPagosEmpresa(){
+  if(!empresaActual) return;
+  const el = document.getElementById('emp-pagos-list');
+  if(!el) return;
+  try{
+    const rows = await api('pagos_empresa?empresa_nombre=eq.'+encodeURIComponent(empresaActual.nombre)+'&order=fecha_pago.desc,id.desc');
+    el.innerHTML = rows.length ? rows.map(p=>{
+      const periodo = p.periodo_desde.split('-').reverse().join('/')+' – '+p.periodo_hasta.split('-').reverse().join('/');
+      const pagoLabel = p.forma_pago==='mixto'?'🔀 Mixto':p.forma_pago==='qr'?'📲 QR':'💵 Efectivo';
+      return '<tr>'
+        +'<td style="font-family:monospace;color:var(--muted)">'+p.fecha_pago.split('-').reverse().join('/')+'</td>'
+        +'<td style="font-size:11px">'+periodo+'</td>'
+        +'<td style="font-weight:700;color:#6EE7B7">$'+fmt(p.total)+'</td>'
+        +'<td style="font-size:11px">'+pagoLabel+'</td>'
+        +'<td style="font-size:11px;color:var(--muted)">'+(p.nota||'—')+'</td>'
+        +'</tr>';
+    }).join('') : '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">Sin pagos registrados todavía</td></tr>';
+  }catch(e){
+    el.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">⚠️ No se pudo conectar con la tabla "pagos_empresa" — puede que falte crearla en Supabase</td></tr>';
+  }
 }
 
 function abrirModalEmpresa(id){
