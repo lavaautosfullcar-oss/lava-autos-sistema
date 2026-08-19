@@ -3841,27 +3841,35 @@ function verEmpresa(id, nombre){
   loadPagosEmpresa();
 }
 
+// Trae las lavadas de la empresa actual en un rango de fechas, cruzando por
+// empresa_id Y por empresa_nombre (sin duplicar). Esto es necesario porque
+// algunas órdenes viejas quedaron con el nombre escrito distinto (ej.
+// "SUSUERTE S,A" en vez de "SUSUERTE S.A") pero con el empresa_id correcto —
+// si solo se filtrara por nombre, esas lavadas se quedarían fuera.
+async function ordenesEmpresaRango(start, end){
+  let allOrds = [];
+  try{
+    const byId = empresaActual && empresaActual.id
+      ? await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&empresa_id=eq.'+empresaActual.id+'&order=fecha.asc')
+      : [];
+    allOrds = [...byId];
+  }catch{}
+  try{
+    const byNombre = await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end
+      +'&empresa_nombre=eq.'+encodeURIComponent(empresaActual.nombre)+'&order=fecha.asc');
+    const ids = new Set(allOrds.map(o=>o.id));
+    byNombre.forEach(o=>{ if(!ids.has(o.id)) allOrds.push(o); });
+  }catch{}
+  return allOrds;
+}
+
 async function loadEmpresaDetalle(){
   if(!empresaActual) return;
   const rango = getEmpRango();
   if(!rango) return;
   const {start, end} = rango;
   try{
-    // Query by empresa_id OR empresa_nombre OR pendiente_pago with matching name
-    let allOrds = [];
-    try{
-      const byId = empresaActual.id
-        ? await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&empresa_id=eq.'+empresaActual.id+'&order=fecha.asc')
-        : [];
-      allOrds = [...byId];
-    }catch{}
-    try{
-      const byNombre = await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end
-        +'&empresa_nombre=eq.'+encodeURIComponent(empresaActual.nombre)+'&order=fecha.asc');
-      // Merge without duplicates
-      const ids = new Set(allOrds.map(o=>o.id));
-      byNombre.forEach(o=>{ if(!ids.has(o.id)) allOrds.push(o); });
-    }catch{}
+    let allOrds = await ordenesEmpresaRango(start, end);
 
     // Also get pendiente_pago orders for today that match empresa
     try{
@@ -3918,8 +3926,7 @@ async function generarFacturaEmpresa(){
   if(!rango) return;
   const {start, end, label} = rango;
   try{
-    const ords = await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end
-      +'&empresa_nombre=eq.'+encodeURIComponent(empresaActual.nombre)+'&order=fecha.asc');
+    const ords = await ordenesEmpresaRango(start, end);
     // Un carro "abierto" (aún en lavado) no se factura: no es una lavada terminada.
     const pendientes = ords.filter(o=>o.estado!=='abierta'&&(o.estado==='pendiente_pago'||o.forma_pago==='pendiente'));
     if(!pendientes.length){ showToast('No hay lavadas pendientes en este periodo', true); return; }
@@ -4011,8 +4018,7 @@ async function abrirPagoEmpresaFactura(){
   if(!rango) return;
   const {start, end, label} = rango;
   try{
-    const ords = await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end
-      +'&empresa_nombre=eq.'+encodeURIComponent(empresaActual.nombre)+'&order=fecha.asc');
+    const ords = await ordenesEmpresaRango(start, end);
     const pendientes = ords.filter(o=>o.estado!=='abierta'&&(o.estado==='pendiente_pago'||o.forma_pago==='pendiente'));
     if(!pendientes.length){ showToast('No hay lavadas pendientes en este periodo', true); return; }
 
