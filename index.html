@@ -1403,13 +1403,40 @@ let borrarOrdenId=null, ordenActual=null;
 let serviciosCfgAll=[];
 
 // ── API ──────────────────────────────────────────────────────────────────────
+// Supabase/PostgREST limita cada respuesta a 1000 filas por defecto y lo hace
+// EN SILENCIO (sin error, solo corta la lista) — así fue como el Dashboard,
+// Cierre del día, historial de una empresa, etc. dejaron de reflejar datos a
+// partir de cierto punto de agosto: ese mes superó las 1000 órdenes y las
+// consultas por rango de fechas (sin "limit=" propio) se truncaban antes de
+// llegar a los días finales del mes. api() ahora pagina automáticamente para
+// traer TODAS las filas que cumplen el filtro, salvo que el llamado ya venga
+// con su propio "limit=" (esos se respetan tal cual, a propósito).
 async function api(path,method='GET',body=null){
+  if(method==='GET' && !/[?&]limit=/.test(path)){
+    return await apiGetAll(path);
+  }
   const opts={method,headers:H};
   if(body) opts.body=JSON.stringify(body);
   const r=await fetch(SB_URL+'/rest/v1/'+path,opts);
   if(!r.ok){const e=await r.text();throw new Error(e);}
   if(r.status===204) return null;
   return r.json();
+}
+
+async function apiGetAll(path){
+  const PAGE=1000;
+  let offset=0, all=[];
+  while(true){
+    const sep = path.includes('?') ? '&' : '?';
+    const r = await fetch(SB_URL+'/rest/v1/'+path+sep+'limit='+PAGE+'&offset='+offset, {headers:H});
+    if(!r.ok){ const e=await r.text(); throw new Error(e); }
+    const chunk = await r.json();
+    all = all.concat(chunk);
+    if(chunk.length < PAGE) break; // última página
+    offset += PAGE;
+    if(offset > 500000) break; // salvavidas anti-loop-infinito
+  }
+  return all;
 }
 const fmt=n=>new Intl.NumberFormat('es-CO').format(n||0);
 const today=()=>{
@@ -1437,7 +1464,10 @@ function doLogin(){
     currentUser={rol:selRoleVal,nombre:selRoleVal==='dueno'?'Dueño':'Cajero'};
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app').classList.add('visible');
-    setupNav();
+    // setupNav() e initApp() van separados en try/catch: un error en uno no
+    // debe impedir que el otro corra (initApp es el que carga conceseros,
+    // órdenes del día y dashboard — es crítico que siempre se ejecute).
+    try{ setupNav(); }catch(e){ console.error('setupNav error:', e); }
     initApp();
   } else {
     err.textContent='PIN incorrecto.';
@@ -1490,10 +1520,16 @@ function setupNav(){
      'bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
       document.getElementById(id)?.classList.remove('hidden'));
   }
-  document.getElementById('tb-user').textContent=(isOwner?'👑 Propietario':'🖥️ Administrador');
-  document.getElementById('tb-date').textContent=new Date().toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short'});
-  document.getElementById('ordenes-fecha').textContent=new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  document.getElementById('cierre-fecha').textContent='Cierre — '+new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
+  // Nota: estas 4 líneas van con "?." a propósito. Antes, si un solo id no
+  // existía en el DOM (ej. "cierre-fecha" vs el real "cierre-fecha-lbl"),
+  // el error detenía TODO lo que seguía en doLogin() — incluyendo initApp(),
+  // que es lo que carga los conceseros, las órdenes de hoy y el dashboard.
+  // Por eso "guardaba la orden" (eso es un botón aparte) pero el dashboard y
+  // la actualización se quedaban en blanco: initApp() nunca llegaba a correr.
+  const tbUser = document.getElementById('tb-user'); if(tbUser) tbUser.textContent=(isOwner?'👑 Propietario':'🖥️ Administrador');
+  const tbDate = document.getElementById('tb-date'); if(tbDate) tbDate.textContent=new Date().toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short'});
+  const ordFecha = document.getElementById('ordenes-fecha'); if(ordFecha) ordFecha.textContent=new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const cierreFecha = document.getElementById('cierre-fecha-lbl'); if(cierreFecha) cierreFecha.textContent='Cierre — '+new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
 }
 
 // ── NAV ──────────────────────────────────────────────────────────────────────
