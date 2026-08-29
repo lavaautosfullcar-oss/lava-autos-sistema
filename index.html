@@ -1829,6 +1829,12 @@ async function guardarOrden(){
       estado: isEmpresa ? 'pendiente_pago' : 'abierta',
       empresa_id: empId||null,
       empresa_nombre: empNombre||null,
+      // OJO: hay que mandar "fecha" explícito con today() (hora de Bogotá).
+      // Antes no se enviaba y la base de datos la rellenaba sola con la fecha
+      // del SERVIDOR (en UTC) — Bogotá va 5 horas atrás de UTC, así que
+      // cualquier orden creada después de las 7pm hora Colombia caía ya en
+      // el "día siguiente" en UTC, y quedaba mal fechada un día adelante.
+      fecha: today(),
       hora_entrada: new Date().toISOString(),
       total,
       observaciones:document.getElementById('ord-obs').value
