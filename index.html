@@ -283,6 +283,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           <div class="cierre-row"><span style="color:var(--muted)">÷ 2 — Pago lavadores (50%)</span><span style="font-weight:700;color:#FCA5A5;font-family:'Georgia',serif" id="dc-mitad-lav">$0</span></div>
           <div class="cierre-row" style="border-bottom:2px solid var(--border)"><span style="font-weight:700">= Tu mitad</span><span style="font-size:18px;font-weight:800;color:var(--gold);font-family:'Georgia',serif" id="dc-tu-mitad">$0</span></div>
 
+          <div class="cierre-row"><span style="color:var(--muted)">— QR del día (ya está en la cuenta)</span><span style="font-weight:700;color:#C4B5FD;font-family:'Georgia',serif" id="dc-qr-desc">$0</span></div>
           <div class="cierre-row"><span style="color:var(--muted)">— Pendientes por cobrar</span><span style="font-weight:700;color:#FCD34D;font-family:'Georgia',serif" id="dc-pendientes">$0</span></div>
           <div class="cierre-row" style="border-bottom:2px solid var(--border)"><span style="font-weight:700">= Tu parte de lavadas</span><span style="font-size:18px;font-weight:800;color:#6EE7B7;font-family:'Georgia',serif" id="dc-tu-neta">$0</span></div>
 
@@ -302,7 +303,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           <div class="divider"></div>
           <div style="font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">¿Dónde está tu plata?</div>
           <div class="cierre-row"><span style="color:var(--muted)">💵 En caja (efectivo)</span><span style="font-weight:700;color:#6EE7B7;font-family:'Georgia',serif" id="dc-caja-ef">$0</span></div>
-          <div class="cierre-row" style="border:none"><span style="color:var(--muted)">📲 En cuenta (QR — intacto)</span><span style="font-weight:700;color:#C4B5FD;font-family:'Georgia',serif" id="dc-cuenta-qr">$0</span></div>
+          <div class="cierre-row" style="border:none"><span style="color:var(--muted)">📲 En cuenta (QR — ya descontado de tu parte)</span><span style="font-weight:700;color:#C4B5FD;font-family:'Georgia',serif" id="dc-cuenta-qr">$0</span></div>
         </div>
 
         <!-- Ventas productos card -->
@@ -1674,14 +1675,31 @@ function renderOrdenes(ords){
 
 function updateKpis(ords){
   const total=ords.reduce((s,o)=>s+(o.total||0),0);
+  // Efectivo/QR: solo de lo ya cerrado y cobrado (incluye la parte de cada
+  // pago mixto). Antes esta función no contaba los pagos mixtos aparte.
   const cerr=ords.filter(o=>o.estado==='cerrada');
-  const ef=cerr.filter(o=>o.forma_pago==='efectivo').reduce((s,o)=>s+(o.total||0),0);
-  const qr=cerr.filter(o=>o.forma_pago==='qr').reduce((s,o)=>s+(o.total||0),0);
-  const pend=ords.filter(o=>o.estado==='abierta').reduce((s,o)=>s+(o.total||0),0);
+  let ef=0, qr=0;
+  cerr.forEach(o=>{
+    if(o.forma_pago==='efectivo') ef+=parseInt(o.total)||0;
+    else if(o.forma_pago==='qr') qr+=parseInt(o.total)||0;
+    else if(o.forma_pago==='mixto'){
+      ef+=parseInt(o.pago_efectivo)||0;
+      qr+=parseInt(o.pago_qr)||0;
+    }
+  });
+  // OJO: antes esta variable se llamaba "pend" pero en realidad sumaba las
+  // "abiertas" (carros aún en lavado) y se mostraba con el ícono ⏳, que en
+  // el resto del sistema significa "pendiente por cobrar" (trabajo YA
+  // terminado que no han pagado). Eran dos cosas distintas mostradas igual.
+  // Ahora se separan: ⏳ = pendiente por cobrar de verdad, 🚗 = en curso.
+  const pendPago=ords.filter(o=>o.estado==='pendiente_pago').reduce((s,o)=>s+(o.total||0),0);
+  const enCurso=ords.filter(o=>o.estado==='abierta').reduce((s,o)=>s+(o.total||0),0);
   const ab=ords.filter(o=>o.estado==='abierta').length;
   const ce=ords.filter(o=>o.estado==='cerrada').length;
   document.getElementById('kpi-ventas').textContent='$'+fmt(total);
-  document.getElementById('kpi-split').textContent='💵 $'+fmt(ef)+' · 📲 $'+fmt(qr)+(pend?' · ⏳ $'+fmt(pend):'');
+  document.getElementById('kpi-split').textContent='💵 $'+fmt(ef)+' · 📲 $'+fmt(qr)
+    +(pendPago?' · ⏳ $'+fmt(pendPago)+' pdte':'')
+    +(enCurso?' · 🚗 $'+fmt(enCurso)+' en curso':'');
   document.getElementById('kpi-count').textContent=ords.length;
   document.getElementById('kpi-estados').textContent=ce+' cerradas · '+ab+' abiertas';
   document.getElementById('kpi-veh').textContent=ords.length;
@@ -2228,16 +2246,19 @@ async function loadCierre(){
 
     const totPend = pendientes.reduce((s,o)=>s+(o.total||0),0);
 
-    // ── Lógica del cierre ─────────────────────────────────────────────────────
-    // Total del día = TODO (cerrado + pendiente)
-    const totalDia = todasMenosAbiertas.reduce((s,o)=>s+(o.total||0),0);
+    // ── Lógica del cierre (igual que la Planilla) ────────────────────────────
+    // Total del día = TODO lo del día, incluidas las lavadas abiertas (en
+    // curso), igual que en la Planilla — así "tu parte" del Cierre coincide
+    // con el dato final de la Planilla.
+    const totalDia = ords.reduce((s,o)=>s+(o.total||0),0);
 
-    // Dividir en 2
+    // Dividir en 2 (sobre el total de la planilla, igual que arriba)
     const mitadLavadores = Math.round(totalDia / 2);
     const tuMitad        = totalDia - mitadLavadores;
 
-    // De tu mitad: restar pendientes
-    const tuParteNeta = tuMitad - totPend;
+    // De tu mitad: restar el QR completo (esa plata ya está en la cuenta,
+    // no en tu caja) y lo pendiente por cobrar completo.
+    const tuParteNeta = tuMitad - qr - totPend;
 
     // Caja = efectivo − pago lavadores
     const cajaEf = ef - mitadLavadores;
@@ -2277,6 +2298,7 @@ async function loadCierre(){
     s('dc-total-dia',     '$'+fmt(totalDia));
     s('dc-mitad-lav',     '$'+fmt(mitadLavadores));
     s('dc-tu-mitad',      '$'+fmt(tuMitad));
+    s('dc-qr-desc',       '$'+fmt(qr));
     s('dc-pendientes',    '$'+fmt(totPend));
     s('dc-tu-neta',       '$'+fmt(tuParteNeta));
     s('dc-prod-concesor', '$'+fmt(ventasConcesores));
@@ -2311,7 +2333,15 @@ async function loadCierre(){
 
     const sorted=Object.values(cm).sort((a,b)=>b.t-a.t);
     const liqEl=document.getElementById('liq-resumen');
-    if(liqEl) liqEl.textContent=liqSet.size+'/'+sorted.length+' liquidados';
+    if(liqEl){
+      const totalConc = sorted.length;
+      const liquidados = liqSet.size;
+      let liqTexto;
+      if(totalConc===0) liqTexto = 'Sin conceseros hoy';
+      else if(liquidados>=totalConc) liqTexto = '✅ '+totalConc+' de '+totalConc+' lavadores liquidados';
+      else liqTexto = liquidados+' de '+totalConc+' lavadores liquidados (faltan '+(totalConc-liquidados)+')';
+      liqEl.textContent = liqTexto;
+    }
 
     let rows='';
     if(!sorted.length){
@@ -3051,13 +3081,19 @@ async function loadDashFinanzas(){
 
     const ords=await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
 
-    // Agrupar por día - TODAS menos abiertas
+    // Agrupar por día - el total incluye TODO (igual que la Planilla, con
+    // abiertas); pendientes/efectivo/QR se calculan solo de lo ya terminado
+    // (un carro en curso no es plata cobrada ni una deuda, es trabajo sin
+    // terminar).
     const byDay={};
-    for(const o of ords.filter(o=>o.estado!=='abierta')){
+    for(const o of ords){
       if(!byDay[o.fecha]) byDay[o.fecha]={fecha:o.fecha,ef:0,qr:0,pend:0,total:0};
       const v=parseInt(o.total)||0;
       byDay[o.fecha].total+=v;
-      if(o.estado==='pendiente_pago'||o.forma_pago==='pendiente'){
+      if(o.estado==='abierta'){
+        // trabajo en curso: ya suma al total del día, pero no es ni pendiente
+        // de cobro ni plata ya cobrada todavía.
+      } else if(o.estado==='pendiente_pago'||o.forma_pago==='pendiente'){
         byDay[o.fecha].pend+=v;
       } else if(o.forma_pago==='efectivo') byDay[o.fecha].ef+=v;
       else if(o.forma_pago==='qr')         byDay[o.fecha].qr+=v;
@@ -3072,10 +3108,11 @@ async function loadDashFinanzas(){
     let totEf=0,totQr=0,totPend=0,totTotal=0;
     days.forEach(d=>{totEf+=d.ef;totQr+=d.qr;totPend+=d.pend;totTotal+=d.total;});
 
-    // Lógica correcta: total ÷ 2
+    // Lógica correcta: total (con abiertas, igual que la Planilla) ÷ 2, y de
+    // tu mitad se resta el QR completo y lo pendiente completo.
     const mitadLavadores = Math.round(totTotal/2);
     const tuMitad        = totTotal - mitadLavadores;
-    const tuParteNeta    = tuMitad - totPend;
+    const tuParteNeta    = tuMitad - totQr - totPend;
 
     // Ventas productos del mes
     let ventasProdMes=0;
@@ -3107,7 +3144,7 @@ async function loadDashFinanzas(){
     let ingRows='';
     for(const d of days){
       const mitad=Math.round(d.total/2);
-      const tuParte=d.total-mitad-d.pend;
+      const tuParte=d.total-mitad-d.pend-d.qr;
       const caja=d.ef-mitad;
       ingRows+='<tr>'
         +'<td style="font-family:monospace;color:var(--muted)">'+d.fecha.split('-').reverse().join('/')+'</td>'
@@ -3167,6 +3204,8 @@ async function loadDashFinanzas(){
           +'<div style="font-size:20px;font-weight:800;font-family:Georgia,serif;color:var(--gold)">$'+fmt(totTotal)+'</div>'
           +'<div style="font-size:11px;color:var(--muted);margin-top:8px;margin-bottom:4px">÷ 2 — Pago lavadores</div>'
           +'<div style="font-size:16px;font-weight:700;color:#FCA5A5">-$'+fmt(mitadLavadores)+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:4px">— QR del mes (ya en la cuenta)</div>'
+          +'<div style="font-size:16px;font-weight:700;color:#C4B5FD">-$'+fmt(totQr)+'</div>'
           +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:4px">— Pendientes por cobrar</div>'
           +'<div style="font-size:16px;font-weight:700;color:#FCD34D">-$'+fmt(totPend)+'</div>'
           +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:4px">+ Ventas productos</div>'
@@ -4454,11 +4493,14 @@ async function loadSaldos(){
       }
     }
 
-    const totalMes = todasMenosAbiertas.reduce((s,o)=>s+(o.total||0),0);
+    // Igual que en el Cierre/Finanzas: el total del mes incluye las abiertas
+    // (igual que la Planilla), y de tu mitad se resta el QR completo y lo
+    // pendiente completo.
+    const totalMes = ords.reduce((s,o)=>s+(o.total||0),0);
     const mitadLav = Math.round(totalMes/2);
     const tuMitad  = totalMes - mitadLav;
     const totPend  = pendientes.reduce((s,o)=>s+(o.total||0),0);
-    const tuNeta   = tuMitad - totPend;
+    const tuNeta   = tuMitad - qr - totPend;
 
     // Ventas productos
     let ventasProd=0;
