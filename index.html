@@ -456,6 +456,10 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         <div class="row">
           <div><div class="page-title">🏗️ Inversiones</div><div class="page-sub">Ampliación y mejoras del lavadero — separado de los gastos operativos</div></div>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <select id="inv-filtro-mes" onchange="renderInversionesFiltrado()"
+              style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none">
+              <option value="">Todos los meses</option>
+            </select>
             <select id="inv-filtro-cat" onchange="renderInversionesFiltrado()"
               style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none">
               <option value="">Todas las categorías</option>
@@ -464,8 +468,8 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           </div>
         </div>
         <div class="kpis" style="grid-template-columns:1fr 1fr 1fr">
-          <div class="kpi" style="border-left-color:#8B5CF6"><div class="kpi-l">Total invertido</div><div class="kpi-v" style="color:#C4B5FD;font-size:15px" id="inv-total-acum">$0</div></div>
-          <div class="kpi" style="border-left-color:#6366F1"><div class="kpi-l">Invertido este mes</div><div class="kpi-v" style="color:#A5B4FC;font-size:15px" id="inv-total-mes">$0</div></div>
+          <div class="kpi" style="border-left-color:#8B5CF6"><div class="kpi-l">Total invertido (histórico)</div><div class="kpi-v" style="color:#C4B5FD;font-size:15px" id="inv-total-acum">$0</div></div>
+          <div class="kpi" style="border-left-color:#6366F1"><div class="kpi-l" id="inv-total-mes-lbl">Invertido este mes</div><div class="kpi-v" style="color:#A5B4FC;font-size:15px" id="inv-total-mes">$0</div></div>
           <div class="kpi"><div class="kpi-l">Mayor categoría</div><div class="kpi-v" style="color:var(--gold);font-size:13px" id="inv-cat-top">—</div></div>
         </div>
         <div class="card" style="border-color:rgba(139,92,246,.3);background:rgba(139,92,246,.05)">
@@ -2580,6 +2584,19 @@ async function loadInversiones(){
         + todasCats.map(c=>'<option value="'+c+'">'+c+'</option>').join('');
       filtroSel.value = todasCats.includes(valorActual) ? valorActual : '';
     }
+
+    // Poblar el selector de mes con los meses que tienen inversiones + el mes
+    // actual (aunque todavía no tenga nada), de más reciente a más antiguo.
+    const mesSel = document.getElementById('inv-filtro-mes');
+    if(mesSel){
+      const mesActual = today().slice(0,7);
+      const meses = [...new Set([mesActual, ...inv.map(i=>i.fecha.slice(0,7))])].sort((a,b)=>b.localeCompare(a));
+      const valorActual = mesSel.value;
+      mesSel.innerHTML = '<option value="">Todos los meses</option>'
+        + meses.map(m=>'<option value="'+m+'">'+labelMesInv(m)+'</option>').join('');
+      mesSel.value = (valorActual && meses.includes(valorActual)) ? valorActual : mesActual;
+    }
+
     renderInversionesFiltrado();
   }catch(e){
     showToast('No se pudo cargar Inversiones — puede que falte crear la tabla en Supabase',true);
@@ -2588,21 +2605,29 @@ async function loadInversiones(){
   }
 }
 
+function labelMesInv(mes){
+  const [y,m] = mes.split('-');
+  return MES[parseInt(m)-1]+' '+y;
+}
+
 function renderInversionesFiltrado(){
   try{
-    const filtro = document.getElementById('inv-filtro-cat')?.value || '';
-    const inv = filtro ? inversionesTodas.filter(i=>i.categoria===filtro) : inversionesTodas;
-    const mesActual = today().slice(0,7);
-    const invMes = inv.filter(i=>i.fecha.slice(0,7)===mesActual);
+    const filtroCat = document.getElementById('inv-filtro-cat')?.value || '';
+    const filtroMes = document.getElementById('inv-filtro-mes')?.value || '';
+    let inv = filtroCat ? inversionesTodas.filter(i=>i.categoria===filtroCat) : inversionesTodas;
+    if(filtroMes) inv = inv.filter(i=>i.fecha.slice(0,7)===filtroMes);
 
-    const totalAcum = inv.reduce((s,i)=>s+(i.valor||0),0);
-    const totalMes = invMes.reduce((s,i)=>s+(i.valor||0),0);
+    const totalAcum = inversionesTodas.reduce((s,i)=>s+(i.valor||0),0); // histórico completo, sin filtros
+    const totalMes = inv.reduce((s,i)=>s+(i.valor||0),0); // según los filtros de mes/categoría activos
     document.getElementById('inv-total-acum').textContent = '$'+fmt(totalAcum);
     document.getElementById('inv-total-mes').textContent = '$'+fmt(totalMes);
+    document.getElementById('inv-total-mes-lbl').textContent = filtroMes
+      ? 'Invertido en '+labelMesInv(filtroMes)
+      : 'Invertido (todos los meses)';
 
     const cm={}; inv.forEach(i=>{cm[i.categoria]=(cm[i.categoria]||0)+i.valor;});
     const top=Object.entries(cm).sort((a,b)=>b[1]-a[1])[0];
-    document.getElementById('inv-cat-top').textContent = filtro ? filtro : (top?top[0]:'—');
+    document.getElementById('inv-cat-top').textContent = filtroCat ? filtroCat : (top?top[0]:'—');
 
     document.getElementById('inversiones-list').innerHTML = inv.length ? inv.map(i=>`
       <tr>
@@ -2612,7 +2637,7 @@ function renderInversionesFiltrado(){
         <td><span class="badge ${i.forma_pago==='qr'?'bqr':'bg'}">${i.forma_pago==='qr'?'📲':'💵'}</span></td>
         <td style="color:#C4B5FD;font-weight:700">$${fmt(i.valor)}</td>
         <td><button class="btn btn-r" style="padding:3px 8px;font-size:10px" onclick="borrarInversion(${i.id})">🗑️</button></td>
-      </tr>`).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Sin inversiones registradas'+(filtro?' en esta categoría':'')+'</td></tr>';
+      </tr>`).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Sin inversiones registradas'+((filtroCat||filtroMes)?' con estos filtros':'')+'</td></tr>';
   }catch(e){showToast('Error',true);}
 }
 
