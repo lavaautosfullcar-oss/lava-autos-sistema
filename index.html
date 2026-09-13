@@ -352,6 +352,11 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         <div class="row">
           <div><div class="page-title">🛒 Venta de productos</div><div class="page-sub" id="prod-fecha-lbl"></div></div>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <div class="pay-toggle" style="margin:0">
+              <button class="pt pt-ef on-ef" id="prod-modo-hoy" onclick="selProdModo('hoy')">📅 Hoy</button>
+              <button class="pt pt-qr" id="prod-modo-historial" onclick="selProdModo('historial')">📊 Historial mensual</button>
+            </div>
+            <select id="prod-hist-mes" onchange="loadProductosHistorial()" style="display:none;background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none"></select>
             <select id="prod-filtro" onchange="renderProductosFiltrado()"
               style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none">
               <option value="">Todos los productos</option>
@@ -369,15 +374,36 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
             <button class="btn btn-p" onclick="abrirModalProducto()">+ Registrar venta</button>
           </div>
         </div>
-        <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
-          <div class="kpi"><div class="kpi-l">💰 Total ventas</div><div class="kpi-v" style="color:var(--gold)" id="prod-total-dia">$0</div></div>
-          <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">👤 Ventas a clientes</div><div class="kpi-v" style="color:#6EE7B7" id="prod-total-clientes">$0</div></div>
-          <div class="kpi" style="border-left-color:#FCA5A5"><div class="kpi-l">👷 Descuentos concesores</div><div class="kpi-v" style="color:#FCA5A5" id="prod-descuentos">$0</div></div>
-          <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">📦 Unidades vendidas</div><div class="kpi-v" style="color:#C4B5FD" id="prod-unidades">0</div></div>
+
+        <div id="prod-vista-hoy">
+          <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+            <div class="kpi"><div class="kpi-l">💰 Total ventas</div><div class="kpi-v" style="color:var(--gold)" id="prod-total-dia">$0</div></div>
+            <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">👤 Ventas a clientes</div><div class="kpi-v" style="color:#6EE7B7" id="prod-total-clientes">$0</div></div>
+            <div class="kpi" style="border-left-color:#FCA5A5"><div class="kpi-l">👷 Descuentos concesores</div><div class="kpi-v" style="color:#FCA5A5" id="prod-descuentos">$0</div></div>
+            <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">📦 Unidades vendidas</div><div class="kpi-v" style="color:#C4B5FD" id="prod-unidades">0</div></div>
+          </div>
+          <div class="card">
+            <div class="card-t"><span class="card-tg">✦ Ventas registradas hoy</span></div>
+            <div id="prod-lista"></div>
+          </div>
         </div>
-        <div class="card">
-          <div class="card-t"><span class="card-tg">✦ Ventas registradas hoy</span></div>
-          <div id="prod-lista"></div>
+
+        <div id="prod-vista-historial" style="display:none">
+          <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+            <div class="kpi"><div class="kpi-l">💰 Total del mes</div><div class="kpi-v" style="color:var(--gold)" id="ph-total-mes">$0</div></div>
+            <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">📦 Unidades vendidas</div><div class="kpi-v" style="color:#6EE7B7" id="ph-unidades-mes">0</div></div>
+            <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">🏆 Más vendido</div><div class="kpi-v" style="color:#C4B5FD;font-size:15px" id="ph-mas-vendido">—</div></div>
+            <div class="kpi" style="border-left-color:#FCA5A5"><div class="kpi-l">👷 Descuentos concesores</div><div class="kpi-v" style="color:#FCA5A5" id="ph-descuentos-mes">$0</div></div>
+          </div>
+          <div class="card">
+            <div class="card-t"><span class="card-tg">🏆 Ranking de productos del mes (de más a menos vendido)</span></div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>#</th><th>Producto</th><th>Unidades</th><th>👤 Clientes</th><th>👷 Concesores</th><th>Total</th></tr></thead>
+                <tbody id="ph-ranking"></tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1294,8 +1320,30 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
     <div style="font-size:11px;color:var(--muted);margin-bottom:4px" id="prod-total-label">Total a descontar al concesor</div>
     <div style="font-size:22px;font-weight:800;color:var(--gold);font-family:Georgia,serif" id="prod-total-calc">$0</div>
   </div>
+  <div id="prod-cliente-pago" class="field" style="display:none">
+    <label>¿Cómo pagó el cliente?</label>
+    <div class="pay-toggle" style="margin-bottom:10px">
+      <button class="pt pt-ef on-ef" onclick="selProdPagoTipo('simple',this)" id="prod-pago-tipo-simple">💵/📲 Un solo pago</button>
+      <button class="pt pt-qr" onclick="selProdPagoTipo('mixto',this)" id="prod-pago-tipo-mixto">🔀 Pago mixto</button>
+    </div>
+    <div id="prod-pago-simple-fields">
+      <div class="pay-toggle">
+        <button class="pt pt-ef on-ef" onclick="selProdPagoModo(this,'efectivo')" id="prod-pago-ef">💵 Efectivo</button>
+        <button class="pt pt-qr" onclick="selProdPagoModo(this,'qr')" id="prod-pago-qr">📲 QR</button>
+      </div>
+    </div>
+    <div id="prod-pago-mixto-fields" style="display:none">
+      <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-bottom:6px">
+        <div class="field"><label>💵 Efectivo</label><input type="number" id="prod-pago-mixto-ef" placeholder="0" oninput="calcProdPagoMixto()"
+          style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%"/></div>
+        <div class="field"><label>📲 QR</label><input type="number" id="prod-pago-mixto-qr" placeholder="0" oninput="calcProdPagoMixto()"
+          style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%"/></div>
+      </div>
+      <div id="prod-pago-mixto-check" style="padding:8px 12px;border-radius:8px;font-size:12px;text-align:center;background:rgba(255,255,255,.04)">Ingresa los valores</div>
+    </div>
+  </div>
   <div style="display:flex;gap:8px">
-    <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarVentaProducto()">💾 Guardar</button>
+    <button class="btn btn-p" style="flex:1;padding:10px" id="prod-btn-guardar" onclick="guardarVentaProducto()">💾 Guardar</button>
     <button class="btn btn-g" onclick="cerrarModal('modal-producto')">Cancelar</button>
   </div>
 </div>
@@ -1548,7 +1596,7 @@ function go(s,el){
   else if(s==='cierre') loadCierre();
   else if(s==='historial') initHistorial();
   else if(s==='saldos') loadSaldos();
-  else if(s==='productos') loadProductos();
+  else if(s==='productos') selProdModo('hoy');
   else if(s==='empresas') loadEmpresas();
   else if(s==='empresa-detalle') loadEmpresaDetalle();
   else if(s==='pendientes') loadPendientes();
@@ -2267,12 +2315,25 @@ async function loadCierre(){
     const cuentaQR = qr;
 
     // ── Ventas productos ──────────────────────────────────────────────────────
-    let ventasConcesores=0, ventasClientes=0, ventasProdByConc={};
+    // Los descuentos a concesores no son plata física que entra hoy (se restan de
+    // su liquidación), así que se tratan como efectivo. Las ventas a clientes sí
+    // son plata que entra hoy, y ahora se reparten entre caja (efectivo) y banco
+    // (QR) según cómo pagó el cliente.
+    let ventasConcesores=0, ventasClientes=0, ventasClientesEf=0, ventasClientesQr=0, ventasProdByConc={};
     try{
       const vp = await api('ventas_productos?fecha=eq.'+today());
       vp.forEach(v=>{
         if(v.tipo_venta==='cliente'||!v.concesero){
           ventasClientes+=v.total;
+          const fp = v.forma_pago||'efectivo'; // ventas antiguas sin forma_pago: se asumen en efectivo
+          if(fp==='mixto'){
+            ventasClientesEf += v.pago_efectivo||0;
+            ventasClientesQr += v.pago_qr||0;
+          } else if(fp==='qr'){
+            ventasClientesQr += v.total;
+          } else {
+            ventasClientesEf += v.total;
+          }
         } else {
           ventasConcesores+=v.total;
           if(!ventasProdByConc[v.concesero]) ventasProdByConc[v.concesero]=0;
@@ -2281,6 +2342,7 @@ async function loadCierre(){
       });
     }catch(e){ console.warn('ventas prod:', e.message); }
     const totalProductos = ventasConcesores + ventasClientes;
+    const totalProductosEf = ventasConcesores + ventasClientesEf; // lo que sí queda en caja física
 
     // ── Total final tuyo ──────────────────────────────────────────────────────
     const totalFinal = tuParteNeta + totalProductos;
@@ -2305,15 +2367,16 @@ async function loadCierre(){
     s('dc-prod-cliente',  '$'+fmt(ventasClientes));
     s('dc-prod-total',    '$'+fmt(totalProductos));
     s('dc-total-final',   '$'+fmt(totalFinal));
-    s('dc-caja-ef',       '$'+fmt(cajaEf + totalProductos));
-    s('dc-cuenta-qr',     '$'+fmt(cuentaQR));
+    s('dc-caja-ef',       '$'+fmt(cajaEf + totalProductosEf));
+    s('dc-cuenta-qr',     '$'+fmt(cuentaQR + ventasClientesQr));
 
     // Mostrar/ocultar sección productos
     const prodSec = document.getElementById('cierre-prod-section');
     if(prodSec) prodSec.style.display = totalProductos>0 ? 'block' : 'none';
 
-    // Arqueo
-    arqueoEsperado = cajaEf + totalProductos;
+    // Arqueo (solo lo que físicamente debe estar en caja: efectivo de lavadas +
+    // descuentos a concesores + ventas a clientes pagadas en efectivo)
+    arqueoEsperado = cajaEf + totalProductosEf;
     const arqueoElx = document.getElementById('arqueo-esperado');
     if(arqueoElx) arqueoElx.textContent = '$'+fmt(arqueoEsperado);
 
@@ -2843,6 +2906,15 @@ async function loadDashResumen(){
       ventasProd = vp.reduce((s,v)=>s+(v.total||0),0);
     }catch{}
 
+    // Detailing del mes (neto: venta − insumos − comisión del ayudante). Se
+    // suma a la utilidad general porque así se decidió: el detailing hace
+    // parte de la ganancia que se reparte, no es aparte de Mateo.
+    let detailingNetaMes = 0;
+    try{
+      const det = await api('detailing?fecha=gte.'+start+'&fecha=lte.'+end);
+      detailingNetaMes = det.reduce((s,d)=>s+((d.valor||0)-(d.costo_insumos||0)-(d.comision_ayudante||0)),0);
+    }catch{}
+
     // Previous month compare
     const [y,m]=dashMes.split('-');
     const prevDate=new Date(parseInt(y),parseInt(m)-2,1);
@@ -2854,7 +2926,7 @@ async function loadDashResumen(){
     const diffStr=diff>0?'▲ +'+diff+'% vs mes anterior':diff<0?'▼ '+diff+'% vs mes anterior':'= igual';
     const diffColor=diff>0?'#6EE7B7':diff<0?'#FCA5A5':'#8BA3BB';
 
-    const ganNeta = Math.round(total/2) - gastosTotal;
+    const ganNeta = Math.round(total/2) - gastosTotal + ventasProd + detailingNetaMes;
 
     // Update KPIs
     const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
@@ -2932,11 +3004,13 @@ async function loadDashResumen(){
         {label:'🚗 Lavadas particulares', val:lavadas, color:'#6EE7B7'},
         {label:'🏢 Empresas con contrato', val:empresasTotal, color:'#C4B5FD'},
         {label:'🛒 Ventas productos', val:ventasProd, color:'var(--gold)'},
+        {label:'✨ Detailing (neto)', val:detailingNetaMes, color:'#F0ABFC'},
       ];
+      const totalLineas=total+ventasProd+detailingNetaMes;
       const maxL=Math.max(...lineas.map(l=>l.val),1);
       lineasEl.innerHTML=lineas.map(l=>{
         const w=Math.round((l.val/maxL)*100);
-        const pct=total?Math.round(l.val/total*100):0;
+        const pct=totalLineas?Math.round(l.val/totalLineas*100):0;
         return '<div style="margin:8px 0">'
           +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">'
             +'<span>'+l.label+'</span>'
@@ -3121,6 +3195,14 @@ async function loadDashFinanzas(){
       ventasProdMes=vp.reduce((s,v)=>s+(v.total||0),0);
     }catch{}
 
+    // Detailing del mes (neto: venta − insumos − comisión). Se reparte igual
+    // que el resto de la utilidad — así se decidió.
+    let detailingNetaMes=0;
+    try{
+      const det=await api('detailing?fecha=gte.'+start+'&fecha=lte.'+end);
+      detailingNetaMes=det.reduce((s,d)=>s+((d.valor||0)-(d.costo_insumos||0)-(d.comision_ayudante||0)),0);
+    }catch{}
+
     // Gastos del mes
     const gastos=await api('gastos?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
     const gastosReales=gastos.filter(g=>g.categoria!=='🏦 Saldo inicial');
@@ -3131,7 +3213,7 @@ async function loadDashFinanzas(){
       else totGastosQr+=parseInt(g.valor)||0;
     });
 
-    const totalFinalMes = tuParteNeta + ventasProdMes - totGastos;
+    const totalFinalMes = tuParteNeta + ventasProdMes + detailingNetaMes - totGastos;
 
     // KPIs
     const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
@@ -4001,11 +4083,15 @@ async function loadEmpresaDetalle(){
   }catch(e){ showToast('Error: '+e.message, true); }
 }
 
+let facturaEmpresaEnProceso = false;
+
 async function generarFacturaEmpresa(){
   if(!empresaActual) return;
+  if(facturaEmpresaEnProceso) return; // evita abrir varias facturas por clics repetidos
   const rango = getEmpRango();
   if(!rango) return;
   const {start, end, label} = rango;
+  facturaEmpresaEnProceso = true;
   try{
     const ords = await ordenesEmpresaRango(start, end);
     // Un carro "abierto" (aún en lavado) no se factura: no es una lavada terminada.
@@ -4083,6 +4169,7 @@ async function generarFacturaEmpresa(){
       +'</body></html>');
     w.document.close();
   }catch(e){ showToast('Error: '+e.message, true); }
+  finally{ facturaEmpresaEnProceso = false; }
 }
 
 // ── MARCAR FACTURA DE EMPRESA COMO PAGADA (pago masivo) ─────────────────────
@@ -4167,8 +4254,11 @@ function calcPagoEmpMixto(){
   }
 }
 
+let pagoEmpresaEnProceso = false;
+
 async function confirmarPagoEmpresaFactura(){
   if(!empresaActual || !empPagoPendientesCache || !empPagoPendientesCache.ordenes.length) return;
+  if(pagoEmpresaEnProceso) return; // evita registrar el mismo pago varias veces por doble clic
   const {ordenes, start, end} = empPagoPendientesCache;
   const total = ordenes.reduce((s,o)=>s+(o.total||0),0);
   const nota = document.getElementById('pe-nota').value.trim();
@@ -4184,6 +4274,9 @@ async function confirmarPagoEmpresaFactura(){
     qrTotal = empPagoMode==='qr' ? total : 0;
   }
 
+  pagoEmpresaEnProceso = true;
+  const btnPago = document.querySelector('#modal-pago-empresa .btn-p');
+  if(btnPago) btnPago.disabled = true;
   try{
     // Marca cada lavada pendiente como cobrada. Si el pago fue mixto, se
     // reparte proporcionalmente al valor de cada lavada, y el residuo del
@@ -4231,6 +4324,7 @@ async function confirmarPagoEmpresaFactura(){
   }catch(e){
     showToast('No se pudo guardar — puede que falte crear la tabla "pagos_empresa" en Supabase', true);
   }
+  finally{ pagoEmpresaEnProceso = false; if(btnPago) btnPago.disabled = false; }
 }
 
 async function loadPagosEmpresa(){
@@ -4509,12 +4603,20 @@ async function loadSaldos(){
       ventasProd=vp.reduce((s,v)=>s+(v.total||0),0);
     }catch{}
 
+    // Detailing del mes (neto: venta − insumos − comisión). Se reparte igual
+    // que el resto de la utilidad — así se decidió.
+    let detailingNeta=0;
+    try{
+      const det=await api('detailing?fecha=gte.'+start+'&fecha=lte.'+end);
+      detailingNeta=det.reduce((s,d)=>s+((d.valor||0)-(d.costo_insumos||0)-(d.comision_ayudante||0)),0);
+    }catch{}
+
     // Gastos
     const gastos=await api('gastos?fecha=gte.'+start+'&fecha=lte.'+end);
     const gastosReales=gastos.filter(g=>g.categoria!=='🏦 Saldo inicial');
     const totGastos=gastosReales.reduce((s,g)=>s+(g.valor||0),0);
 
-    const netaMes = tuNeta + ventasProd - totGastos;
+    const netaMes = tuNeta + ventasProd + detailingNeta - totGastos;
 
     s('sal-ef-mes',        '$'+fmt(ef));
     s('sal-qr-mes',        '$'+fmt(qr));
@@ -4619,13 +4721,14 @@ function renderProductosFiltrado(){
     const filtro = document.getElementById('prod-filtro')?.value || '';
     const ventas = filtro ? ventasProductosHoy.filter(v=>v.producto===filtro) : ventasProductosHoy;
 
-    let total=0, unidades=0;
-    
-    // Group by lavador
+    let total=0, unidades=0, totalClientes=0, totalConcesores=0;
+
+    // Group by lavador (o "Clientes" cuando la venta es directa a un cliente)
     const byLavador = {};
     ventas.forEach(v=>{
-      const nombre = v.concesero||'Sin nombre';
-      if(!byLavador[nombre]) byLavador[nombre] = {total:0, items:[]};
+      const esCliente = v.tipo_venta==='cliente'||!v.concesero;
+      const nombre = esCliente ? '👤 Ventas a clientes' : v.concesero;
+      if(!byLavador[nombre]) byLavador[nombre] = {total:0, items:[], esCliente};
       byLavador[nombre].total += v.total;
       byLavador[nombre].items.push({
         producto: v.producto,
@@ -4633,28 +4736,33 @@ function renderProductosFiltrado(){
         precio_unit: v.precio_unit,
         valor: v.total,
         hora: v.hora,
-        id: v.id
+        id: v.id,
+        forma_pago: v.forma_pago
       });
       total += v.total;
       unidades += v.cantidad||1;
+      if(esCliente) totalClientes += v.total; else totalConcesores += v.total;
     });
 
     // Render by lavador
     const sorted = Object.entries(byLavador).sort((a,b)=>b[1].total-a[1].total);
     const html = sorted.map(([nombre, d])=>{
-      const items = d.items.map(item=>
-        '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0 5px 16px;border-bottom:1px solid rgba(255,255,255,.05)">'
-          +'<span style="font-size:12px;color:var(--muted)">'+(item.hora?'<span style=\"color:var(--muted);margin-right:8px\">'+item.hora+'</span>':'')+item.producto+' x'+(item.cantidad||1)+'</span>'
+      const items = d.items.map(item=>{
+        const badge = d.esCliente && item.forma_pago
+          ? ' <span style="font-size:9px;color:var(--muted)">('+(item.forma_pago==='efectivo'?'💵 efectivo':item.forma_pago==='qr'?'📲 QR':'🔀 mixto')+')</span>'
+          : '';
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0 5px 16px;border-bottom:1px solid rgba(255,255,255,.05)">'
+          +'<span style="font-size:12px;color:var(--muted)">'+(item.hora?'<span style=\"color:var(--muted);margin-right:8px\">'+item.hora+'</span>':'')+item.producto+' x'+(item.cantidad||1)+badge+'</span>'
           +'<div style="display:flex;align-items:center;gap:8px">'
             +'<span style="font-size:12px;color:var(--gold)">$'+fmt(item.valor)+'</span>'
             +'<button class="btn btn-r" style="padding:2px 6px;font-size:10px" onclick="borrarVenta('+item.id+')">🗑️</button>'
           +'</div>'
-        +'</div>'
-      ).join('');
+        +'</div>';
+      }).join('');
       return '<div style="border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden">'
         +'<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,.04)">'
-          +'<span style="font-weight:700;font-size:13px">👷 '+nombre+'</span>'
-          +'<span style="font-weight:800;color:#FCA5A5;font-size:13px">-$'+fmt(d.total)+'</span>'
+          +'<span style="font-weight:700;font-size:13px">'+(d.esCliente?'':'👷 ')+nombre+'</span>'
+          +'<span style="font-weight:800;color:'+(d.esCliente?'#6EE7B7':'#FCA5A5')+';font-size:13px">'+(d.esCliente?'+$':'-$')+fmt(d.total)+'</span>'
         +'</div>'
         + items
         +'</div>';
@@ -4664,26 +4772,68 @@ function renderProductosFiltrado(){
       '<div style="text-align:center;color:var(--muted);padding:30px">Sin ventas registradas hoy</div>';
     document.getElementById('prod-total-dia').textContent = '$'+fmt(total);
     document.getElementById('prod-unidades').textContent = unidades;
-    document.getElementById('prod-descuentos').textContent = '$'+fmt(total);
+    document.getElementById('prod-descuentos').textContent = '$'+fmt(totalConcesores);
+    const clEl = document.getElementById('prod-total-clientes');
+    if(clEl) clEl.textContent = '$'+fmt(totalClientes);
   }catch(e){ showToast('Error: '+e.message, true); }
 }
 
 let prodTipo = 'concesor';
+let prodPagoTipo = 'simple';
+let prodPagoModo = 'efectivo';
 
 function selProdTipo(tipo, btn){
   prodTipo = tipo;
   document.getElementById('prod-tipo-concesor').classList.remove('on-ef');
   document.getElementById('prod-tipo-cliente').classList.remove('on-qr');
+  const pagoSec = document.getElementById('prod-cliente-pago');
   if(tipo==='concesor'){
     btn.classList.add('on-ef');
     document.getElementById('prod-concesor-fields').style.display='block';
+    if(pagoSec) pagoSec.style.display='none';
     const lbl=document.getElementById('prod-total-label');
     if(lbl) lbl.textContent='Total a descontar al concesor';
   } else {
     btn.classList.add('on-qr');
     document.getElementById('prod-concesor-fields').style.display='none';
+    if(pagoSec) pagoSec.style.display='block';
     const lbl=document.getElementById('prod-total-label');
     if(lbl) lbl.textContent='Total ingreso de caja';
+  }
+}
+
+function selProdPagoTipo(tipo, btn){
+  prodPagoTipo = tipo;
+  document.getElementById('prod-pago-tipo-simple').classList.remove('on-ef');
+  document.getElementById('prod-pago-tipo-mixto').classList.remove('on-qr');
+  btn.classList.add(tipo==='simple'?'on-ef':'on-qr');
+  document.getElementById('prod-pago-simple-fields').style.display = tipo==='simple'?'block':'none';
+  document.getElementById('prod-pago-mixto-fields').style.display = tipo==='mixto'?'block':'none';
+  if(tipo==='mixto') calcProdPagoMixto();
+}
+
+function selProdPagoModo(btn, modo){
+  prodPagoModo = modo;
+  document.getElementById('prod-pago-ef').classList.remove('on-ef');
+  document.getElementById('prod-pago-qr').classList.remove('on-qr');
+  btn.classList.add(modo==='efectivo'?'on-ef':'on-qr');
+}
+
+function calcProdPagoMixto(){
+  const total = (parseInt(document.getElementById('prod-cantidad')?.value)||1) * (parseInt(document.getElementById('prod-precio')?.value)||0);
+  const ef = parseInt(document.getElementById('prod-pago-mixto-ef').value)||0;
+  const qr = parseInt(document.getElementById('prod-pago-mixto-qr').value)||0;
+  const suma = ef+qr;
+  const check = document.getElementById('prod-pago-mixto-check');
+  if(suma===total && total>0){
+    check.style.background='rgba(16,185,129,.15)'; check.style.color='#6EE7B7';
+    check.textContent='✅ Cuadra — $'+fmt(ef)+' ef + $'+fmt(qr)+' QR';
+  } else if(suma>total){
+    check.style.background='rgba(239,68,68,.15)'; check.style.color='#FCA5A5';
+    check.textContent='⚠️ Excede el total por $'+fmt(suma-total);
+  } else {
+    check.style.background='rgba(245,158,11,.15)'; check.style.color='#FCD34D';
+    check.textContent='Faltan $'+fmt(total-suma)+' por asignar (total: $'+fmt(total)+')';
   }
 }
 
@@ -4705,8 +4855,22 @@ async function abrirModalProducto(){
   document.getElementById('prod-tipo-concesor').classList.add('on-ef');
   document.getElementById('prod-tipo-cliente').classList.remove('on-qr');
   document.getElementById('prod-concesor-fields').style.display='block';
+  document.getElementById('prod-cliente-pago').style.display='none';
   const lbl=document.getElementById('prod-total-label');
   if(lbl) lbl.textContent='Total a descontar al concesor';
+  // Reset forma de pago del cliente
+  prodPagoTipo = 'simple';
+  prodPagoModo = 'efectivo';
+  document.getElementById('prod-pago-tipo-simple').classList.add('on-ef');
+  document.getElementById('prod-pago-tipo-mixto').classList.remove('on-qr');
+  document.getElementById('prod-pago-simple-fields').style.display='block';
+  document.getElementById('prod-pago-mixto-fields').style.display='none';
+  document.getElementById('prod-pago-ef').classList.add('on-ef');
+  document.getElementById('prod-pago-qr').classList.remove('on-qr');
+  document.getElementById('prod-pago-mixto-ef').value = '';
+  document.getElementById('prod-pago-mixto-qr').value = '';
+  document.getElementById('prod-pago-mixto-check').textContent = 'Ingresa los valores';
+  document.getElementById('prod-pago-mixto-check').style.background = 'rgba(255,255,255,.04)';
   document.getElementById('modal-producto').style.display = 'flex';
 }
 
@@ -4723,9 +4887,13 @@ function calcProdTotal(){
   const precio= parseInt(document.getElementById('prod-precio')?.value)||0;
   const total = cant * precio;
   document.getElementById('prod-total-calc').textContent = '$'+fmt(total);
+  if(prodTipo==='cliente' && prodPagoTipo==='mixto') calcProdPagoMixto();
 }
 
+let ventaProductoEnProceso = false;
+
 async function guardarVentaProducto(){
+  if(ventaProductoEnProceso) return; // evita registrar la misma venta varias veces por doble clic
   const concesero = document.getElementById('prod-concesero')?.value;
   const producto  = document.getElementById('prod-nombre')?.value;
   const cant      = parseInt(document.getElementById('prod-cantidad')?.value)||1;
@@ -4734,13 +4902,34 @@ async function guardarVentaProducto(){
   if(!producto){  showToast('Selecciona el producto', true); return; }
   if(!precio){    showToast('Ingresa el valor', true); return; }
   const total = cant * precio;
+
+  let formaPago=null, pagoEf=0, pagoQr=0;
+  if(prodTipo==='cliente'){
+    if(prodPagoTipo==='mixto'){
+      pagoEf = parseInt(document.getElementById('prod-pago-mixto-ef').value)||0;
+      pagoQr = parseInt(document.getElementById('prod-pago-mixto-qr').value)||0;
+      if(pagoEf+pagoQr!==total){ showToast('El pago mixto no cuadra con el total', true); return; }
+      formaPago = 'mixto';
+    } else {
+      formaPago = prodPagoModo;
+      pagoEf = formaPago==='efectivo' ? total : 0;
+      pagoQr = formaPago==='qr' ? total : 0;
+    }
+  }
+
   const hora = new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',hour12:true});
+  const btn = document.getElementById('prod-btn-guardar');
+  ventaProductoEnProceso = true;
+  if(btn) btn.disabled = true;
   try{
     await api('ventas_productos','POST',{
       fecha: today(),
       concesero: prodTipo==='concesor' ? concesero : null,
       tipo_venta: prodTipo,
-      producto, cantidad: cant, precio_unit: precio, total, hora
+      producto, cantidad: cant, precio_unit: precio, total, hora,
+      forma_pago: formaPago,
+      pago_efectivo: pagoEf,
+      pago_qr: pagoQr
     });
     cerrarModal('modal-producto');
     showToast(prodTipo==='concesor'
@@ -4748,6 +4937,7 @@ async function guardarVentaProducto(){
       : '💰 Venta a cliente ✅ — $'+fmt(total)+' en caja');
     loadProductos();
   }catch(e){ showToast('Error: '+e.message, true); }
+  finally{ ventaProductoEnProceso = false; if(btn) btn.disabled = false; }
 }
 
 async function borrarVenta(id){
@@ -4755,7 +4945,81 @@ async function borrarVenta(id){
   try{
     await api('ventas_productos?id=eq.'+id,'DELETE');
     showToast('Venta eliminada');
+    if(prodModo==='historial') loadProductosHistorial(); else loadProductos();
+  }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+// ── HISTORIAL MENSUAL DE PRODUCTOS ──────────────────────────────────────────
+let prodModo = 'hoy';
+
+function selProdModo(modo){
+  prodModo = modo;
+  document.getElementById('prod-modo-hoy').classList.remove('on-ef');
+  document.getElementById('prod-modo-historial').classList.remove('on-qr');
+  document.getElementById(modo==='hoy'?'prod-modo-hoy':'prod-modo-historial').classList.add(modo==='hoy'?'on-ef':'on-qr');
+  document.getElementById('prod-vista-hoy').style.display = modo==='hoy'?'block':'none';
+  document.getElementById('prod-vista-historial').style.display = modo==='historial'?'block':'none';
+  document.getElementById('prod-hist-mes').style.display = modo==='historial'?'inline-block':'none';
+  document.getElementById('prod-filtro').style.display = modo==='hoy'?'inline-block':'none';
+  if(modo==='hoy'){
     loadProductos();
+  } else {
+    const sel = document.getElementById('prod-hist-mes');
+    if(!sel.options.length){
+      const now = new Date();
+      for(let i=0; i<12; i++){
+        const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+        const val = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+        sel.innerHTML += '<option value="'+val+'">'+MES[d.getMonth()]+' '+d.getFullYear()+'</option>';
+      }
+    }
+    loadProductosHistorial();
+  }
+}
+
+async function loadProductosHistorial(){
+  const mes = document.getElementById('prod-hist-mes').value || today().slice(0,7);
+  const [y,m] = mes.split('-');
+  const lastDay = new Date(parseInt(y), parseInt(m), 0).getDate();
+  const start = mes+'-01', end = mes+'-'+String(lastDay).padStart(2,'0');
+  try{
+    const vp = await api('ventas_productos?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
+
+    let totalMes=0, unidadesMes=0, descuentosMes=0;
+    const porProducto = {};
+    vp.forEach(v=>{
+      if(!porProducto[v.producto]) porProducto[v.producto] = {unidades:0, cliente:0, concesor:0, total:0};
+      const p = porProducto[v.producto];
+      p.unidades += v.cantidad||1;
+      p.total += v.total||0;
+      const esCliente = v.tipo_venta==='cliente'||!v.concesero;
+      if(esCliente) p.cliente += v.total||0; else p.concesor += v.total||0;
+      totalMes += v.total||0;
+      unidadesMes += v.cantidad||1;
+      if(!esCliente) descuentosMes += v.total||0;
+    });
+
+    const ranking = Object.entries(porProducto).sort((a,b)=>b[1].total-a[1].total);
+    const medals = ['🥇','🥈','🥉'];
+    const rows = ranking.map(([nombre,d],i)=>
+      '<tr>'
+        +'<td style="text-align:center">'+(medals[i]||(i+1))+'</td>'
+        +'<td style="font-weight:600">'+nombre+'</td>'
+        +'<td>'+d.unidades+'</td>'
+        +'<td style="color:#6EE7B7">'+(d.cliente?'$'+fmt(d.cliente):'-')+'</td>'
+        +'<td style="color:#FCA5A5">'+(d.concesor?'$'+fmt(d.concesor):'-')+'</td>'
+        +'<td style="font-weight:800;color:var(--gold)">$'+fmt(d.total)+'</td>'
+      +'</tr>'
+    ).join('');
+
+    document.getElementById('ph-ranking').innerHTML = rows ||
+      '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Sin ventas de productos este mes</td></tr>';
+    document.getElementById('ph-total-mes').textContent = '$'+fmt(totalMes);
+    document.getElementById('ph-unidades-mes').textContent = unidadesMes;
+    document.getElementById('ph-descuentos-mes').textContent = '$'+fmt(descuentosMes);
+    document.getElementById('ph-mas-vendido').textContent = ranking.length
+      ? ranking[0][0]+' ('+ranking[0][1].unidades+' und.)'
+      : '—';
   }catch(e){ showToast('Error: '+e.message, true); }
 }
 
