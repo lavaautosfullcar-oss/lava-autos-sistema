@@ -82,6 +82,12 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 .pt-qr{background:rgba(139,92,246,.08);color:#C4B5FD;border-color:rgba(139,92,246,.25)}
 .pt.on-ef{background:var(--green);color:#111;border-color:var(--green)}
 .pt.on-qr{background:var(--purple);color:#fff;border-color:var(--purple)}
+.pt-taxi{background:rgba(245,158,11,.08);color:#FCD34D;border-color:rgba(245,158,11,.25)}
+.pt-pistolazo{background:rgba(239,68,68,.08);color:#FCA5A5;border-color:rgba(239,68,68,.25)}
+.pt-moto{background:rgba(59,130,246,.08);color:#93C5FD;border-color:rgba(59,130,246,.25)}
+.pt.on-taxi{background:#F59E0B;color:#111;border-color:#F59E0B}
+.pt.on-pistolazo{background:#EF4444;color:#fff;border-color:#EF4444}
+.pt.on-moto{background:#3B82F6;color:#fff;border-color:#3B82F6}
 .divider{height:1px;background:var(--border);margin:10px 0}
 .tipo-btn{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-family:'Segoe UI',sans-serif;transition:all .15s}
 .tipo-btn.on{background:var(--gold-p);border-color:var(--gold-b);color:var(--gold)}
@@ -175,6 +181,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <div class="ni on" onclick="go('ordenes',this)" id="nav-ordenes"><span class="ni-ico">🧾</span>Órdenes del día</div>
       <div class="ni" onclick="go('planilla',this)" id="nav-planilla"><span class="ni-ico">📋</span>Planilla</div>
       <div class="ni" onclick="go('productos',this)" id="nav-productos"><span class="ni-ico">🛒</span>Productos</div>
+      <div class="ni" onclick="go('turnos',this)" id="nav-turnos"><span class="ni-ico">🎫</span>Turnos</div>
       <div class="ni hidden" onclick="go('detailing',this)" id="nav-detailing"><span class="ni-ico">✨</span>Detailing</div>
       <div class="ni hidden" onclick="go('cierre',this)" id="nav-cierre"><span class="ni-ico">💰</span>Cierre del día</div>
       <div class="ni hidden" onclick="go('gastos',this)" id="nav-gastos"><span class="ni-ico">📋</span>Gastos</div>
@@ -371,6 +378,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
               <option value="Extintor">Extintor</option>
               <option value="Otro">Otro</option>
             </select>
+            <button class="btn btn-g" onclick="abrirModalCompraProducto()">🧾 Registrar compra</button>
             <button class="btn btn-p" onclick="abrirModalProducto()">+ Registrar venta</button>
           </div>
         </div>
@@ -390,20 +398,52 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 
         <div id="prod-vista-historial" style="display:none">
           <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
-            <div class="kpi"><div class="kpi-l">💰 Total del mes</div><div class="kpi-v" style="color:var(--gold)" id="ph-total-mes">$0</div></div>
-            <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">📦 Unidades vendidas</div><div class="kpi-v" style="color:#6EE7B7" id="ph-unidades-mes">0</div></div>
+            <div class="kpi"><div class="kpi-l">💰 Vendido (mes)</div><div class="kpi-v" style="color:var(--gold)" id="ph-total-mes">$0</div></div>
+            <div class="kpi" style="border-left-color:#FCA5A5"><div class="kpi-l">🧾 Comprado (mes)</div><div class="kpi-v" style="color:#FCA5A5" id="ph-comprado-mes">$0</div></div>
+            <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">📈 Margen (mes)</div><div class="kpi-v" style="color:#6EE7B7" id="ph-margen-mes">$0</div></div>
             <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">🏆 Más vendido</div><div class="kpi-v" style="color:#C4B5FD;font-size:15px" id="ph-mas-vendido">—</div></div>
+          </div>
+          <div class="kpis" style="grid-template-columns:repeat(2,1fr)">
+            <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">📦 Unidades vendidas</div><div class="kpi-v" style="color:#C4B5FD" id="ph-unidades-mes">0</div></div>
             <div class="kpi" style="border-left-color:#FCA5A5"><div class="kpi-l">👷 Descuentos concesores</div><div class="kpi-v" style="color:#FCA5A5" id="ph-descuentos-mes">$0</div></div>
           </div>
           <div class="card">
             <div class="card-t"><span class="card-tg">🏆 Ranking de productos del mes (de más a menos vendido)</span></div>
             <div class="tbl-wrap">
               <table>
-                <thead><tr><th>#</th><th>Producto</th><th>Unidades</th><th>👤 Clientes</th><th>👷 Concesores</th><th>Total</th></tr></thead>
+                <thead><tr><th>#</th><th>Producto</th><th>Unidades</th><th>👤 Clientes</th><th>👷 Concesores</th><th>Total vendido</th><th>🧾 Costo</th><th>📈 Margen</th></tr></thead>
                 <tbody id="ph-ranking"></tbody>
               </table>
             </div>
           </div>
+          <div class="card">
+            <div class="card-t"><span class="card-tg">🧾 Compras de mercancía este mes</span></div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Fecha</th><th>Producto</th><th>Cant.</th><th>Costo unit.</th><th>Total</th><th></th></tr></thead>
+                <tbody id="ph-compras-lista"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TURNOS -->
+      <div id="s-turnos" class="screen">
+        <div class="row">
+          <div><div class="page-title">🎫 Turnos</div><div class="page-sub">Hora de llegada de cada lavador — así se sabe a quién le toca el siguiente turno</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-t"><span class="card-tg">+ Registrar llegada</span></div>
+          <div class="field"><label>Lavador</label><select id="tur-conc"
+            style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%"></select></div>
+          <button class="btn btn-p" style="width:100%;padding:10px" id="tur-btn-guardar" onclick="guardarTurno()">✅ Marcar llegada ahora</button>
+        </div>
+
+        <div class="card">
+          <div class="card-t"><span class="card-tg">🕓 Orden de llegada — hoy</span></div>
+          <div id="turnos-lista"></div>
         </div>
       </div>
 
@@ -492,6 +532,8 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           <button class="btn btn-g" onclick="showDashTab('diario',this)" id="dt-diario">📅 Diario</button>
           <button class="btn btn-g" onclick="showDashTab('finanzas',this)" id="dt-finanzas">📒 Libro del mes</button>
           <button class="btn btn-g" onclick="showDashTab('conceseros',this)" id="dt-conceseros">👥 Concesores</button>
+          <button class="btn btn-g" onclick="showDashTab('rango',this)" id="dt-rango">🗓️ Por rango / semanas</button>
+          <button class="btn btn-g" onclick="showDashTab('analitica',this)" id="dt-analitica">📈 Productividad y clientes</button>
         </div>
 
         <!-- RESUMEN -->
@@ -633,6 +675,63 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
               <thead><tr><th>#</th><th>Concesor</th><th>Total</th><th>Tu parte</th><th>Vehículos</th><th>Días</th><th>Promedio/día</th></tr></thead>
               <tbody id="dc-tabla"></tbody>
             </table></div>
+          </div>
+        </div>
+
+        <!-- POR RANGO / SEMANAS -->
+        <div id="dt-rango-content" style="display:none">
+          <div class="card">
+            <div class="form-grid" style="grid-template-columns:1fr 1fr auto">
+              <div class="field" style="margin:0"><label>Desde</label><input type="date" id="rng-desde"/></div>
+              <div class="field" style="margin:0"><label>Hasta</label><input type="date" id="rng-hasta"/></div>
+              <button class="btn btn-p" style="align-self:end" onclick="loadDashRango()">🔍 Consultar</button>
+            </div>
+          </div>
+          <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+            <div class="kpi"><div class="kpi-l">💰 Ingresos del rango</div><div class="kpi-v" style="color:var(--gold)" id="rng-total">$0</div></div>
+            <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">✦ Ganancia neta del rango</div><div class="kpi-v" style="color:#6EE7B7" id="rng-gan">$0</div></div>
+            <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">🚗 Vehículos</div><div class="kpi-v" style="color:#C4B5FD" id="rng-veh">0</div></div>
+            <div class="kpi" style="border-left-color:#FCA5A5"><div class="kpi-l">📋 Gastos del rango</div><div class="kpi-v" style="color:#FCA5A5" id="rng-gastos">$0</div></div>
+          </div>
+          <div class="card">
+            <div class="card-t"><span class="card-tg">✦ Ganancia por semana</span></div>
+            <div class="tbl-wrap"><table>
+              <thead><tr><th>Semana</th><th>Ingresos (lavadas)</th><th>Vehículos</th><th>Productos (margen)</th><th>Detailing (neto)</th><th>Gastos</th><th>Ganancia neta</th></tr></thead>
+              <tbody id="rng-semanas"></tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <!-- PRODUCTIVIDAD Y CLIENTES -->
+        <div id="dt-analitica-content" style="display:none">
+          <div class="card">
+            <div class="card-t"><span class="card-tg">🎯 Productividad por lavador (mes)</span></div>
+            <div class="tbl-wrap"><table>
+              <thead><tr><th>Lavador</th><th>Días con turno</th><th>Llegada prom.</th><th>Arranque prom.</th><th>Ingreso generado</th><th>Horas trabajadas*</th><th>$/hora</th></tr></thead>
+              <tbody id="an-productividad"></tbody>
+            </table></div>
+            <div style="font-size:11px;color:var(--muted);margin-top:8px">* Aproximado: desde que marca llegada en Turnos hasta su última lavada asignada ese día. Ordenado de mayor a menor $/hora.</div>
+          </div>
+
+          <div class="card">
+            <div class="card-t"><span class="card-tg">🔁 Clientes recurrentes vs. nuevos (mes)</span></div>
+            <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+              <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">🆕 Nuevos este mes</div><div class="kpi-v" style="color:#6EE7B7" id="an-cli-nuevos">0</div></div>
+              <div class="kpi" style="border-left-color:var(--gold)"><div class="kpi-l">🔁 Recurrentes</div><div class="kpi-v" style="color:var(--gold)" id="an-cli-recurrentes">0</div></div>
+              <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">🚗 Ocasionales</div><div class="kpi-v" style="color:#C4B5FD" id="an-cli-ocasionales">0</div></div>
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin:4px 0 10px">"Recurrente" = ha visitado en 3 o más meses distintos desde que aparece en el sistema. "Nuevo" = su primera lavada registrada fue este mes.</div>
+            <div class="card-t"><span class="card-tg">🏆 Clientes más fieles (histórico)</span></div>
+            <div class="tbl-wrap"><table>
+              <thead><tr><th>Placa</th><th>Visitas históricas</th><th>Meses distintos</th><th>Última visita</th></tr></thead>
+              <tbody id="an-cli-top"></tbody>
+            </table></div>
+          </div>
+
+          <div class="card">
+            <div class="card-t"><span class="card-tg">⏰ Horas pico (mes) — lavadas por hora de llegada</span></div>
+            <div id="an-horas-bars" style="display:flex;align-items:flex-end;gap:2px;height:100px;padding:8px 0"></div>
+            <div id="an-horas-labels" style="display:flex;gap:2px;margin-top:4px"></div>
           </div>
         </div>
 
@@ -1353,6 +1452,51 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 </div>
 </div>
 
+<!-- Modal compra de producto (costo/insumos) -->
+<div id="modal-compra-producto" class="modal-bg" style="display:none">
+<div class="modal">
+  <div class="modal-h">
+    <span>🧾 Registrar compra de mercancía</span>
+    <span class="modal-x" onclick="cerrarModal('modal-compra-producto')">✕</span>
+  </div>
+  <div class="field"><label>Producto</label>
+    <select id="cp-producto" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%">
+      <option value="Champú">Champú</option>
+      <option value="Uva">Uva</option>
+      <option value="Teflón">Teflón</option>
+      <option value="Grafito">Grafito</option>
+      <option value="Desengrasante">Desengrasante</option>
+      <option value="Restaurador partes negras">Restaurador partes negras</option>
+      <option value="Trapo">Trapo</option>
+      <option value="Ambientador">Ambientador</option>
+      <option value="Extintor">Extintor</option>
+      <option value="Otro">Otro</option>
+    </select>
+  </div>
+  <div class="form-grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label>Cantidad comprada</label>
+      <input type="number" id="cp-cantidad" value="1" min="1" oninput="calcCompraTotal()"
+        style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%"/>
+    </div>
+    <div class="field"><label>Costo unitario</label>
+      <input type="number" id="cp-costo-unit" placeholder="0" oninput="calcCompraTotal()"
+        style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%"/>
+    </div>
+  </div>
+  <div class="field"><label>Fecha de la compra</label>
+    <input type="date" id="cp-fecha" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%"/>
+  </div>
+  <div style="background:var(--gold-p);border:1px solid var(--gold-b);border-radius:8px;padding:12px;text-align:center;margin-bottom:12px">
+    <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Total de la compra</div>
+    <div style="font-size:22px;font-weight:800;color:var(--gold);font-family:Georgia,serif" id="cp-total-calc">$0</div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-p" style="flex:1;padding:10px" id="cp-btn-guardar" onclick="guardarCompraProducto()">💾 Guardar</button>
+    <button class="btn btn-g" onclick="cerrarModal('modal-compra-producto')">Cancelar</button>
+  </div>
+</div>
+</div>
+
 <!-- Modal empresa -->
 <div id="modal-empresa" class="modal-bg" style="display:none">
 <div class="modal">
@@ -1601,6 +1745,7 @@ function go(s,el){
   else if(s==='historial') initHistorial();
   else if(s==='saldos') loadSaldos();
   else if(s==='productos') selProdModo('hoy');
+  else if(s==='turnos') loadTurnos();
   else if(s==='empresas') loadEmpresas();
   else if(s==='empresa-detalle') loadEmpresaDetalle();
   else if(s==='pendientes') loadPendientes();
@@ -2855,7 +3000,7 @@ let currentDashTab='resumen';
 
 function showDashTab(tab, btn){
   currentDashTab=tab;
-  ['resumen','diario','finanzas','conceseros'].forEach(t=>{
+  ['resumen','diario','finanzas','conceseros','rango','analitica'].forEach(t=>{
     const el=document.getElementById('dt-'+t+'-content');
     if(el) el.style.display=t===tab?'block':'none';
     const b=document.getElementById('dt-'+t);
@@ -2870,6 +3015,21 @@ function loadDashTab(tab){
   else if(tab==='diario')    loadDashDiario();
   else if(tab==='finanzas')  loadDashFinanzas();
   else if(tab==='conceseros') loadDashConceseros();
+  else if(tab==='rango'){
+    // Por defecto, si no hay fechas elegidas, propone la semana en curso
+    // (lunes a hoy) para que no arranque vacío.
+    const desdeEl=document.getElementById('rng-desde'), hastaEl=document.getElementById('rng-hasta');
+    if(desdeEl && !desdeEl.value){
+      const hoy=new Date();
+      const lunes=new Date(hoy);
+      const diaSemana=(hoy.getDay()+6)%7; // 0=lunes
+      lunes.setDate(hoy.getDate()-diaSemana);
+      desdeEl.value=lunes.toISOString().slice(0,10);
+    }
+    if(hastaEl && !hastaEl.value) hastaEl.value=today();
+    loadDashRango();
+  }
+  else if(tab==='analitica') loadDashAnalitica();
 }
 
 async function loadDashMeses(){
@@ -2930,6 +3090,14 @@ async function loadDashResumen(){
       const vp = await api('ventas_productos?fecha=gte.'+start+'&fecha=lte.'+end);
       ventasProd = vp.reduce((s,v)=>s+(v.total||0),0);
     }catch{}
+    // Costo de la mercancía comprada este mes — el margen real de productos
+    // (lo que se refleja en la ganancia) es lo vendido menos lo comprado.
+    let comprasProd = 0;
+    try{
+      const cp = await api('compras_productos?fecha=gte.'+start+'&fecha=lte.'+end);
+      comprasProd = cp.reduce((s,c)=>s+(c.costo_total||0),0);
+    }catch{}
+    const margenProd = ventasProd - comprasProd;
 
     // Detailing del mes (neto: venta − insumos − comisión del ayudante). Se
     // suma a la utilidad general porque así se decidió: el detailing hace
@@ -2951,7 +3119,7 @@ async function loadDashResumen(){
     const diffStr=diff>0?'▲ +'+diff+'% vs mes anterior':diff<0?'▼ '+diff+'% vs mes anterior':'= igual';
     const diffColor=diff>0?'#6EE7B7':diff<0?'#FCA5A5':'#8BA3BB';
 
-    const ganNeta = Math.round(total/2) - gastosTotal + ventasProd + detailingNetaMes;
+    const ganNeta = Math.round(total/2) - gastosTotal + margenProd + detailingNetaMes;
 
     // Update KPIs
     const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
@@ -3028,13 +3196,13 @@ async function loadDashResumen(){
       const lineas=[
         {label:'🚗 Lavadas particulares', val:lavadas, color:'#6EE7B7'},
         {label:'🏢 Empresas con contrato', val:empresasTotal, color:'#C4B5FD'},
-        {label:'🛒 Ventas productos', val:ventasProd, color:'var(--gold)'},
+        {label:'🛒 Productos (margen)', val:margenProd, color:'var(--gold)'},
         {label:'✨ Detailing (neto)', val:detailingNetaMes, color:'#F0ABFC'},
       ];
-      const totalLineas=total+ventasProd+detailingNetaMes;
+      const totalLineas=total+margenProd+detailingNetaMes;
       const maxL=Math.max(...lineas.map(l=>l.val),1);
       lineasEl.innerHTML=lineas.map(l=>{
-        const w=Math.round((l.val/maxL)*100);
+        const w=Math.max(0,Math.round((l.val/maxL)*100));
         const pct=totalLineas?Math.round(l.val/totalLineas*100):0;
         return '<div style="margin:8px 0">'
           +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">'
@@ -3219,6 +3387,14 @@ async function loadDashFinanzas(){
       const vp=await api('ventas_productos?fecha=gte.'+start+'&fecha=lte.'+end);
       ventasProdMes=vp.reduce((s,v)=>s+(v.total||0),0);
     }catch{}
+    // Costo de la mercancía comprada — el margen real (lo que se reparte) es
+    // lo vendido menos lo comprado.
+    let comprasProdMes=0;
+    try{
+      const cp=await api('compras_productos?fecha=gte.'+start+'&fecha=lte.'+end);
+      comprasProdMes=cp.reduce((s,c)=>s+(c.costo_total||0),0);
+    }catch{}
+    const margenProdMes = ventasProdMes - comprasProdMes;
 
     // Detailing del mes (neto: venta − insumos − comisión). Se reparte igual
     // que el resto de la utilidad — así se decidió.
@@ -3238,7 +3414,7 @@ async function loadDashFinanzas(){
       else totGastosQr+=parseInt(g.valor)||0;
     });
 
-    const totalFinalMes = tuParteNeta + ventasProdMes + detailingNetaMes - totGastos;
+    const totalFinalMes = tuParteNeta + margenProdMes + detailingNetaMes - totGastos;
 
     // KPIs
     const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
@@ -3317,6 +3493,10 @@ async function loadDashFinanzas(){
           +'<div style="font-size:16px;font-weight:700;color:#FCD34D">-$'+fmt(totPend)+'</div>'
           +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:4px">+ Ventas productos</div>'
           +'<div style="font-size:16px;font-weight:700;color:#6EE7B7">+$'+fmt(ventasProdMes)+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:4px">— Costo de productos comprados</div>'
+          +'<div style="font-size:16px;font-weight:700;color:#FCA5A5">-$'+fmt(comprasProdMes)+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:4px">+ Detailing (neto)</div>'
+          +'<div style="font-size:16px;font-weight:700;color:#F0ABFC">+$'+fmt(detailingNetaMes)+'</div>'
           +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:4px">— Gastos del mes</div>'
           +'<div style="font-size:16px;font-weight:700;color:#FCA5A5">-$'+fmt(totGastos)+'</div>'
         +'</div>'
@@ -3440,6 +3620,220 @@ async function loadDashConceseros(){
       +'</tr>';
     }).join('');
   }catch(e){showToast('Error',true);}
+}
+
+function fmtFechaCorta(fechaStr){
+  const [y,m,d] = fechaStr.split('-');
+  return parseInt(d)+' '+MES[parseInt(m)-1];
+}
+
+async function loadDashRango(){
+  const start = document.getElementById('rng-desde')?.value;
+  const end = document.getElementById('rng-hasta')?.value;
+  if(!start || !end){ showToast('Selecciona el rango de fechas', true); return; }
+  if(start>end){ showToast('La fecha "desde" debe ser antes que "hasta"', true); return; }
+  try{
+    const [ords, gastos, vp, cp, det] = await Promise.all([
+      api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc'),
+      api('gastos?fecha=gte.'+start+'&fecha=lte.'+end),
+      api('ventas_productos?fecha=gte.'+start+'&fecha=lte.'+end).catch(()=>[]),
+      api('compras_productos?fecha=gte.'+start+'&fecha=lte.'+end).catch(()=>[]),
+      api('detailing?fecha=gte.'+start+'&fecha=lte.'+end).catch(()=>[])
+    ]);
+
+    const cerradas = ords.filter(o=>o.estado==='cerrada');
+    const total = cerradas.reduce((s,o)=>s+(o.total||0),0);
+    const gastosReales = gastos.filter(g=>g.categoria!=='🏦 Saldo inicial' && g.categoria!=='🛒 Venta producto');
+    const gastosTotal = gastosReales.reduce((s,g)=>s+(g.valor||0),0);
+    const ventasProd = vp.reduce((s,v)=>s+(v.total||0),0);
+    const comprasProd = cp.reduce((s,c)=>s+(c.costo_total||0),0);
+    const margenProd = ventasProd - comprasProd;
+    const detailingNeta = det.reduce((s,d)=>s+((d.valor||0)-(d.costo_insumos||0)-(d.comision_ayudante||0)),0);
+    const ganNeta = Math.round(total/2) - gastosTotal + margenProd + detailingNeta;
+
+    document.getElementById('rng-total').textContent = '$'+fmt(total);
+    document.getElementById('rng-gan').textContent = '$'+fmt(ganNeta);
+    document.getElementById('rng-veh').textContent = cerradas.length;
+    document.getElementById('rng-gastos').textContent = '$'+fmt(gastosTotal);
+
+    // Agrupar por semana calendario (lunes a domingo), recortada al rango elegido
+    function lunesDe(fechaStr){
+      const d = new Date(fechaStr+'T00:00:00');
+      const dia = (d.getDay()+6)%7;
+      d.setDate(d.getDate()-dia);
+      return d.toISOString().slice(0,10);
+    }
+    function sumarDias(fechaStr, n){
+      const d = new Date(fechaStr+'T00:00:00');
+      d.setDate(d.getDate()+n);
+      return d.toISOString().slice(0,10);
+    }
+    const semanas = {};
+    function addTo(fecha, campo, valor){
+      const key = lunesDe(fecha);
+      if(!semanas[key]) semanas[key] = {ingresos:0, veh:0, productos:0, detailing:0, gastos:0};
+      semanas[key][campo] += valor;
+    }
+    cerradas.forEach(o=>{ addTo(o.fecha,'ingresos', o.total||0); addTo(o.fecha,'veh',1); });
+    vp.forEach(v=>addTo(v.fecha,'productos', v.total||0));
+    cp.forEach(c=>addTo(c.fecha,'productos', -(c.costo_total||0)));
+    det.forEach(d=>addTo(d.fecha,'detailing', (d.valor||0)-(d.costo_insumos||0)-(d.comision_ayudante||0)));
+    gastosReales.forEach(g=>addTo(g.fecha,'gastos', g.valor||0));
+
+    const semanasOrdenadas = Object.keys(semanas).sort();
+    const rows = semanasOrdenadas.map(lunes=>{
+      const s = semanas[lunes];
+      const domingo = sumarDias(lunes,6);
+      const desdeEtiqueta = lunes<start ? start : lunes;
+      const hastaEtiqueta = domingo>end ? end : domingo;
+      const ganSemana = Math.round(s.ingresos/2) - s.gastos + s.productos + s.detailing;
+      return '<tr>'
+        +'<td style="font-size:11px">'+fmtFechaCorta(desdeEtiqueta)+' – '+fmtFechaCorta(hastaEtiqueta)+'</td>'
+        +'<td>$'+fmt(s.ingresos)+'</td>'
+        +'<td>'+s.veh+'</td>'
+        +'<td style="color:'+(s.productos>=0?'#6EE7B7':'#FCA5A5')+'">$'+fmt(s.productos)+'</td>'
+        +'<td style="color:#F0ABFC">$'+fmt(s.detailing)+'</td>'
+        +'<td style="color:#FCA5A5">$'+fmt(s.gastos)+'</td>'
+        +'<td style="font-weight:800;color:var(--gold)">$'+fmt(ganSemana)+'</td>'
+      +'</tr>';
+    }).join('');
+
+    document.getElementById('rng-semanas').innerHTML = rows ||
+      '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">Sin datos en este rango</td></tr>';
+  }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+async function loadDashAnalitica(){
+  const mes = dashMes || today().slice(0,7);
+  const [y,m] = mes.split('-');
+  const lastDay = new Date(parseInt(y), parseInt(m), 0).getDate();
+  const start = mes+'-01', end = mes+'-'+String(lastDay).padStart(2,'0');
+
+  // ── Productividad por lavador + horas pico (con datos del mes) ──
+  try{
+    const [turnos, ordenesMes] = await Promise.all([
+      api('turnos?fecha=gte.'+start+'&fecha=lte.'+end+'&order=hora.asc'),
+      api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=hora_entrada.asc')
+    ]);
+
+    const porLavador = {};
+    turnos.forEach(t=>{
+      const id=t.concesero_id;
+      if(!id) return;
+      if(!porLavador[id]) porLavador[id]={nombre:t.concesero_nombre, dias:{}};
+      if(!porLavador[id].dias[t.fecha]) porLavador[id].dias[t.fecha]={llegada:t.hora};
+    });
+    ordenesMes.forEach(o=>{
+      const id=o.concesero_id;
+      if(!id || !o.hora_entrada) return;
+      if(!porLavador[id]) porLavador[id]={nombre:o.concesero_nombre, dias:{}};
+      if(!porLavador[id].dias[o.fecha]) porLavador[id].dias[o.fecha]={};
+      const d = porLavador[id].dias[o.fecha];
+      if(!d.primeraOrden || o.hora_entrada<d.primeraOrden) d.primeraOrden=o.hora_entrada;
+      if(!d.ultimaOrden || o.hora_entrada>d.ultimaOrden) d.ultimaOrden=o.hora_entrada;
+      d.ingreso = (d.ingreso||0) + (o.total||0);
+    });
+
+    const prom = arr => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null;
+    const fmtMin = min => min==null ? '—' : String(Math.floor(min/60)).padStart(2,'0')+':'+String(Math.round(min%60)).padStart(2,'0');
+
+    const filas = Object.values(porLavador).map(l=>{
+      const dias = Object.values(l.dias);
+      const diasConTurno = dias.filter(d=>d.llegada).length;
+      const arranques=[], llegadasMin=[];
+      let ingresoTotal=0, horasTotal=0;
+      dias.forEach(d=>{
+        if(d.ingreso) ingresoTotal += d.ingreso;
+        if(d.llegada){
+          const llegadaDate = new Date(d.llegada);
+          llegadasMin.push(llegadaDate.getHours()*60+llegadaDate.getMinutes());
+          if(d.primeraOrden){
+            const arranqueMin = (new Date(d.primeraOrden)-llegadaDate)/60000;
+            if(arranqueMin>=0) arranques.push(arranqueMin);
+          }
+          if(d.ultimaOrden){
+            const horas = (new Date(d.ultimaOrden)-llegadaDate)/3600000;
+            if(horas>0) horasTotal += horas;
+          }
+        }
+      });
+      return {
+        nombre: l.nombre,
+        diasConTurno,
+        llegadaProm: prom(llegadasMin),
+        arranqueProm: prom(arranques),
+        ingresoTotal,
+        horasTotal,
+        productividadHora: horasTotal>0 ? ingresoTotal/horasTotal : null
+      };
+    }).sort((a,b)=>(b.productividadHora||-1)-(a.productividadHora||-1));
+
+    document.getElementById('an-productividad').innerHTML = filas.length ? filas.map(f=>
+      '<tr>'
+        +'<td style="font-weight:600">'+f.nombre+'</td>'
+        +'<td>'+f.diasConTurno+'</td>'
+        +'<td>'+fmtMin(f.llegadaProm)+'</td>'
+        +'<td>'+(f.arranqueProm!=null?Math.round(f.arranqueProm)+' min':'—')+'</td>'
+        +'<td style="color:var(--gold)">$'+fmt(f.ingresoTotal)+'</td>'
+        +'<td>'+(f.horasTotal?f.horasTotal.toFixed(1)+'h':'—')+'</td>'
+        +'<td style="font-weight:800;color:#6EE7B7">'+(f.productividadHora!=null?'$'+fmt(Math.round(f.productividadHora)):'—')+'</td>'
+      +'</tr>'
+    ).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">Sin turnos registrados este mes — regístralos en 🎫 Turnos</td></tr>';
+
+    // ── Horas pico ──
+    const horas = new Array(24).fill(0);
+    ordenesMes.forEach(o=>{
+      if(!o.hora_entrada) return;
+      horas[new Date(o.hora_entrada).getHours()]++;
+    });
+    const maxH = Math.max(...horas,1);
+    const barsEl = document.getElementById('an-horas-bars');
+    const labelsEl = document.getElementById('an-horas-labels');
+    if(barsEl) barsEl.innerHTML = horas.map(v=>
+      '<div style="flex:1;background:'+(v===maxH&&v>0?'var(--gold)':'rgba(255,255,255,.15)')+';height:'+Math.max(2,Math.round(v/maxH*100))+'%;border-radius:2px 2px 0 0" title="'+v+' lavadas"></div>'
+    ).join('');
+    if(labelsEl) labelsEl.innerHTML = horas.map((v,h)=>
+      h%3===0 ? '<div style="flex:1;text-align:center;font-size:8px;color:var(--muted)">'+h+'</div>' : '<div style="flex:1"></div>'
+    ).join('');
+  }catch(e){ showToast('Error: '+e.message, true); }
+
+  // ── Clientes recurrentes vs nuevos (usa todo el histórico para clasificar) ──
+  try{
+    const historicas = await api('ordenes?select=fecha,placa&order=fecha.asc');
+    const porPlaca = {};
+    historicas.forEach(o=>{
+      if(!o.placa) return;
+      if(!porPlaca[o.placa]) porPlaca[o.placa]={visitas:0, meses:new Set(), primera:o.fecha, ultima:o.fecha};
+      const p=porPlaca[o.placa];
+      p.visitas++;
+      p.meses.add(o.fecha.slice(0,7));
+      if(o.fecha<p.primera) p.primera=o.fecha;
+      if(o.fecha>p.ultima) p.ultima=o.fecha;
+    });
+
+    const placasDelMes = new Set(historicas.filter(o=>o.placa && o.fecha>=start && o.fecha<=end).map(o=>o.placa));
+    let nuevos=0, recurrentes=0, ocasionales=0;
+    placasDelMes.forEach(pl=>{
+      const p = porPlaca[pl];
+      if(!p) return;
+      if(p.primera>=start) nuevos++;
+      else if(p.meses.size>=3) recurrentes++;
+      else ocasionales++;
+    });
+    document.getElementById('an-cli-nuevos').textContent = nuevos;
+    document.getElementById('an-cli-recurrentes').textContent = recurrentes;
+    document.getElementById('an-cli-ocasionales').textContent = ocasionales;
+
+    const topFieles = Object.entries(porPlaca).sort((a,b)=>b[1].visitas-a[1].visitas).slice(0,10);
+    document.getElementById('an-cli-top').innerHTML = topFieles.length ? topFieles.map(([placa,p])=>
+      '<tr>'
+        +'<td style="font-weight:700;color:var(--gold)">'+placa+'</td>'
+        +'<td>'+p.visitas+'</td>'
+        +'<td>'+p.meses.size+'</td>'
+        +'<td style="color:var(--muted);font-size:11px">'+p.ultima+'</td>'
+      +'</tr>'
+    ).join('') : '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px">Sin datos</td></tr>';
+  }catch(e){ console.warn('clientes analítica:', e.message); }
 }
 
 // ── CONCESEROS ────────────────────────────────────────────────────────────────
@@ -4627,6 +5021,14 @@ async function loadSaldos(){
       const vp=await api('ventas_productos?fecha=gte.'+start+'&fecha=lte.'+end);
       ventasProd=vp.reduce((s,v)=>s+(v.total||0),0);
     }catch{}
+    // Costo de la mercancía comprada — el margen real (lo que se reparte) es
+    // lo vendido menos lo comprado.
+    let comprasProd=0;
+    try{
+      const cp=await api('compras_productos?fecha=gte.'+start+'&fecha=lte.'+end);
+      comprasProd=cp.reduce((s,c)=>s+(c.costo_total||0),0);
+    }catch{}
+    ventasProd = ventasProd - comprasProd; // de aquí en adelante, "ventasProd" ya es el margen neto
 
     // Detailing del mes (neto: venta − insumos − comisión). Se reparte igual
     // que el resto de la utilidad — así se decidió.
@@ -5002,6 +5404,8 @@ function selProdModo(modo){
   }
 }
 
+let comprasProdMesCache = [];
+
 async function loadProductosHistorial(){
   const mes = document.getElementById('prod-hist-mes').value || today().slice(0,7);
   const [y,m] = mes.split('-');
@@ -5009,11 +5413,15 @@ async function loadProductosHistorial(){
   const start = mes+'-01', end = mes+'-'+String(lastDay).padStart(2,'0');
   try{
     const vp = await api('ventas_productos?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
+    let compras = [];
+    try{ compras = await api('compras_productos?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.desc,id.desc'); }
+    catch(e){ console.warn('compras_productos:', e.message); }
+    comprasProdMesCache = compras;
 
     let totalMes=0, unidadesMes=0, descuentosMes=0;
     const porProducto = {};
     vp.forEach(v=>{
-      if(!porProducto[v.producto]) porProducto[v.producto] = {unidades:0, cliente:0, concesor:0, total:0};
+      if(!porProducto[v.producto]) porProducto[v.producto] = {unidades:0, cliente:0, concesor:0, total:0, costo:0};
       const p = porProducto[v.producto];
       p.unidades += v.cantidad||1;
       p.total += v.total||0;
@@ -5024,27 +5432,171 @@ async function loadProductosHistorial(){
       if(!esCliente) descuentosMes += v.total||0;
     });
 
+    let compradoMes = 0;
+    compras.forEach(c=>{
+      if(!porProducto[c.producto]) porProducto[c.producto] = {unidades:0, cliente:0, concesor:0, total:0, costo:0};
+      porProducto[c.producto].costo += c.costo_total||0;
+      compradoMes += c.costo_total||0;
+    });
+
     const ranking = Object.entries(porProducto).sort((a,b)=>b[1].total-a[1].total);
     const medals = ['🥇','🥈','🥉'];
-    const rows = ranking.map(([nombre,d],i)=>
-      '<tr>'
+    const rows = ranking.map(([nombre,d],i)=>{
+      const margen = d.total - d.costo;
+      return '<tr>'
         +'<td style="text-align:center">'+(medals[i]||(i+1))+'</td>'
         +'<td style="font-weight:600">'+nombre+'</td>'
         +'<td>'+d.unidades+'</td>'
         +'<td style="color:#6EE7B7">'+(d.cliente?'$'+fmt(d.cliente):'-')+'</td>'
         +'<td style="color:#FCA5A5">'+(d.concesor?'$'+fmt(d.concesor):'-')+'</td>'
-        +'<td style="font-weight:800;color:var(--gold)">$'+fmt(d.total)+'</td>'
-      +'</tr>'
-    ).join('');
+        +'<td style="font-weight:700">$'+fmt(d.total)+'</td>'
+        +'<td style="color:#FCA5A5">'+(d.costo?'$'+fmt(d.costo):'-')+'</td>'
+        +'<td style="font-weight:800;color:'+(margen>=0?'var(--gold)':'#FCA5A5')+'">$'+fmt(margen)+'</td>'
+      +'</tr>';
+    }).join('');
 
     document.getElementById('ph-ranking').innerHTML = rows ||
-      '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Sin ventas de productos este mes</td></tr>';
+      '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">Sin movimientos de productos este mes</td></tr>';
     document.getElementById('ph-total-mes').textContent = '$'+fmt(totalMes);
+    document.getElementById('ph-comprado-mes').textContent = '$'+fmt(compradoMes);
+    document.getElementById('ph-margen-mes').textContent = '$'+fmt(totalMes - compradoMes);
     document.getElementById('ph-unidades-mes').textContent = unidadesMes;
     document.getElementById('ph-descuentos-mes').textContent = '$'+fmt(descuentosMes);
     document.getElementById('ph-mas-vendido').textContent = ranking.length
       ? ranking[0][0]+' ('+ranking[0][1].unidades+' und.)'
       : '—';
+
+    document.getElementById('ph-compras-lista').innerHTML = compras.length ? compras.map(c=>
+      '<tr>'
+        +'<td style="color:var(--muted);font-family:monospace;font-size:11px">'+c.fecha+'</td>'
+        +'<td>'+c.producto+'</td>'
+        +'<td>'+c.cantidad+'</td>'
+        +'<td>$'+fmt(c.costo_unitario)+'</td>'
+        +'<td style="font-weight:700;color:#FCA5A5">$'+fmt(c.costo_total)+'</td>'
+        +'<td><button class="btn btn-r" style="padding:3px 8px;font-size:10px" onclick="borrarCompraProducto('+c.id+')">🗑️</button></td>'
+      +'</tr>'
+    ).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Sin compras registradas este mes</td></tr>';
+  }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+function abrirModalCompraProducto(){
+  document.getElementById('cp-producto').value = 'Champú';
+  document.getElementById('cp-cantidad').value = '1';
+  document.getElementById('cp-costo-unit').value = '';
+  document.getElementById('cp-fecha').value = today();
+  document.getElementById('cp-total-calc').textContent = '$0';
+  document.getElementById('modal-compra-producto').style.display = 'flex';
+}
+
+function calcCompraTotal(){
+  const cant = parseInt(document.getElementById('cp-cantidad')?.value)||1;
+  const costo = parseInt(document.getElementById('cp-costo-unit')?.value)||0;
+  document.getElementById('cp-total-calc').textContent = '$'+fmt(cant*costo);
+}
+
+let compraProductoEnProceso = false;
+
+async function guardarCompraProducto(){
+  if(compraProductoEnProceso) return;
+  const producto = document.getElementById('cp-producto')?.value;
+  const cant = parseInt(document.getElementById('cp-cantidad')?.value)||1;
+  const costoUnit = parseInt(document.getElementById('cp-costo-unit')?.value)||0;
+  const fecha = document.getElementById('cp-fecha')?.value || today();
+  if(!producto){ showToast('Selecciona el producto', true); return; }
+  if(!costoUnit){ showToast('Ingresa el costo unitario', true); return; }
+  const total = cant*costoUnit;
+  const btn = document.getElementById('cp-btn-guardar');
+  compraProductoEnProceso = true;
+  if(btn) btn.disabled = true;
+  try{
+    await api('compras_productos','POST',{
+      fecha, producto, cantidad: cant, costo_unitario: costoUnit, costo_total: total
+    });
+    cerrarModal('modal-compra-producto');
+    showToast('🧾 Compra registrada ✅ — $'+fmt(total)+' en '+producto);
+    if(prodModo==='historial') loadProductosHistorial();
+  }catch(e){ showToast('Error: '+e.message, true); }
+  finally{ compraProductoEnProceso = false; if(btn) btn.disabled = false; }
+}
+
+async function borrarCompraProducto(id){
+  if(!confirm('¿Eliminar esta compra?')) return;
+  try{
+    await api('compras_productos?id=eq.'+id,'DELETE');
+    showToast('Compra eliminada');
+    loadProductosHistorial();
+  }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+// ── TURNOS (hora de llegada de cada lavador, por orden) ─────────────────────
+let turnosHoy = [];
+
+async function loadTurnos(){
+  // Reutiliza los conceseros ya cargados (o los trae si aún no hay)
+  if(!conceseros.length){
+    try{ conceseros = await api('conceseros?activo=eq.true&order=nombre'); }catch{}
+  }
+  const sel = document.getElementById('tur-conc');
+  if(sel && !sel.options.length){
+    sel.innerHTML = conceseros.map(c=>`<option value="${c.id}" data-nombre="${c.nombre}">${c.nombre}</option>`).join('');
+  }
+  try{
+    const t = await api('turnos?fecha=eq.'+today()+'&order=hora.asc');
+    turnosHoy = t;
+    renderTurnosLista();
+  }catch(e){
+    document.getElementById('turnos-lista').innerHTML =
+      '<div style="text-align:center;color:var(--muted);padding:20px">⚠️ No se pudo conectar con la tabla "turnos". Pídele a Claude que te ayude a crearla en Supabase.</div>';
+  }
+}
+
+function renderTurnosLista(){
+  const el = document.getElementById('turnos-lista');
+  if(!el) return;
+  el.innerHTML = turnosHoy.length ? turnosHoy.map((t,i)=>{
+    const hora = new Date(t.hora).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',hour12:true});
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.05)">'
+      +'<div style="display:flex;align-items:center;gap:10px">'
+        +'<span style="font-weight:800;color:var(--gold);font-family:Georgia,serif;font-size:16px">#'+(i+1)+'</span>'
+        +'<span style="font-weight:700;font-size:13px">'+(t.concesero_nombre||'')+'</span>'
+        +'<span style="font-family:monospace;color:var(--muted);font-size:11px">'+hora+'</span>'
+      +'</div>'
+      +'<button class="btn btn-r" style="padding:3px 8px;font-size:10px" onclick="borrarTurno('+t.id+')">🗑️</button>'
+    +'</div>';
+  }).join('') : '<div style="text-align:center;color:var(--muted);padding:20px">Aún nadie ha marcado llegada hoy</div>';
+}
+
+let turnoEnProceso = false;
+
+async function guardarTurno(){
+  if(turnoEnProceso) return;
+  const concSel = document.getElementById('tur-conc');
+  const concId = parseInt(concSel?.value);
+  const concNombre = concSel?.options[concSel.selectedIndex]?.dataset.nombre || '';
+  if(!concId){ showToast('Selecciona el lavador', true); return; }
+
+  const btn = document.getElementById('tur-btn-guardar');
+  turnoEnProceso = true;
+  if(btn) btn.disabled = true;
+  try{
+    await api('turnos','POST',{
+      fecha: today(),
+      hora: new Date().toISOString(),
+      concesero_id: concId,
+      concesero_nombre: concNombre
+    });
+    showToast('✅ Llegada registrada — '+concNombre);
+    loadTurnos();
+  }catch(e){ showToast('Error: '+e.message, true); }
+  finally{ turnoEnProceso = false; if(btn) btn.disabled = false; }
+}
+
+async function borrarTurno(id){
+  if(!confirm('¿Eliminar este turno?')) return;
+  try{
+    await api('turnos?id=eq.'+id,'DELETE');
+    showToast('Turno eliminado');
+    loadTurnos();
   }catch(e){ showToast('Error: '+e.message, true); }
 }
 
