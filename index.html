@@ -5601,29 +5601,40 @@ function renderTurnosLista(conteoNormales={}, conteoExcluidos={}){
     const hora = new Date(t.hora).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',hour12:true});
     const normales = conteoNormales[t.concesero_id]||0;
     const excluidos = conteoExcluidos[t.concesero_id]||0;
-    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.05)">'
+    const seFue = !!t.hora_salida;
+    const horaSalida = seFue ? new Date(t.hora_salida).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',hour12:true}) : null;
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.05);opacity:'+(seFue?'.55':'1')+'">'
       +'<div style="display:flex;align-items:center;gap:10px">'
         +'<span style="font-weight:800;color:var(--gold);font-family:Georgia,serif;font-size:16px">#'+(i+1)+'</span>'
         +'<span style="font-weight:700;font-size:13px">'+(t.concesero_nombre||'')+'</span>'
-        +'<span style="font-family:monospace;color:var(--muted);font-size:11px">'+hora+'</span>'
+        +'<span style="font-family:monospace;color:var(--muted);font-size:11px">'+hora+(seFue?' → '+horaSalida:'')+'</span>'
       +'</div>'
       +'<div style="display:flex;align-items:center;gap:10px">'
         +'<span style="font-size:12px;color:#6EE7B7" title="Lavadas que cuentan para el turno">🚗 '+normales+'</span>'
         +(excluidos?'<span style="font-size:10px;color:var(--muted)" title="Taxis, pistolazos o motos — no cuentan">('+excluidos+' aparte)</span>':'')
+        +(seFue
+          ? '<span style="font-size:10px;color:var(--muted)">🚪 se fue</span>'
+          : '<button class="btn btn-g" style="padding:3px 8px;font-size:10px" onclick="marcarSalidaTurno('+t.id+')">🚪 Marcar salida</button>')
         +'<button class="btn btn-r" style="padding:3px 8px;font-size:10px" onclick="borrarTurno('+t.id+')">🗑️</button>'
       +'</div>'
     +'</div>';
   }).join('') : '<div style="text-align:center;color:var(--muted);padding:20px">Aún nadie ha marcado llegada hoy</div>';
 
   if(!sigEl) return;
+  const activos = turnosHoy.filter(t=>!t.hora_salida);
   if(!turnosHoy.length){
     sigEl.innerHTML = '<div style="text-align:center;padding:14px;color:var(--muted);font-size:13px">Aún nadie ha marcado llegada — registra el primer turno abajo 👇</div>';
     return;
   }
-  // El siguiente turno es, entre los que ya llegaron, el que menos lavadas
-  // "normales" lleva hoy; si hay empate, gana el que llegó primero.
-  let candidato = turnosHoy[0], minNormales = conteoNormales[turnosHoy[0].concesero_id]||0;
-  turnosHoy.forEach(t=>{
+  if(!activos.length){
+    sigEl.innerHTML = '<div style="text-align:center;padding:14px;color:var(--muted);font-size:13px">Todos los lavadores de hoy ya marcaron salida</div>';
+    return;
+  }
+  // El siguiente turno es, entre los que siguen activos (no han marcado
+  // salida), el que menos lavadas "normales" lleva hoy; si hay empate,
+  // gana el que llegó primero.
+  let candidato = activos[0], minNormales = conteoNormales[activos[0].concesero_id]||0;
+  activos.forEach(t=>{
     const n = conteoNormales[t.concesero_id]||0;
     if(n < minNormales){ minNormales = n; candidato = t; }
   });
@@ -5632,6 +5643,15 @@ function renderTurnosLista(conteoNormales={}, conteoExcluidos={}){
     +'<div style="font-size:26px;font-weight:800;color:var(--gold);font-family:Georgia,serif">'+candidato.concesero_nombre+'</div>'
     +'<div style="font-size:11px;color:var(--muted);margin-top:2px">lleva '+minNormales+' lavada'+(minNormales===1?'':'s')+' hoy</div>'
   +'</div>';
+}
+
+async function marcarSalidaTurno(id){
+  if(!confirm('¿Marcar que este lavador ya se fue? Dejará de contar para el siguiente turno.')) return;
+  try{
+    await api('turnos?id=eq.'+id,'PATCH',{hora_salida:new Date().toISOString()});
+    showToast('🚪 Salida registrada');
+    loadTurnos();
+  }catch(e){ showToast('Error: '+e.message, true); }
 }
 
 let turnoEnProceso = false;
