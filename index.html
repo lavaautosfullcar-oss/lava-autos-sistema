@@ -434,6 +434,10 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           <div><div class="page-title">🎫 Turnos</div><div class="page-sub">Hora de llegada de cada lavador — así se sabe a quién le toca el siguiente turno</div></div>
         </div>
 
+        <div class="card" style="border:1px solid var(--gold-b)">
+          <div id="turnos-siguiente"></div>
+        </div>
+
         <div class="card">
           <div class="card-t"><span class="card-tg">+ Registrar llegada</span></div>
           <div class="field"><label>Lavador</label><select id="tur-conc"
@@ -443,6 +447,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 
         <div class="card">
           <div class="card-t"><span class="card-tg">🕓 Orden de llegada — hoy</span></div>
+          <div style="font-size:11px;color:var(--muted);margin:-4px 0 10px">🚗 = lavadas que cuentan para el turno. Taxis, pistolazos y motos no cuentan ni afectan el orden.</div>
           <div id="turnos-lista"></div>
         </div>
       </div>
@@ -5531,6 +5536,16 @@ async function borrarCompraProducto(id){
 // ── TURNOS (hora de llegada de cada lavador, por orden) ─────────────────────
 let turnosHoy = [];
 
+// Dice si un servicio NO debe contar para el turno (taxi, pistolazo o moto)
+function esServicioExcluidoTurno(nombre){
+  const n = (nombre||'').toUpperCase();
+  if(n.includes('TAXI')) return true;
+  if(n.includes('PISTOLAZO')) return true;
+  const lista = (typeof servicios!=='undefined' && servicios.length) ? servicios : SERVICIOS_ALL;
+  const svc = lista.find(s=>s.nombre===nombre);
+  return svc ? svc.tipo==='Motos' : false;
+}
+
 async function loadTurnos(){
   // Reutiliza los conceseros ya cargados (o los trae si aún no hay)
   if(!conceseros.length){
@@ -5543,27 +5558,80 @@ async function loadTurnos(){
   try{
     const t = await api('turnos?fecha=eq.'+today()+'&order=hora.asc');
     turnosHoy = t;
-    renderTurnosLista();
   }catch(e){
     document.getElementById('turnos-lista').innerHTML =
       '<div style="text-align:center;color:var(--muted);padding:20px">⚠️ No se pudo conectar con la tabla "turnos". Pídele a Claude que te ayude a crearla en Supabase.</div>';
+    document.getElementById('turnos-siguiente').innerHTML = '';
+    return;
   }
+
+  // Cuenta, para cada lavador, cuántas lavadas de HOY sí cuentan para el turno
+  // (se excluyen taxis, pistolazos y motos, aunque sí quedan registradas).
+  let conteoNormales = {}, conteoExcluidos = {};
+  try{
+    const ords = await api('ordenes?fecha=eq.'+today()+'&select=id,concesero_id');
+    const ids = ords.map(o=>o.id);
+    let serviciosOrdenes = [];
+    if(ids.length){
+      serviciosOrdenes = await api('orden_servicios?orden_id=in.('+ids.join(',')+')');
+    }
+    const serviciosPorOrden = {};
+    serviciosOrdenes.forEach(s=>{
+      if(!serviciosPorOrden[s.orden_id]) serviciosPorOrden[s.orden_id]=[];
+      serviciosPorOrden[s.orden_id].push(s.servicio_nombre);
+    });
+    ords.forEach(o=>{
+      if(!o.concesero_id) return;
+      const nombresServ = serviciosPorOrden[o.id] || [];
+      const excluido = nombresServ.length>0 && nombresServ.every(esServicioExcluidoTurno);
+      if(excluido) conteoExcluidos[o.concesero_id] = (conteoExcluidos[o.concesero_id]||0)+1;
+      else conteoNormales[o.concesero_id] = (conteoNormales[o.concesero_id]||0)+1;
+    });
+  }catch(e){ console.warn('conteo turnos:', e.message); }
+
+  renderTurnosLista(conteoNormales, conteoExcluidos);
 }
 
-function renderTurnosLista(){
+function renderTurnosLista(conteoNormales={}, conteoExcluidos={}){
   const el = document.getElementById('turnos-lista');
+  const sigEl = document.getElementById('turnos-siguiente');
   if(!el) return;
+
   el.innerHTML = turnosHoy.length ? turnosHoy.map((t,i)=>{
     const hora = new Date(t.hora).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',hour12:true});
+    const normales = conteoNormales[t.concesero_id]||0;
+    const excluidos = conteoExcluidos[t.concesero_id]||0;
     return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.05)">'
       +'<div style="display:flex;align-items:center;gap:10px">'
         +'<span style="font-weight:800;color:var(--gold);font-family:Georgia,serif;font-size:16px">#'+(i+1)+'</span>'
         +'<span style="font-weight:700;font-size:13px">'+(t.concesero_nombre||'')+'</span>'
         +'<span style="font-family:monospace;color:var(--muted);font-size:11px">'+hora+'</span>'
       +'</div>'
-      +'<button class="btn btn-r" style="padding:3px 8px;font-size:10px" onclick="borrarTurno('+t.id+')">🗑️</button>'
+      +'<div style="display:flex;align-items:center;gap:10px">'
+        +'<span style="font-size:12px;color:#6EE7B7" title="Lavadas que cuentan para el turno">🚗 '+normales+'</span>'
+        +(excluidos?'<span style="font-size:10px;color:var(--muted)" title="Taxis, pistolazos o motos — no cuentan">('+excluidos+' aparte)</span>':'')
+        +'<button class="btn btn-r" style="padding:3px 8px;font-size:10px" onclick="borrarTurno('+t.id+')">🗑️</button>'
+      +'</div>'
     +'</div>';
   }).join('') : '<div style="text-align:center;color:var(--muted);padding:20px">Aún nadie ha marcado llegada hoy</div>';
+
+  if(!sigEl) return;
+  if(!turnosHoy.length){
+    sigEl.innerHTML = '<div style="text-align:center;padding:14px;color:var(--muted);font-size:13px">Aún nadie ha marcado llegada — registra el primer turno abajo 👇</div>';
+    return;
+  }
+  // El siguiente turno es, entre los que ya llegaron, el que menos lavadas
+  // "normales" lleva hoy; si hay empate, gana el que llegó primero.
+  let candidato = turnosHoy[0], minNormales = conteoNormales[turnosHoy[0].concesero_id]||0;
+  turnosHoy.forEach(t=>{
+    const n = conteoNormales[t.concesero_id]||0;
+    if(n < minNormales){ minNormales = n; candidato = t; }
+  });
+  sigEl.innerHTML = '<div style="text-align:center;padding:14px">'
+    +'<div style="font-size:12px;color:var(--muted);letter-spacing:1px;margin-bottom:4px">👉 SIGUIENTE TURNO</div>'
+    +'<div style="font-size:26px;font-weight:800;color:var(--gold);font-family:Georgia,serif">'+candidato.concesero_nombre+'</div>'
+    +'<div style="font-size:11px;color:var(--muted);margin-top:2px">lleva '+minNormales+' lavada'+(minNormales===1?'':'s')+' hoy</div>'
+  +'</div>';
 }
 
 let turnoEnProceso = false;
