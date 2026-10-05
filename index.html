@@ -1253,7 +1253,8 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 <!-- Gasto -->
 <div id="modal-gasto" class="modal-bg" style="display:none">
 <div class="modal">
-  <div class="modal-title">📋 Registrar gasto</div>
+  <div class="modal-title" id="gasto-modal-title">📋 Registrar gasto</div>
+  <input type="hidden" id="gasto-edit-id" value=""/>
   <div class="form-grid" style="grid-template-columns:1fr 1fr">
     <div class="field"><label>Categoría</label>
       <select id="gasto-cat" onchange="onGastoCatChange()">
@@ -1271,6 +1272,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
     <input type="text" id="gasto-cat-nueva" placeholder="Ej: 🚕 Transporte"/>
   </div>
   <div class="field"><label>Descripción</label><input type="text" id="gasto-desc" placeholder="Ej: Shampoo x10"/></div>
+  <div class="field"><label>Fecha del gasto</label><input type="date" id="gasto-fecha"/></div>
   <div class="field"><label>Forma de pago</label>
     <div class="pay-toggle">
       <button class="pt pt-ef on-ef" onclick="selGastoPay(this,'efectivo')" id="g-ef">💵 Efectivo</button>
@@ -2642,19 +2644,25 @@ function renderGastosFiltrado(){
         <td>${g.descripcion}</td>
         <td><span class="badge ${g.forma_pago==='qr'?'bqr':'bg'}">${g.forma_pago==='qr'?'📲':'💵'}</span></td>
         <td style="color:#FCA5A5;font-weight:700">$${fmt(g.valor)}</td>
-        <td><button class="btn btn-r" style="padding:3px 8px;font-size:10px" onclick="borrarGasto(${g.id})">🗑️</button></td>
+        <td style="white-space:nowrap"><button class="btn btn-g" style="padding:3px 8px;font-size:10px" title="Editar (cambiar fecha, valor, etc.)" onclick="abrirModalGasto(${g.id})">✏️</button> <button class="btn btn-r" style="padding:3px 8px;font-size:10px" onclick="borrarGasto(${g.id})">🗑️</button></td>
       </tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Sin gastos'+(filtro?' en esta categoría':'')+'</td></tr>';
   }catch(e){showToast('Error',true);}
 }
 
-async function abrirModalGasto(){
-  document.getElementById('gasto-desc').value='';
-  document.getElementById('gasto-valor').value='';
+async function abrirModalGasto(editId){
+  // Sin parámetro = gasto nuevo (fecha de hoy por defecto, se puede cambiar).
+  // Con id = editar un gasto ya registrado (por ejemplo, para cambiarle la fecha).
+  const g = editId ? gastosMesActual.find(x=>x.id===editId) : null;
+  document.getElementById('gasto-edit-id').value = g ? g.id : '';
+  document.getElementById('gasto-modal-title').textContent = g ? '✏️ Editar gasto' : '📋 Registrar gasto';
+  document.getElementById('gasto-desc').value = g ? (g.descripcion||'') : '';
+  document.getElementById('gasto-valor').value = g ? g.valor : '';
+  document.getElementById('gasto-fecha').value = g ? g.fecha : today();
   document.getElementById('gasto-cat-nueva').value='';
   document.getElementById('gasto-cat-nueva-field').style.display='none';
-  gastoPayMode='efectivo';
-  document.getElementById('g-ef').classList.add('on-ef');
-  document.getElementById('g-qr').classList.remove('on-qr');
+  gastoPayMode = (g && g.forma_pago==='qr') ? 'qr' : 'efectivo';
+  document.getElementById('g-ef').classList.toggle('on-ef', gastoPayMode==='efectivo');
+  document.getElementById('g-qr').classList.toggle('on-qr', gastoPayMode==='qr');
 
   // Agregar al select las categorías personalizadas que ya se hayan usado antes,
   // para que no toque volver a escribirlas cada vez.
@@ -2672,7 +2680,13 @@ async function abrirModalGasto(){
     });
   }catch{}
 
-  document.getElementById('gasto-cat').value = CATEGORIAS_GASTO_FIJAS[0];
+  const selCat = document.getElementById('gasto-cat');
+  if(g && !Array.from(selCat.options).some(o=>o.value===g.categoria)){
+    const opt=document.createElement('option');
+    opt.textContent=g.categoria; opt.dataset.extra='1';
+    selCat.insertBefore(opt, selCat.querySelector('option[value="__nueva__"]'));
+  }
+  selCat.value = g ? g.categoria : CATEGORIAS_GASTO_FIJAS[0];
   document.getElementById('modal-gasto').style.display='flex';
 }
 
@@ -2697,11 +2711,22 @@ async function guardarGasto(){
   const desc=document.getElementById('gasto-desc').value.trim();
   const val=parseInt(document.getElementById('gasto-valor').value);
   if(!desc||!val){showToast('Completa todos los campos',true);return;}
+  if(gastoEnProceso) return;
+  const fecha=document.getElementById('gasto-fecha').value || today();
+  const editId=document.getElementById('gasto-edit-id').value;
+  const body={categoria:cat,descripcion:desc,valor:val,forma_pago:gastoPayMode,fecha};
+  gastoEnProceso=true;
   try{
-    await api('gastos','POST',{categoria:cat,descripcion:desc,valor:val,forma_pago:gastoPayMode,fecha:today()});
-    cerrarModal('modal-gasto');showToast('Gasto registrado ✅');loadGastos();
+    if(editId) await api('gastos?id=eq.'+editId,'PATCH',body);
+    else await api('gastos','POST',body);
+    cerrarModal('modal-gasto');
+    const otroMes = fecha.slice(0,7)!==today().slice(0,7);
+    showToast((editId?'Gasto actualizado ✅':'Gasto registrado ✅')+(otroMes?' — quedó en '+fecha+' (otro mes, ya no se ve en esta lista)':''));
+    loadGastos();
   }catch(e){showToast('Error',true);}
+  finally{gastoEnProceso=false;}
 }
+let gastoEnProceso=false;
 
 async function borrarGasto(id){
   if(!confirm('¿Borrar este gasto?')) return;
