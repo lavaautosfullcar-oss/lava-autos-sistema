@@ -3064,7 +3064,10 @@ function loadDashTab(tab){
 
 async function loadDashMeses(){
   try{
-    const ords=await api('ordenes?order=fecha.desc&limit=1000');
+    // Solo se trae la columna fecha (liviano) y SIN límite, para que salgan todos
+    // los meses con datos. Antes tenía limit=1000 y solo alcanzaba a ver las
+    // últimas 1000 órdenes, así que los meses más viejos (agosto) desaparecían.
+    const ords=await api('ordenes?select=fecha&order=fecha.desc');
     const meses=[...new Set(ords.map(o=>o.fecha.slice(0,7)))].sort().reverse();
     if(!dashMes) dashMes=meses[0];
     document.getElementById('mes-btns').innerHTML=meses.map(m=>{
