@@ -3447,7 +3447,11 @@ async function loadDashFinanzas(){
       else totGastosQr+=parseInt(g.valor)||0;
     });
 
-    const totalFinalMes = tuParteNeta + margenProdMes + detailingNetaMes - totGastos;
+    // Ganancia del mes = tu mitad + margen de productos + detailing − gastos.
+    // El QR y los pendientes NO se restan: el QR es plata tuya que está en la
+    // cuenta (no en la caja) y los pendientes son plata por cobrar; ambos solo
+    // dicen DÓNDE está la plata, no cuánto ganaste.
+    const totalFinalMes = tuMitad + margenProdMes + detailingNetaMes - totGastos;
 
     // KPIs
     const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
@@ -3520,14 +3524,10 @@ async function loadDashFinanzas(){
           +'<div style="font-size:20px;font-weight:800;font-family:Georgia,serif;color:var(--gold)">$'+fmt(totTotal)+'</div>'
           +'<div style="font-size:11px;color:var(--muted);margin-top:8px;margin-bottom:4px">÷ 2 — Pago lavadores</div>'
           +'<div style="font-size:16px;font-weight:700;color:#FCA5A5">-$'+fmt(mitadLavadores)+'</div>'
-          +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:4px">— QR del mes (ya en la cuenta)</div>'
-          +'<div style="font-size:16px;font-weight:700;color:#C4B5FD">-$'+fmt(totQr)+'</div>'
-          +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:4px">— Pendientes por cobrar</div>'
-          +'<div style="font-size:16px;font-weight:700;color:#FCD34D">-$'+fmt(totPend)+'</div>'
-          +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:4px">+ Ventas productos</div>'
-          +'<div style="font-size:16px;font-weight:700;color:#6EE7B7">+$'+fmt(ventasProdMes)+'</div>'
-          +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:4px">— Costo de productos comprados</div>'
-          +'<div style="font-size:16px;font-weight:700;color:#FCA5A5">-$'+fmt(comprasProdMes)+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:4px">= Tu mitad</div>'
+          +'<div style="font-size:18px;font-weight:800;color:#6EE7B7">$'+fmt(tuMitad)+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:4px">+ Productos (vendido $'+fmt(ventasProdMes)+' − comprado $'+fmt(comprasProdMes)+')</div>'
+          +'<div style="font-size:16px;font-weight:700;color:'+(margenProdMes>=0?'#6EE7B7':'#FCA5A5')+'">'+(margenProdMes>=0?'+':'-')+'$'+fmt(Math.abs(margenProdMes))+'</div>'
           +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:4px">+ Detailing (neto)</div>'
           +'<div style="font-size:16px;font-weight:700;color:#F0ABFC">+$'+fmt(detailingNetaMes)+'</div>'
           +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:4px">— Gastos del mes</div>'
@@ -3538,6 +3538,8 @@ async function loadDashFinanzas(){
           +'<div style="font-size:18px;font-weight:800;color:#6EE7B7">$'+fmt(cajaTotal)+'</div>'
           +'<div style="font-size:11px;color:var(--muted);margin-top:8px;margin-bottom:4px">📲 Cuenta QR</div>'
           +'<div style="font-size:18px;font-weight:800;color:#C4B5FD">$'+fmt(totQr)+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-top:8px;margin-bottom:4px">⏳ Pendientes por cobrar (incluidos arriba, aún sin cobrar)</div>'
+          +'<div style="font-size:16px;font-weight:700;color:#FCD34D">$'+fmt(totPend)+'</div>'
           +'<div style="border-top:1px solid var(--gold-b);margin-top:10px;padding-top:10px">'
             +'<div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">✦ Total tuyo del mes</div>'
             +'<div style="font-size:24px;font-weight:900;font-family:Georgia,serif;color:var(--gold)">$'+fmt(totalFinalMes)+'</div>'
@@ -5076,7 +5078,7 @@ async function loadSaldos(){
     const gastosReales=gastos.filter(g=>g.categoria!=='🏦 Saldo inicial');
     const totGastos=gastosReales.reduce((s,g)=>s+(g.valor||0),0);
 
-    const netaMes = tuNeta + ventasProd + detailingNeta - totGastos;
+    const netaMes = tuMitad + ventasProd + detailingNeta - totGastos; // tu mitad + productos + detailing − gastos (el QR y los pendientes no se restan)
 
     s('sal-ef-mes',        '$'+fmt(ef));
     s('sal-qr-mes',        '$'+fmt(qr));
