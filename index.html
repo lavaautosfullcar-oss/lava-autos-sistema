@@ -447,7 +447,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 
         <div class="card">
           <div class="card-t"><span class="card-tg">🕓 Orden de llegada — hoy</span></div>
-          <div style="font-size:11px;color:var(--muted);margin:-4px 0 10px">🚗 = lavadas que cuentan para el turno. Taxis, pistolazos y motos no cuentan ni afectan el orden.</div>
+          <div style="font-size:11px;color:var(--muted);margin:-4px 0 10px">🚗 = lavadas que cuentan para el turno. Taxis, pistolazos y motos (aunque lleven adicionales) y adicionales menores de $25.000 no cuentan ni afectan el orden.</div>
           <div id="turnos-lista"></div>
         </div>
       </div>
@@ -5536,14 +5536,36 @@ async function borrarCompraProducto(id){
 // ── TURNOS (hora de llegada de cada lavador, por orden) ─────────────────────
 let turnosHoy = [];
 
-// Dice si un servicio NO debe contar para el turno (taxi, pistolazo o moto)
-function esServicioExcluidoTurno(nombre){
+// Reglas de qué NO cuenta como turno:
+//  1) Una orden con taxi, pistolazo o moto NO cuenta, aunque tenga adicionales.
+//  2) Una orden que sea solo adicionales menores de $25.000 NO cuenta.
+// Una lavada normal con un adicional pequeño sigue contando como un turno.
+const TURNO_ADICIONAL_MIN = 25000;
+
+function esServicioTaxiPistolazoMoto(nombre){
   const n = (nombre||'').toUpperCase();
   if(n.includes('TAXI')) return true;
   if(n.includes('PISTOLAZO')) return true;
   const lista = (typeof servicios!=='undefined' && servicios.length) ? servicios : SERVICIOS_ALL;
   const svc = lista.find(s=>s.nombre===nombre);
-  return svc ? svc.tipo==='Motos' : false;
+  return !!(svc && svc.tipo==='Motos');
+}
+
+// "valor" es lo que se cobró por ese servicio en la orden (si no viene, se
+// usa el precio del catálogo).
+function esAdicionalMenor(nombre, valor){
+  const n = (nombre||'').toUpperCase();
+  if(!n.includes('ADICIONAL')) return false;
+  const lista = (typeof servicios!=='undefined' && servicios.length) ? servicios : SERVICIOS_ALL;
+  const svc = lista.find(s=>s.nombre===nombre);
+  const precio = (valor!=null && valor!=='') ? valor : (svc ? svc.precio : 0);
+  return (parseInt(precio)||0) < TURNO_ADICIONAL_MIN;
+}
+
+function ordenExcluidaDeTurno(svcsOrden){
+  if(!svcsOrden.length) return false;
+  if(svcsOrden.some(sv=>esServicioTaxiPistolazoMoto(sv.nombre))) return true;
+  return svcsOrden.every(sv=>esAdicionalMenor(sv.nombre, sv.valor));
 }
 
 async function loadTurnos(){
@@ -5566,7 +5588,8 @@ async function loadTurnos(){
   }
 
   // Cuenta, para cada lavador, cuántas lavadas de HOY sí cuentan para el turno
-  // (se excluyen taxis, pistolazos y motos, aunque sí quedan registradas).
+  // (se excluyen taxis, pistolazos y motos con o sin adicionales, y órdenes
+  // de solo adicionales menores de $25.000; igual quedan registrados).
   let conteoNormales = {}, conteoExcluidos = {};
   try{
     const ords = await api('ordenes?fecha=eq.'+today()+'&select=id,concesero_id');
@@ -5578,12 +5601,12 @@ async function loadTurnos(){
     const serviciosPorOrden = {};
     serviciosOrdenes.forEach(s=>{
       if(!serviciosPorOrden[s.orden_id]) serviciosPorOrden[s.orden_id]=[];
-      serviciosPorOrden[s.orden_id].push(s.servicio_nombre);
+      serviciosPorOrden[s.orden_id].push({nombre:s.servicio_nombre, valor:s.valor_unit});
     });
     ords.forEach(o=>{
       if(!o.concesero_id) return;
-      const nombresServ = serviciosPorOrden[o.id] || [];
-      const excluido = nombresServ.length>0 && nombresServ.every(esServicioExcluidoTurno);
+      const svcsOrden = serviciosPorOrden[o.id] || [];
+      const excluido = ordenExcluidaDeTurno(svcsOrden);
       if(excluido) conteoExcluidos[o.concesero_id] = (conteoExcluidos[o.concesero_id]||0)+1;
       else conteoNormales[o.concesero_id] = (conteoNormales[o.concesero_id]||0)+1;
     });
@@ -5611,7 +5634,7 @@ function renderTurnosLista(conteoNormales={}, conteoExcluidos={}){
       +'</div>'
       +'<div style="display:flex;align-items:center;gap:10px">'
         +'<span style="font-size:12px;color:#6EE7B7" title="Lavadas que cuentan para el turno">🚗 '+normales+'</span>'
-        +(excluidos?'<span style="font-size:10px;color:var(--muted)" title="Taxis, pistolazos o motos — no cuentan">('+excluidos+' aparte)</span>':'')
+        +(excluidos?'<span style="font-size:10px;color:var(--muted)" title="Taxis, pistolazos, motos (con o sin adicionales) o adicionales menores de $25.000 — no cuentan">('+excluidos+' aparte)</span>':'')
         +(seFue
           ? '<span style="font-size:10px;color:var(--muted)">🚪 se fue</span>'
           : '<button class="btn btn-g" style="padding:3px 8px;font-size:10px" onclick="marcarSalidaTurno('+t.id+')">🚪 Marcar salida</button>')
