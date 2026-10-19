@@ -278,7 +278,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 
         <!-- Ganancia total -->
         <div class="card" style="background:var(--gold-p);border-color:var(--gold-b);margin-bottom:12px">
-          <div style="font-size:9px;color:var(--gold);text-transform:uppercase;font-weight:700;margin-bottom:4px">✦ Tu parte total del día</div>
+          <div style="font-size:9px;color:var(--gold);text-transform:uppercase;font-weight:700;margin-bottom:4px">✦ Lo nuestro del día (lavadas + detailing + productos)</div>
           <div style="font-size:32px;font-weight:900;font-family:'Georgia',serif;color:var(--gold)" id="c-neta">$0</div>
         </div>
 
@@ -286,13 +286,20 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         <div class="card">
           <div class="card-t"><span class="card-tg">✦ Desglose del cierre</span></div>
 
-          <div class="cierre-row"><span style="color:var(--muted)">📋 Total del día (planilla)</span><span style="font-weight:700;font-family:'Georgia',serif" id="dc-total-dia">$0</span></div>
-          <div class="cierre-row"><span style="color:var(--muted)">÷ 2 — Pago lavadores (50%)</span><span style="font-weight:700;color:#FCA5A5;font-family:'Georgia',serif" id="dc-mitad-lav">$0</span></div>
-          <div class="cierre-row" style="border-bottom:2px solid var(--border)"><span style="font-weight:700">= Tu mitad</span><span style="font-size:18px;font-weight:800;color:var(--gold);font-family:'Georgia',serif" id="dc-tu-mitad">$0</span></div>
+          <div class="cierre-row"><span style="color:var(--muted)">📋 Total del día (planilla — todo lo lavado hoy)</span><span style="font-weight:700;font-family:'Georgia',serif" id="dc-total-dia">$0</span></div>
+          <div class="cierre-row"><span style="color:var(--muted)">÷ 2 — Pago lavadores (50%, siempre en efectivo)</span><span style="font-weight:700;color:#FCA5A5;font-family:'Georgia',serif" id="dc-mitad-lav">$0</span></div>
+          <div class="cierre-row"><span style="color:var(--muted)">💵 Cobrado hoy en efectivo</span><span style="font-weight:700;color:#6EE7B7;font-family:'Georgia',serif" id="dc-cob-ef">$0</span></div>
+          <div class="cierre-row"><span style="color:var(--muted)">📲 Cobrado hoy por QR</span><span style="font-weight:700;color:#C4B5FD;font-family:'Georgia',serif" id="dc-cob-qr">$0</span></div>
+          <div class="cierre-row" id="dc-cob-ant-row" style="display:none"><span style="color:var(--muted);font-size:12px">↳ de eso: pendientes de otros días cobrados hoy (entran completos)</span><span style="font-weight:700;color:#FCD34D;font-family:'Georgia',serif" id="dc-cob-ant">$0</span></div>
+          <div class="cierre-row" style="border-bottom:2px solid var(--border)"><span style="font-weight:700">= Lo que nos queda de las lavadas</span><span style="font-size:18px;font-weight:800;color:#6EE7B7;font-family:'Georgia',serif" id="dc-tu-neta">$0</span></div>
+          <div class="cierre-row"><span style="color:var(--muted);font-size:12px">⏳ Pendientes de hoy por cobrar (aún no entran)</span><span style="font-weight:700;color:#FCD34D;font-family:'Georgia',serif" id="dc-pendientes">$0</span></div>
 
-          <div class="cierre-row"><span style="color:var(--muted)">— QR del día (ya está en la cuenta)</span><span style="font-weight:700;color:#C4B5FD;font-family:'Georgia',serif" id="dc-qr-desc">$0</span></div>
-          <div class="cierre-row"><span style="color:var(--muted)">— Pendientes por cobrar</span><span style="font-weight:700;color:#FCD34D;font-family:'Georgia',serif" id="dc-pendientes">$0</span></div>
-          <div class="cierre-row" style="border-bottom:2px solid var(--border)"><span style="font-weight:700">= Tu parte de lavadas</span><span style="font-size:18px;font-weight:800;color:#6EE7B7;font-family:'Georgia',serif" id="dc-tu-neta">$0</span></div>
+          <!-- Detailing -->
+          <div id="cierre-det-section" style="display:none">
+            <div class="cierre-row"><span style="color:var(--muted)">✨ Detailing cobrado hoy</span><span style="font-weight:700;color:#F0ABFC;font-family:'Georgia',serif" id="dc-det-venta">$0</span></div>
+            <div class="cierre-row"><span style="color:var(--muted)">— Insumos y comisión (se pagan hoy)</span><span style="font-weight:700;color:#FCA5A5;font-family:'Georgia',serif" id="dc-det-costo">$0</span></div>
+            <div class="cierre-row" style="border-bottom:2px solid var(--border)"><span style="font-weight:700">= Neto del detailing</span><span style="font-size:18px;font-weight:800;color:#F0ABFC;font-family:'Georgia',serif" id="dc-det-neto">$0</span></div>
+          </div>
 
           <!-- Productos -->
           <div id="cierre-prod-section" style="display:none">
@@ -303,14 +310,15 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 
           <!-- Total final -->
           <div style="background:var(--gold-p);border:1px solid var(--gold-b);border-radius:8px;padding:12px;margin-top:10px;display:flex;justify-content:space-between;align-items:center">
-            <span style="font-weight:700;color:var(--gold)">✦ TOTAL TUYO DEL DÍA</span>
+            <span style="font-weight:700;color:var(--gold)">✦ TOTAL NUESTRO DEL DÍA</span>
             <span style="font-size:24px;font-weight:900;color:var(--gold);font-family:'Georgia',serif" id="dc-total-final">$0</span>
           </div>
+          <div id="dc-total-detalle" style="font-size:11px;color:var(--muted);margin-top:6px;text-align:right"></div>
 
           <div class="divider"></div>
           <div style="font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">¿Dónde está tu plata?</div>
           <div class="cierre-row"><span style="color:var(--muted)">💵 En caja (efectivo)</span><span style="font-weight:700;color:#6EE7B7;font-family:'Georgia',serif" id="dc-caja-ef">$0</span></div>
-          <div class="cierre-row" style="border:none"><span style="color:var(--muted)">📲 En cuenta (QR — ya descontado de tu parte)</span><span style="font-weight:700;color:#C4B5FD;font-family:'Georgia',serif" id="dc-cuenta-qr">$0</span></div>
+          <div class="cierre-row" style="border:none"><span style="color:var(--muted)">📲 En cuenta (QR)</span><span style="font-weight:700;color:#C4B5FD;font-family:'Georgia',serif" id="dc-cuenta-qr">$0</span></div>
         </div>
 
         <!-- Ventas productos card -->
@@ -628,8 +636,11 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
                 <thead>
                   <tr>
                     <th>Fecha</th>
+                    <th>📋 Planilla</th>
                     <th>⏳ Pendiente</th>
-                    <th>💰 Mi mitad</th>
+                    <th>💰 Cobrado</th>
+                    <th>✦ Nos queda (lavadas)</th>
+                    <th>✨ Detailing</th>
                     <th>💵 En caja</th>
                     <th>📲 En cuenta</th>
                   </tr>
@@ -693,7 +704,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
             </div>
           </div>
           <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
-            <div class="kpi"><div class="kpi-l">💰 Ingresos del rango</div><div class="kpi-v" style="color:var(--gold)" id="rng-total">$0</div></div>
+            <div class="kpi"><div class="kpi-l">💰 Cobrado en el rango</div><div class="kpi-v" style="color:var(--gold)" id="rng-total">$0</div></div>
             <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">✦ Ganancia neta del rango</div><div class="kpi-v" style="color:#6EE7B7" id="rng-gan">$0</div></div>
             <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">🚗 Vehículos</div><div class="kpi-v" style="color:#C4B5FD" id="rng-veh">0</div></div>
             <div class="kpi" style="border-left-color:#FCA5A5"><div class="kpi-l">📋 Gastos del rango</div><div class="kpi-v" style="color:#FCA5A5" id="rng-gastos">$0</div></div>
@@ -701,7 +712,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           <div class="card">
             <div class="card-t"><span class="card-tg">✦ Ganancia por semana</span></div>
             <div class="tbl-wrap"><table>
-              <thead><tr><th>Semana</th><th>Ingresos (lavadas)</th><th>Vehículos</th><th>Productos (margen)</th><th>Detailing (neto)</th><th>Gastos</th><th>Ganancia neta</th></tr></thead>
+              <thead><tr><th>Semana</th><th>Cobrado (lavadas)</th><th>Vehículos</th><th>Productos (margen)</th><th>Detailing (neto)</th><th>Gastos</th><th>Ganancia neta</th></tr></thead>
               <tbody id="rng-semanas"></tbody>
             </table></div>
           </div>
@@ -836,6 +847,16 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
               <span style="font-weight:700;color:var(--gold)" id="sal-neta-mes">$0</span>
             </div>
           </div>
+        </div>
+
+        <!-- Mes a mes -->
+        <div class="card">
+          <div class="card-t"><span class="card-tg">📆 Mes a mes — lo que nos va quedando</span></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Mes</th><th>Lavadas (nos queda)</th><th>Detailing</th><th>Productos</th><th>Gastos</th><th>✦ Resultado del mes</th><th>Acumulado</th></tr></thead>
+            <tbody id="sal-meses-rows"></tbody>
+          </table></div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px">Lavadas = lo cobrado (por el día que entró la plata) − la mitad de los lavadores. Resultado = lavadas + detailing + productos − gastos. El acumulado suma los resultados mes a mes desde el saldo inicial.</div>
         </div>
 
         <!-- Saldo inicial -->
@@ -1558,6 +1579,9 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
     </div>
     <div id="pe-mixto-check" style="padding:8px 12px;border-radius:8px;font-size:12px;text-align:center;background:rgba(255,255,255,.04)">Ingresa los valores</div>
   </div>
+  <div class="field"><label>Fecha del pago (el día que entró la plata)</label>
+    <input type="date" id="pe-fecha"/>
+  </div>
   <div class="field"><label>Nota / comprobante (opcional)</label>
     <input type="text" id="pe-nota" placeholder="Ej: Transferencia #4521, consignación..."/>
   </div>
@@ -2165,13 +2189,13 @@ async function confirmarCobrar(){
       if(efMonto+qrMonto!==cobrarTotal){showToast('El total mixto no cuadra',true);return;}
       pagoFinal='mixto';
     }
-    await api('ordenes?id=eq.'+cobrarOrdenId,'PATCH',{
+    await patchOrdenCobrada(cobrarOrdenId,{
       estado:'cerrada',
       hora_salida:new Date().toISOString(),
       forma_pago:pagoFinal,
       pago_efectivo:cobrarTipo==='mixto'?efMonto:(cobrarPayMode==='efectivo'?cobrarTotal:0),
       pago_qr:cobrarTipo==='mixto'?qrMonto:(cobrarPayMode==='qr'?cobrarTotal:0)
-    });
+    }, today());
     if(ordenActual){ordenActual.forma_pago=pagoFinal;imprimirTicket(ordenActual);}
     cerrarModal('modal-cobrar');
     showToast('Orden cobrada ✅');
@@ -2424,50 +2448,165 @@ function imprimirTicket(o){
   }, 300);
 }
 
+// ══ CUENTA SIMPLE (base de Cierre, Libro del mes, Saldos y Dashboard) ═════════
+// Reglas acordadas:
+//  1) La planilla de un día = todo lo lavado ese día (con abiertas y pendientes).
+//     Los lavadores ganan la mitad y se les paga SIEMPRE en efectivo, ese día.
+//  2) La plata se cuenta el día que ENTRA (fecha de cobro), completa. Un pendiente
+//     (cliente o empresa) cobrado después entra 100% nuestro ese día, porque al
+//     lavador ya se le pagó el día de la lavada.
+//  3) El QR se queda en la cuenta; el efectivo es el que paga a los lavadores.
+//  4) Detailing: entra el día que se hace; comisión e insumos se pagan ese mismo
+//     día y salen del mismo medio por el que entró la plata (efectivo → caja,
+//     QR → cuenta).
+
+// Cuánto de una orden cobrada fue en efectivo y cuánto por QR
+function efQrDeOrden(o){
+  const t = parseInt(o.total)||0;
+  if(o.forma_pago==='efectivo') return {ef:t, qr:0};
+  if(o.forma_pago==='qr')       return {ef:0, qr:t};
+  if(o.forma_pago==='mixto')    return {ef:parseInt(o.pago_efectivo)||0, qr:parseInt(o.pago_qr)||0};
+  return {ef:0, qr:0};
+}
+const esCobradaOrden = o => o.estado==='cerrada' && o.forma_pago && o.forma_pago!=='pendiente';
+// Un carro "abierto" (en lavado) no es deuda pendiente
+const esPendienteCobro = o => o.estado!=='abierta' && (o.estado==='pendiente_pago' || o.forma_pago==='pendiente');
+
+// Órdenes COBRADAS dentro de un rango, según el día en que entró la plata.
+let _fechaCobroOk = true, _avisoFechaCobro = false;
+async function ordenesCobradasRango(start, end){
+  if(_fechaCobroOk){
+    try{
+      return await api('ordenes?fecha_cobro=gte.'+start+'&fecha_cobro=lte.'+end+'&order=fecha_cobro.asc');
+    }catch(e){
+      _fechaCobroOk = false;
+      console.warn('Falta la columna fecha_cobro (corre el SQL). Se usa la fecha de la lavada.', e.message);
+      if(!_avisoFechaCobro){ _avisoFechaCobro = true; showToast('⚠️ Falta correr el SQL de fecha de cobro en Supabase', true); }
+    }
+  }
+  const ords = await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end);
+  return ords.filter(esCobradaOrden).map(o=>({...o, fecha_cobro:o.fecha}));
+}
+
+// Marca una orden como cobrada y le pone la FECHA DE COBRO (el día que entró la
+// plata). Si todavía no se ha corrido el SQL de fecha_cobro, guarda igual sin ella.
+async function patchOrdenCobrada(id, body, fechaCobro){
+  try{
+    await api('ordenes?id=eq.'+id, 'PATCH', {...body, fecha_cobro: fechaCobro});
+  }catch(e){
+    if(/fecha_cobro/i.test(e.message||'')){
+      await api('ordenes?id=eq.'+id, 'PATCH', body);
+    } else throw e;
+  }
+}
+
+// Detailing de una fila: lo cobrado, lo que cuesta (insumos + comisión) y cómo
+// queda repartido entre efectivo y QR (los costos salen del mismo medio por el
+// que entró la plata, en proporción).
+function detDesglose(r){
+  const valor = parseInt(r.valor)||0;
+  const costo = (parseInt(r.costo_insumos)||0) + (parseInt(r.comision_ayudante)||0);
+  let ef = parseInt(r.pago_efectivo)||0, qr = parseInt(r.pago_qr)||0;
+  if(ef+qr===0){ if(r.forma_pago==='qr') qr=valor; else ef=valor; }
+  const costEf = valor>0 ? Math.round(costo*ef/valor) : 0;
+  const costQr = costo - costEf;
+  return {valor, costo, ef, qr, neto:valor-costo, efNeto:ef-costEf, qrNeto:qr-costQr};
+}
+
+// Cuenta día por día de un rango de fechas + totales.
+async function cuentaPorDia(start, end){
+  const [lavadas, cobradas, det, vp, cp, gs] = await Promise.all([
+    api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc'),
+    ordenesCobradasRango(start, end),
+    api('detailing?fecha=gte.'+start+'&fecha=lte.'+end).catch(()=>[]),
+    api('ventas_productos?fecha=gte.'+start+'&fecha=lte.'+end).catch(()=>[]),
+    api('compras_productos?fecha=gte.'+start+'&fecha=lte.'+end).catch(()=>[]),
+    api('gastos?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc').catch(()=>[])
+  ]);
+  const dias = {};
+  const D = f => dias[f] || (dias[f] = {fecha:f, planilla:0, pend:0, ef:0, qr:0, efAnt:0, qrAnt:0,
+    detVenta:0, detCosto:0, detNeto:0, detEfNeto:0, detQrNeto:0,
+    prodVentas:0, prodCaja:0, prodBanco:0, prodCompras:0, gastos:0, gastosEf:0, gastosQr:0});
+
+  lavadas.forEach(o=>{
+    const d = D(o.fecha);
+    d.planilla += o.total||0;
+    if(esPendienteCobro(o)) d.pend += o.total||0;
+  });
+  cobradas.forEach(o=>{
+    const m = efQrDeOrden(o), fc = o.fecha_cobro || o.fecha, d = D(fc);
+    if(o.fecha < fc){ d.efAnt += m.ef; d.qrAnt += m.qr; } else { d.ef += m.ef; d.qr += m.qr; }
+  });
+  det.forEach(r=>{
+    const x = detDesglose(r), d = D(r.fecha);
+    d.detVenta += x.valor; d.detCosto += x.costo; d.detNeto += x.neto; d.detEfNeto += x.efNeto; d.detQrNeto += x.qrNeto;
+  });
+  vp.forEach(v=>{
+    const d = D(v.fecha), t = v.total||0;
+    d.prodVentas += t;
+    if(v.tipo_venta==='cliente' || !v.concesero){
+      const fp = v.forma_pago || 'efectivo';
+      if(fp==='mixto'){ d.prodCaja += v.pago_efectivo||0; d.prodBanco += v.pago_qr||0; }
+      else if(fp==='qr') d.prodBanco += t;
+      else d.prodCaja += t;
+    } else d.prodCaja += t; // descuento a concesor: queda como efectivo
+  });
+  cp.forEach(c=>{ D(c.fecha).prodCompras += c.costo_total||0; });
+  gs.filter(g=>g.categoria!=='🏦 Saldo inicial' && g.categoria!=='🛒 Venta producto').forEach(g=>{
+    const d = D(g.fecha), v = g.valor||0;
+    d.gastos += v;
+    if(g.forma_pago==='efectivo') d.gastosEf += v;
+    else if(g.forma_pago==='qr')  d.gastosQr += v;
+  });
+
+  const arr = Object.values(dias).sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  const keys = ['planilla','pend','ef','qr','efAnt','qrAnt','mitad','cobrado','nosQuedaLav','cajaLav','bancoLav',
+    'detVenta','detCosto','detNeto','detEfNeto','detQrNeto','prodVentas','prodCaja','prodBanco','prodCompras','prodMargen',
+    'gastos','gastosEf','gastosQr','totalNuestro'];
+  const tot = {}; keys.forEach(k=>tot[k]=0);
+  arr.forEach(d=>{
+    d.mitad       = Math.round(d.planilla/2);                 // lo que ganan los lavadores (en efectivo)
+    d.cobrado     = d.ef + d.qr + d.efAnt + d.qrAnt;          // plata de lavadas que ENTRÓ ese día
+    d.nosQuedaLav = d.cobrado - d.mitad;                      // lo que nos queda de las lavadas
+    d.cajaLav     = d.ef + d.efAnt - d.mitad;                 // caja: el efectivo paga a los lavadores
+    d.bancoLav    = d.qr + d.qrAnt;                           // el QR queda intacto
+    d.prodMargen  = d.prodVentas - d.prodCompras;
+    d.totalNuestro = d.nosQuedaLav + d.detNeto + d.prodMargen - d.gastos;
+    keys.forEach(k=>{ tot[k] += d[k]; });
+  });
+  return {dias:arr, tot};
+}
+
 // ── CIERRE ────────────────────────────────────────────────────────────────────
 async function loadCierre(){
   try{
-    const ords = await api('ordenes?fecha=eq.'+today());
+    const hoy = today();
+    // Lavadas de HOY (planilla: todo lo lavado hoy, con abiertas y pendientes)
+    const ords = await api('ordenes?fecha=eq.'+hoy);
+    // Plata que ENTRÓ hoy (por fecha de cobro): carros de hoy pagados hoy +
+    // pendientes de otros días que se cobraron hoy (entran completos).
+    const cobradasHoy = await ordenesCobradasRango(hoy, hoy);
 
-    // ── Todas las órdenes excepto abiertas ────────────────────────────────────
     const todasMenosAbiertas = ords.filter(o=>o.estado!=='abierta');
-    // Pendientes = solo de las que ya no están "abiertas" (carro aún en lavado
-    // no es una deuda pendiente, es un trabajo sin terminar).
-    const pendientes = todasMenosAbiertas.filter(o=>o.estado==='pendiente_pago'||o.forma_pago==='pendiente');
+    const pendientes = ords.filter(esPendienteCobro);
 
-    // Totales por forma de pago (solo cerradas cobradas)
-    let ef=0, qr=0;
-    const cerradas = ords.filter(o=>o.estado==='cerrada'&&o.forma_pago!=='pendiente'&&o.forma_pago!==null);
-    for(const o of cerradas){
-      const v=parseInt(o.total)||0;
-      if(o.forma_pago==='efectivo')     ef+=v;
-      else if(o.forma_pago==='qr')      qr+=v;
-      else if(o.forma_pago==='mixto'){
-        ef+=parseInt(o.pago_efectivo)||0;
-        qr+=parseInt(o.pago_qr)||0;
-      }
-    }
-
+    let efHoy=0, qrHoy=0, efAnt=0, qrAnt=0;
+    cobradasHoy.forEach(o=>{
+      const m = efQrDeOrden(o);
+      if(o.fecha < hoy){ efAnt+=m.ef; qrAnt+=m.qr; } else { efHoy+=m.ef; qrHoy+=m.qr; }
+    });
+    const ef = efHoy + efAnt, qr = qrHoy + qrAnt;
     const totPend = pendientes.reduce((s,o)=>s+(o.total||0),0);
 
-    // ── Lógica del cierre (igual que la Planilla) ────────────────────────────
-    // Total del día = TODO lo del día, incluidas las lavadas abiertas (en
-    // curso), igual que en la Planilla — así "tu parte" del Cierre coincide
-    // con el dato final de la Planilla.
+    // Los lavadores ganan la mitad de TODO lo lavado hoy y se les paga en efectivo.
     const totalDia = ords.reduce((s,o)=>s+(o.total||0),0);
-
-    // Dividir en 2 (sobre el total de la planilla, igual que arriba)
     const mitadLavadores = Math.round(totalDia / 2);
-    const tuMitad        = totalDia - mitadLavadores;
 
-    // De tu mitad: restar el QR completo (esa plata ya está en la cuenta,
-    // no en tu caja) y lo pendiente por cobrar completo.
-    const tuParteNeta = tuMitad - qr - totPend;
+    // Lo que nos queda de las lavadas = lo que entró hoy − lo que se pagó a los lavadores
+    const nosQuedaLavadas = ef + qr - mitadLavadores;
 
-    // Caja = efectivo − pago lavadores
+    // Caja = efectivo − pago lavadores · QR intacto
     const cajaEf = ef - mitadLavadores;
-
-    // QR intacto
     const cuentaQR = qr;
 
     // ── Ventas productos ──────────────────────────────────────────────────────
@@ -2500,11 +2639,26 @@ async function loadCierre(){
     const totalProductos = ventasConcesores + ventasClientes;
     const totalProductosEf = ventasConcesores + ventasClientesEf; // lo que sí queda en caja física
 
-    // ── Total final tuyo ──────────────────────────────────────────────────────
-    const totalFinal = tuParteNeta + totalProductos;
+    // ── Detailing de HOY ──────────────────────────────────────────────────────
+    // Entra el día que se hace. Insumos y comisión se pagan ese mismo día y salen
+    // del mismo medio por el que entró la plata (efectivo → caja, QR → cuenta).
+    const det = {venta:0, costo:0, neto:0, efNeto:0, qrNeto:0, n:0};
+    try{
+      const rowsDet = await api('detailing?fecha=eq.'+hoy);
+      rowsDet.forEach(r=>{
+        const x = detDesglose(r);
+        det.venta+=x.valor; det.costo+=x.costo; det.neto+=x.neto; det.efNeto+=x.efNeto; det.qrNeto+=x.qrNeto; det.n++;
+      });
+    }catch(e){ console.warn('detailing hoy:', e.message); }
+
+    // ── Total nuestro del día ─────────────────────────────────────────────────
+    const totalFinal  = nosQuedaLavadas + det.neto + totalProductos;
+    const cajaTotal   = cajaEf + totalProductosEf + det.efNeto;
+    const cuentaTotal = cuentaQR + ventasClientesQr + det.qrNeto;
 
     // ── Actualizar UI ─────────────────────────────────────────────────────────
     const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+    const show=(id,on)=>{const el=document.getElementById(id);if(el)el.style.display=on?'':'none';};
 
     // KPIs arriba
     s('c-ef',        '$'+fmt(ef));
@@ -2512,27 +2666,39 @@ async function loadCierre(){
     s('c-pendiente', '$'+fmt(totPend));
     s('c-neta',      '$'+fmt(totalFinal));
 
-    // Desglose
-    s('dc-total-dia',     '$'+fmt(totalDia));
-    s('dc-mitad-lav',     '$'+fmt(mitadLavadores));
-    s('dc-tu-mitad',      '$'+fmt(tuMitad));
-    s('dc-qr-desc',       '$'+fmt(qr));
-    s('dc-pendientes',    '$'+fmt(totPend));
-    s('dc-tu-neta',       '$'+fmt(tuParteNeta));
+    // Desglose — lavadas
+    s('dc-total-dia',  '$'+fmt(totalDia));
+    s('dc-mitad-lav',  '$'+fmt(mitadLavadores));
+    s('dc-cob-ef',     '$'+fmt(ef));
+    s('dc-cob-qr',     '$'+fmt(qr));
+    s('dc-cob-ant',    '$'+fmt(efAnt+qrAnt));
+    show('dc-cob-ant-row', (efAnt+qrAnt)>0);
+    s('dc-tu-neta',    '$'+fmt(nosQuedaLavadas));
+    s('dc-pendientes', '$'+fmt(totPend));
+
+    // Desglose — detailing
+    s('dc-det-venta', '$'+fmt(det.venta));
+    s('dc-det-costo', '-$'+fmt(det.costo));
+    s('dc-det-neto',  '$'+fmt(det.neto));
+    show('cierre-det-section', det.n>0);
+
+    // Desglose — productos
     s('dc-prod-concesor', '$'+fmt(ventasConcesores));
     s('dc-prod-cliente',  '$'+fmt(ventasClientes));
     s('dc-prod-total',    '$'+fmt(totalProductos));
-    s('dc-total-final',   '$'+fmt(totalFinal));
-    s('dc-caja-ef',       '$'+fmt(cajaEf + totalProductosEf));
-    s('dc-cuenta-qr',     '$'+fmt(cuentaQR + ventasClientesQr));
-
-    // Mostrar/ocultar sección productos
     const prodSec = document.getElementById('cierre-prod-section');
     if(prodSec) prodSec.style.display = totalProductos>0 ? 'block' : 'none';
 
-    // Arqueo (solo lo que físicamente debe estar en caja: efectivo de lavadas +
-    // descuentos a concesores + ventas a clientes pagadas en efectivo)
-    arqueoEsperado = cajaEf + totalProductosEf;
+    // Total y dónde está la plata
+    s('dc-total-final',   '$'+fmt(totalFinal));
+    s('dc-total-detalle', 'Lavadas $'+fmt(nosQuedaLavadas)+'  +  Detailing $'+fmt(det.neto)+'  +  Productos $'+fmt(totalProductos));
+    s('dc-caja-ef',       '$'+fmt(cajaTotal));
+    s('dc-cuenta-qr',     '$'+fmt(cuentaTotal));
+
+    // Arqueo: lo que físicamente debe haber en caja = efectivo que entró hoy −
+    // pago a lavadores + productos en efectivo + detailing en efectivo (ya
+    // descontados sus insumos y comisión).
+    arqueoEsperado = cajaTotal;
     const arqueoElx = document.getElementById('arqueo-esperado');
     if(arqueoElx) arqueoElx.textContent = '$'+fmt(arqueoEsperado);
 
@@ -3152,7 +3318,10 @@ async function loadDashResumen(){
     const diffStr=diff>0?'▲ +'+diff+'% vs mes anterior':diff<0?'▼ '+diff+'% vs mes anterior':'= igual';
     const diffColor=diff>0?'#6EE7B7':diff<0?'#FCA5A5':'#8BA3BB';
 
-    const ganNeta = Math.round(total/2) - gastosTotal + margenProd + detailingNetaMes;
+    // Lo que nos queda del mes: misma cuenta simple del Libro del mes y Saldos
+    // (cobrado por día de entrada − pago a lavadores + productos + detailing − gastos)
+    const cuentaMesDash = await cuentaPorDia(start, end);
+    const ganNeta = cuentaMesDash.tot.totalNuestro;
 
     // Update KPIs
     const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
@@ -3379,115 +3548,64 @@ async function loadDashFinanzas(){
     const _lastDay=new Date(parseInt(_y),parseInt(_m),0).getDate();
     const start=dashMes+'-01', end=dashMes+'-'+String(_lastDay).padStart(2,'0');
 
-    const ords=await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
+    // Cuenta simple del mes (misma que usan el Cierre, Saldos y el Dashboard)
+    const {dias:days, tot} = await cuentaPorDia(start, end);
+    const efMes = tot.ef + tot.efAnt, qrMes = tot.qr + tot.qrAnt;
+    const antMes = tot.efAnt + tot.qrAnt;            // pendientes de días anteriores cobrados en el mes
+    const cajaMes = tot.cajaLav + tot.detEfNeto;     // caja: lavadas + detailing
+    const cuentaMes = tot.bancoLav + tot.detQrNeto;  // cuenta QR: lavadas + detailing
 
-    // Agrupar por día - el total incluye TODO (igual que la Planilla, con
-    // abiertas); pendientes/efectivo/QR se calculan solo de lo ya terminado
-    // (un carro en curso no es plata cobrada ni una deuda, es trabajo sin
-    // terminar).
-    const byDay={};
-    for(const o of ords){
-      if(!byDay[o.fecha]) byDay[o.fecha]={fecha:o.fecha,ef:0,qr:0,pend:0,total:0};
-      const v=parseInt(o.total)||0;
-      byDay[o.fecha].total+=v;
-      if(o.estado==='abierta'){
-        // trabajo en curso: ya suma al total del día, pero no es ni pendiente
-        // de cobro ni plata ya cobrada todavía.
-      } else if(o.estado==='pendiente_pago'||o.forma_pago==='pendiente'){
-        byDay[o.fecha].pend+=v;
-      } else if(o.forma_pago==='efectivo') byDay[o.fecha].ef+=v;
-      else if(o.forma_pago==='qr')         byDay[o.fecha].qr+=v;
-      else if(o.forma_pago==='mixto'){
-        byDay[o.fecha].ef+=parseInt(o.pago_efectivo)||0;
-        byDay[o.fecha].qr+=parseInt(o.pago_qr)||0;
-      }
-    }
-    const days=Object.values(byDay).sort((a,b)=>a.fecha.localeCompare(b.fecha));
-
-    // Totales mes
-    let totEf=0,totQr=0,totPend=0,totTotal=0;
-    days.forEach(d=>{totEf+=d.ef;totQr+=d.qr;totPend+=d.pend;totTotal+=d.total;});
-
-    // Lógica correcta: total (con abiertas, igual que la Planilla) ÷ 2, y de
-    // tu mitad se resta el QR completo y lo pendiente completo.
-    const mitadLavadores = Math.round(totTotal/2);
-    const tuMitad        = totTotal - mitadLavadores;
-    const tuParteNeta    = tuMitad - totQr - totPend;
-
-    // Ventas productos del mes
-    let ventasProdMes=0;
-    try{
-      const vp=await api('ventas_productos?fecha=gte.'+start+'&fecha=lte.'+end);
-      ventasProdMes=vp.reduce((s,v)=>s+(v.total||0),0);
-    }catch{}
-    // Costo de la mercancía comprada — el margen real (lo que se reparte) es
-    // lo vendido menos lo comprado.
-    let comprasProdMes=0;
-    try{
-      const cp=await api('compras_productos?fecha=gte.'+start+'&fecha=lte.'+end);
-      comprasProdMes=cp.reduce((s,c)=>s+(c.costo_total||0),0);
-    }catch{}
-    const margenProdMes = ventasProdMes - comprasProdMes;
-
-    // Detailing del mes (neto: venta − insumos − comisión). Se reparte igual
-    // que el resto de la utilidad — así se decidió.
-    let detailingNetaMes=0;
-    try{
-      const det=await api('detailing?fecha=gte.'+start+'&fecha=lte.'+end);
-      detailingNetaMes=det.reduce((s,d)=>s+((d.valor||0)-(d.costo_insumos||0)-(d.comision_ayudante||0)),0);
-    }catch{}
-
-    // Gastos del mes
+    // Gastos del mes (lista para la tabla)
     const gastos=await api('gastos?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
-    const gastosReales=gastos.filter(g=>g.categoria!=='🏦 Saldo inicial');
-    const totGastos=gastosReales.reduce((s,g)=>s+(g.valor||0),0);
+    const gastosReales=gastos.filter(g=>g.categoria!=='🏦 Saldo inicial' && g.categoria!=='🛒 Venta producto');
+    const totGastos=tot.gastos;
     let totGastosEf=0,totGastosQr=0;
     gastosReales.forEach(g=>{
       if(g.forma_pago==='efectivo') totGastosEf+=parseInt(g.valor)||0;
       else totGastosQr+=parseInt(g.valor)||0;
     });
 
-    // Ganancia del mes = tu mitad + margen de productos + detailing − gastos.
-    // El QR y los pendientes NO se restan: el QR es plata tuya que está en la
-    // cuenta (no en la caja) y los pendientes son plata por cobrar; ambos solo
-    // dicen DÓNDE está la plata, no cuánto ganaste.
-    const totalFinalMes = tuMitad + margenProdMes + detailingNetaMes - totGastos;
+    // Lo que nos queda del mes = (cobrado − pago a lavadores) + productos
+    // (vendido − comprado) + detailing neto − gastos.
+    const totalFinalMes = tot.totalNuestro;
 
     // KPIs
     const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-    s('fin-ef',     '$'+fmt(totEf));
-    s('fin-qr',     '$'+fmt(totQr));
+    s('fin-ef',     '$'+fmt(efMes));
+    s('fin-qr',     '$'+fmt(qrMes));
     s('fin-gastos', '$'+fmt(totGastos));
     s('fin-neta',   '$'+fmt(totalFinalMes));
 
-    // Tabla ingresos diarios
+    // Tabla día a día (solo días con movimiento)
     let ingRows='';
     for(const d of days){
-      const mitad=Math.round(d.total/2);
-      const tuParte=d.total-mitad-d.pend-d.qr;
-      const caja=d.ef-mitad;
+      if(!d.planilla && !d.cobrado && !d.detVenta) continue;
+      const ant = d.efAnt + d.qrAnt;
       ingRows+='<tr>'
         +'<td style="font-family:monospace;color:var(--muted)">'+d.fecha.split('-').reverse().join('/')+'</td>'
+        +'<td>'+(d.planilla?'$'+fmt(d.planilla):'-')+'</td>'
         +'<td style="color:#FCD34D">'+(d.pend?'$'+fmt(d.pend):'-')+'</td>'
-        +'<td style="color:var(--gold);font-weight:800">$'+fmt(tuParte)+'</td>'
-        +'<td style="color:#6EE7B7;font-weight:700">$'+fmt(caja)+'</td>'
-        +'<td style="color:#C4B5FD;font-weight:700">$'+fmt(d.qr)+'</td>'
+        +'<td>$'+fmt(d.cobrado)+(ant?'<div style="font-size:9px;color:#FCD34D">incl. $'+fmt(ant)+' de pendientes anteriores</div>':'')+'</td>'
+        +'<td style="color:var(--gold);font-weight:800">$'+fmt(d.nosQuedaLav)+'</td>'
+        +'<td style="color:#F0ABFC">'+(d.detVenta?'$'+fmt(d.detNeto):'-')+'</td>'
+        +'<td style="color:#6EE7B7;font-weight:700">$'+fmt(d.cajaLav + d.detEfNeto)+'</td>'
+        +'<td style="color:#C4B5FD;font-weight:700">$'+fmt(d.bancoLav + d.detQrNeto)+'</td>'
         +'</tr>';
     }
     const ingBody=document.getElementById('fin-ingresos-rows');
     if(ingBody) ingBody.innerHTML=ingRows||'<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">Sin ingresos</td></tr>';
 
     // Footer
-    // Sin restar pendientes: el lavador ya se pagó en efectivo por todo el mes,
-    // igual que en cada fila diaria (caja = ef - mitad).
-    const cajaTotal=totEf-mitadLavadores;
     const ingFoot=document.getElementById('fin-ingresos-total');
     if(ingFoot) ingFoot.innerHTML='<tr style="background:var(--gold-p);font-weight:800">'
       +'<td style="color:var(--gold)">TOTAL MES</td>'
-      +'<td style="color:#FCD34D">$'+fmt(totPend)+'</td>'
-      +'<td style="color:var(--gold)">$'+fmt(tuParteNeta)+'</td>'
-      +'<td style="color:#6EE7B7">$'+fmt(cajaTotal)+'</td>'
-      +'<td style="color:#C4B5FD">$'+fmt(totQr)+'</td>'
+      +'<td>$'+fmt(tot.planilla)+'</td>'
+      +'<td style="color:#FCD34D">$'+fmt(tot.pend)+'</td>'
+      +'<td>$'+fmt(tot.cobrado)+'</td>'
+      +'<td style="color:var(--gold)">$'+fmt(tot.nosQuedaLav)+'</td>'
+      +'<td style="color:#F0ABFC">$'+fmt(tot.detNeto)+'</td>'
+      +'<td style="color:#6EE7B7">$'+fmt(cajaMes)+'</td>'
+      +'<td style="color:#C4B5FD">$'+fmt(cuentaMes)+'</td>'
       +'</tr>';
 
     // Tabla gastos
@@ -3515,33 +3633,36 @@ async function loadDashFinanzas(){
       +'<td style="color:#FCA5A5">$'+fmt(totGastos)+'</td>'
       +'</tr>';
 
-    // Resumen final
+    // Resumen final: cobrado − pago a lavadores = lo que nos queda de las lavadas;
+    // + productos + detailing − gastos = lo nuestro del mes.
+    const row=(label,val,color,big)=>''
+      +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:3px">'+label+'</div>'
+      +'<div style="font-size:'+(big?'18px':'16px')+';font-weight:'+(big?'800':'700')+';color:'+color+'">'+val+'</div>';
+    const margen = tot.prodMargen;
     const resEl=document.getElementById('fin-resumen-final');
     if(resEl) resEl.innerHTML=''
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
         +'<div>'
-          +'<div style="font-size:11px;color:var(--muted);margin-bottom:4px">Total planilla del mes</div>'
-          +'<div style="font-size:20px;font-weight:800;font-family:Georgia,serif;color:var(--gold)">$'+fmt(totTotal)+'</div>'
-          +'<div style="font-size:11px;color:var(--muted);margin-top:8px;margin-bottom:4px">÷ 2 — Pago lavadores</div>'
-          +'<div style="font-size:16px;font-weight:700;color:#FCA5A5">-$'+fmt(mitadLavadores)+'</div>'
-          +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:4px">= Tu mitad</div>'
-          +'<div style="font-size:18px;font-weight:800;color:#6EE7B7">$'+fmt(tuMitad)+'</div>'
-          +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:4px">+ Productos (vendido $'+fmt(ventasProdMes)+' − comprado $'+fmt(comprasProdMes)+')</div>'
-          +'<div style="font-size:16px;font-weight:700;color:'+(margenProdMes>=0?'#6EE7B7':'#FCA5A5')+'">'+(margenProdMes>=0?'+':'-')+'$'+fmt(Math.abs(margenProdMes))+'</div>'
-          +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:4px">+ Detailing (neto)</div>'
-          +'<div style="font-size:16px;font-weight:700;color:#F0ABFC">+$'+fmt(detailingNetaMes)+'</div>'
-          +'<div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:4px">— Gastos del mes</div>'
-          +'<div style="font-size:16px;font-weight:700;color:#FCA5A5">-$'+fmt(totGastos)+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-bottom:4px">Total planilla del mes (todo lo lavado)</div>'
+          +'<div style="font-size:20px;font-weight:800;font-family:Georgia,serif;color:var(--gold)">$'+fmt(tot.planilla)+'</div>'
+          +row('÷ 2 — Pago lavadores (en efectivo)','-$'+fmt(tot.mitad),'#FCA5A5')
+          +row('💵 Cobrado en efectivo','+$'+fmt(efMes),'#6EE7B7')
+          +row('📲 Cobrado por QR','+$'+fmt(qrMes),'#C4B5FD')
+          +(antMes?'<div style="font-size:10px;color:#FCD34D;margin-top:2px">incluye $'+fmt(antMes)+' de pendientes de días anteriores cobrados este mes</div>':'')
+          +row('= Nos queda de las lavadas','$'+fmt(tot.nosQuedaLav),'#6EE7B7',true)
+          +row('+ Productos (vendido $'+fmt(tot.prodVentas)+' − comprado $'+fmt(tot.prodCompras)+')',(margen>=0?'+':'-')+'$'+fmt(Math.abs(margen)),margen>=0?'#6EE7B7':'#FCA5A5')
+          +row('+ Detailing (neto: venta − insumos − comisión)','+$'+fmt(tot.detNeto),'#F0ABFC')
+          +row('— Gastos del mes','-$'+fmt(totGastos),'#FCA5A5')
         +'</div>'
         +'<div style="border-left:1px solid var(--border);padding-left:16px">'
-          +'<div style="font-size:11px;color:var(--muted);margin-bottom:4px">💵 Caja efectivo</div>'
-          +'<div style="font-size:18px;font-weight:800;color:#6EE7B7">$'+fmt(cajaTotal)+'</div>'
-          +'<div style="font-size:11px;color:var(--muted);margin-top:8px;margin-bottom:4px">📲 Cuenta QR</div>'
-          +'<div style="font-size:18px;font-weight:800;color:#C4B5FD">$'+fmt(totQr)+'</div>'
-          +'<div style="font-size:11px;color:var(--muted);margin-top:8px;margin-bottom:4px">⏳ Pendientes por cobrar (incluidos arriba, aún sin cobrar)</div>'
-          +'<div style="font-size:16px;font-weight:700;color:#FCD34D">$'+fmt(totPend)+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-bottom:4px">💵 Caja efectivo (lavadas + detailing)</div>'
+          +'<div style="font-size:18px;font-weight:800;color:#6EE7B7">$'+fmt(cajaMes)+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-top:8px;margin-bottom:4px">📲 Cuenta QR (lavadas + detailing)</div>'
+          +'<div style="font-size:18px;font-weight:800;color:#C4B5FD">$'+fmt(cuentaMes)+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-top:8px;margin-bottom:4px">⏳ Pendientes por cobrar de este mes (aún no entran)</div>'
+          +'<div style="font-size:16px;font-weight:700;color:#FCD34D">$'+fmt(tot.pend)+'</div>'
           +'<div style="border-top:1px solid var(--gold-b);margin-top:10px;padding-top:10px">'
-            +'<div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">✦ Total tuyo del mes</div>'
+            +'<div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">✦ Total nuestro del mes</div>'
             +'<div style="font-size:24px;font-weight:900;font-family:Georgia,serif;color:var(--gold)">$'+fmt(totalFinalMes)+'</div>'
           +'</div>'
         +'</div>'
@@ -3560,28 +3681,16 @@ async function exportarExcel(){
     const [_y,_m]=dashMes.split('-');
     const _lastDay=new Date(parseInt(_y),parseInt(_m),0).getDate();
     const start=dashMes+'-01', end=dashMes+'-'+String(_lastDay).padStart(2,'0');
-    const ords=await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&estado=eq.cerrada&order=fecha.asc');
+    const {dias, tot} = await cuentaPorDia(start, end);
     const gastosAll=await api('gastos?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
     const gastos=gastosAll.filter(g=>g.categoria!=='🏦 Saldo inicial');
 
-    // Build CSV
+    // Build CSV — misma cuenta simple que el Libro del mes
     let csv='INGRESOS '+dashMes+'\n';
-    csv+='Fecha,Efectivo,QR,Total,Pago Lavadores,Caja Efectivo,Cuenta QR\n';
-    const byDay={};
-    for(const o of ords){
-      if(!byDay[o.fecha]) byDay[o.fecha]={ef:0,qr:0};
-      if(o.forma_pago==='efectivo') byDay[o.fecha].ef+=parseInt(o.total)||0;
-      else if(o.forma_pago==='qr')  byDay[o.fecha].qr+=parseInt(o.total)||0;
-      else if(o.forma_pago==='mixto'){byDay[o.fecha].ef+=parseInt(o.pago_efectivo)||0;byDay[o.fecha].qr+=parseInt(o.pago_qr)||0;}
-    }
-    let totEf=0,totQr=0;
-    Object.entries(byDay).sort().forEach(([fecha,d])=>{
-      const t=d.ef+d.qr; const p=Math.round(t/2);
-      totEf+=d.ef; totQr+=d.qr;
-      csv+=fecha+','+d.ef+','+d.qr+','+t+','+p+','+(d.ef-p)+','+d.qr+'\n';
-    });
-    const totB=totEf+totQr; const totP=Math.round(totB/2);
-    csv+='TOTAL,'+totEf+','+totQr+','+totB+','+totP+','+(totEf-totP)+','+totQr+'\n';
+    csv+='Fecha,Planilla,Pago Lavadores,Efectivo cobrado,QR cobrado,Cobrado de dias anteriores,Nos queda (lavadas),Detailing neto,Caja Efectivo,Cuenta QR\n';
+    const linea=(f,d)=>f+','+d.planilla+','+d.mitad+','+(d.ef+d.efAnt)+','+(d.qr+d.qrAnt)+','+(d.efAnt+d.qrAnt)+','+d.nosQuedaLav+','+d.detNeto+','+(d.cajaLav+d.detEfNeto)+','+(d.bancoLav+d.detQrNeto)+'\n';
+    dias.filter(d=>d.planilla||d.cobrado||d.detVenta).forEach(d=>{ csv+=linea(d.fecha,d); });
+    csv+=linea('TOTAL',{...tot, cajaLav:tot.cajaLav, bancoLav:tot.bancoLav});
 
     csv+='\nGASTOS '+dashMes+'\n';
     csv+='Fecha,Descripcion,Categoria,Efectivo,QR,Total\n';
@@ -3668,28 +3777,17 @@ async function loadDashRango(){
   if(!start || !end){ showToast('Selecciona el rango de fechas', true); return; }
   if(start>end){ showToast('La fecha "desde" debe ser antes que "hasta"', true); return; }
   try{
-    const [ords, gastos, vp, cp, det] = await Promise.all([
-      api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc'),
-      api('gastos?fecha=gte.'+start+'&fecha=lte.'+end),
-      api('ventas_productos?fecha=gte.'+start+'&fecha=lte.'+end).catch(()=>[]),
-      api('compras_productos?fecha=gte.'+start+'&fecha=lte.'+end).catch(()=>[]),
-      api('detailing?fecha=gte.'+start+'&fecha=lte.'+end).catch(()=>[])
+    // Cuenta simple por día en el rango + órdenes para contar vehículos
+    const [{dias, tot}, ords] = await Promise.all([
+      cuentaPorDia(start, end),
+      api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc')
     ]);
-
     const cerradas = ords.filter(o=>o.estado==='cerrada');
-    const total = cerradas.reduce((s,o)=>s+(o.total||0),0);
-    const gastosReales = gastos.filter(g=>g.categoria!=='🏦 Saldo inicial' && g.categoria!=='🛒 Venta producto');
-    const gastosTotal = gastosReales.reduce((s,g)=>s+(g.valor||0),0);
-    const ventasProd = vp.reduce((s,v)=>s+(v.total||0),0);
-    const comprasProd = cp.reduce((s,c)=>s+(c.costo_total||0),0);
-    const margenProd = ventasProd - comprasProd;
-    const detailingNeta = det.reduce((s,d)=>s+((d.valor||0)-(d.costo_insumos||0)-(d.comision_ayudante||0)),0);
-    const ganNeta = Math.round(total/2) - gastosTotal + margenProd + detailingNeta;
 
-    document.getElementById('rng-total').textContent = '$'+fmt(total);
-    document.getElementById('rng-gan').textContent = '$'+fmt(ganNeta);
+    document.getElementById('rng-total').textContent = '$'+fmt(tot.cobrado);
+    document.getElementById('rng-gan').textContent = '$'+fmt(tot.totalNuestro);
     document.getElementById('rng-veh').textContent = cerradas.length;
-    document.getElementById('rng-gastos').textContent = '$'+fmt(gastosTotal);
+    document.getElementById('rng-gastos').textContent = '$'+fmt(tot.gastos);
 
     // Agrupar por semana calendario (lunes a domingo), recortada al rango elegido
     function lunesDe(fechaStr){
@@ -3704,16 +3802,12 @@ async function loadDashRango(){
       return d.toISOString().slice(0,10);
     }
     const semanas = {};
-    function addTo(fecha, campo, valor){
-      const key = lunesDe(fecha);
-      if(!semanas[key]) semanas[key] = {ingresos:0, veh:0, productos:0, detailing:0, gastos:0};
-      semanas[key][campo] += valor;
-    }
-    cerradas.forEach(o=>{ addTo(o.fecha,'ingresos', o.total||0); addTo(o.fecha,'veh',1); });
-    vp.forEach(v=>addTo(v.fecha,'productos', v.total||0));
-    cp.forEach(c=>addTo(c.fecha,'productos', -(c.costo_total||0)));
-    det.forEach(d=>addTo(d.fecha,'detailing', (d.valor||0)-(d.costo_insumos||0)-(d.comision_ayudante||0)));
-    gastosReales.forEach(g=>addTo(g.fecha,'gastos', g.valor||0));
+    const sem = f => { const k = lunesDe(f); return semanas[k] || (semanas[k] = {ingresos:0, veh:0, productos:0, detailing:0, gastos:0, gan:0}); };
+    dias.forEach(d=>{
+      const w = sem(d.fecha);
+      w.ingresos += d.cobrado; w.productos += d.prodMargen; w.detailing += d.detNeto; w.gastos += d.gastos; w.gan += d.totalNuestro;
+    });
+    cerradas.forEach(o=>{ sem(o.fecha).veh += 1; });
 
     const semanasOrdenadas = Object.keys(semanas).sort();
     const rows = semanasOrdenadas.map(lunes=>{
@@ -3721,7 +3815,6 @@ async function loadDashRango(){
       const domingo = sumarDias(lunes,6);
       const desdeEtiqueta = lunes<start ? start : lunes;
       const hastaEtiqueta = domingo>end ? end : domingo;
-      const ganSemana = Math.round(s.ingresos/2) - s.gastos + s.productos + s.detailing;
       return '<tr>'
         +'<td style="font-size:11px">'+fmtFechaCorta(desdeEtiqueta)+' – '+fmtFechaCorta(hastaEtiqueta)+'</td>'
         +'<td>$'+fmt(s.ingresos)+'</td>'
@@ -3729,7 +3822,7 @@ async function loadDashRango(){
         +'<td style="color:'+(s.productos>=0?'#6EE7B7':'#FCA5A5')+'">$'+fmt(s.productos)+'</td>'
         +'<td style="color:#F0ABFC">$'+fmt(s.detailing)+'</td>'
         +'<td style="color:#FCA5A5">$'+fmt(s.gastos)+'</td>'
-        +'<td style="font-weight:800;color:var(--gold)">$'+fmt(ganSemana)+'</td>'
+        +'<td style="font-weight:800;color:'+(s.gan>=0?'var(--gold)':'#FCA5A5')+'">$'+fmt(s.gan)+'</td>'
       +'</tr>';
     }).join('');
 
@@ -4652,6 +4745,7 @@ async function abrirPagoEmpresaFactura(){
     document.getElementById('pe-count').textContent = pendientes.length+' lavada'+(pendientes.length===1?'':'s');
     document.getElementById('pe-total').textContent = '$'+fmt(total);
     document.getElementById('pe-nota').value = '';
+    document.getElementById('pe-fecha').value = today(); // por defecto hoy; se puede cambiar
 
     empPagoTipo = 'simple';
     document.getElementById('pe-tipo-simple').classList.add('on-ef');
@@ -4716,6 +4810,7 @@ async function confirmarPagoEmpresaFactura(){
   const {ordenes, start, end} = empPagoPendientesCache;
   const total = ordenes.reduce((s,o)=>s+(o.total||0),0);
   const nota = document.getElementById('pe-nota').value.trim();
+  const fechaPago = document.getElementById('pe-fecha').value || today();
 
   let formaPago = empPagoMode, efTotal = 0, qrTotal = 0;
   if(empPagoTipo==='mixto'){
@@ -4753,20 +4848,20 @@ async function confirmarPagoEmpresaFactura(){
         efOrden = formaPago==='efectivo' ? (o.total||0) : 0;
         qrOrden = formaPago==='qr' ? (o.total||0) : 0;
       }
-      await api('ordenes?id=eq.'+o.id, 'PATCH', {
+      await patchOrdenCobrada(o.id, {
         estado: 'cerrada',
         hora_salida: o.hora_salida || new Date().toISOString(),
         forma_pago: formaPago,
         pago_efectivo: efOrden,
         pago_qr: qrOrden
-      });
+      }, fechaPago);
     }
 
     await api('pagos_empresa', 'POST', {
       empresa_id: empresaActual.id, empresa_nombre: empresaActual.nombre,
       periodo_desde: start, periodo_hasta: end,
       total, forma_pago: formaPago, pago_efectivo: efTotal, pago_qr: qrTotal,
-      nota: nota||null, fecha_pago: today()
+      nota: nota||null, fecha_pago: fechaPago
     });
 
     try{ localStorage.setItem('lava_ciclo_emp_'+empresaActual.id, JSON.stringify({desde:start,hasta:end})); }catch{}
@@ -5024,106 +5119,53 @@ async function loadSaldos(){
     s('sal-caja-sub',  'Saldo actual registrado');
     s('sal-banco-sub', 'Saldo actual registrado');
 
-    // ── Resumen del mes ───────────────────────────────────────────────────────
-    const ords = await api('ordenes?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
-    const todasMenosAbiertas = ords.filter(o=>o.estado!=='abierta');
-    // Igual que en el cierre: un carro "abierto" no es una deuda pendiente.
-    const pendientes = todasMenosAbiertas.filter(o=>o.estado==='pendiente_pago'||o.forma_pago==='pendiente');
-
-    let ef=0, qr=0;
-    const cerradas=ords.filter(o=>o.estado==='cerrada'&&o.forma_pago!=='pendiente'&&o.forma_pago!==null);
-    for(const o of cerradas){
-      if(o.forma_pago==='efectivo')     ef+=parseInt(o.total)||0;
-      else if(o.forma_pago==='qr')      qr+=parseInt(o.total)||0;
-      else if(o.forma_pago==='mixto'){
-        ef+=parseInt(o.pago_efectivo)||0;
-        qr+=parseInt(o.pago_qr)||0;
-      }
-    }
-
-    // Igual que en el Cierre/Finanzas: el total del mes incluye las abiertas
-    // (igual que la Planilla), y de tu mitad se resta el QR completo y lo
-    // pendiente completo.
-    const totalMes = ords.reduce((s,o)=>s+(o.total||0),0);
-    const mitadLav = Math.round(totalMes/2);
-    const tuMitad  = totalMes - mitadLav;
-    const totPend  = pendientes.reduce((s,o)=>s+(o.total||0),0);
-    const tuNeta   = tuMitad - qr - totPend;
-
-    // Ventas productos
-    let ventasProd=0;
-    try{
-      const vp=await api('ventas_productos?fecha=gte.'+start+'&fecha=lte.'+end);
-      ventasProd=vp.reduce((s,v)=>s+(v.total||0),0);
-    }catch{}
-    // Costo de la mercancía comprada — el margen real (lo que se reparte) es
-    // lo vendido menos lo comprado.
-    let comprasProd=0;
-    try{
-      const cp=await api('compras_productos?fecha=gte.'+start+'&fecha=lte.'+end);
-      comprasProd=cp.reduce((s,c)=>s+(c.costo_total||0),0);
-    }catch{}
-    ventasProd = ventasProd - comprasProd; // de aquí en adelante, "ventasProd" ya es el margen neto
-
-    // Detailing del mes (neto: venta − insumos − comisión). Se reparte igual
-    // que el resto de la utilidad — así se decidió.
-    let detailingNeta=0;
-    try{
-      const det=await api('detailing?fecha=gte.'+start+'&fecha=lte.'+end);
-      detailingNeta=det.reduce((s,d)=>s+((d.valor||0)-(d.costo_insumos||0)-(d.comision_ayudante||0)),0);
-    }catch{}
-
-    // Gastos
-    const gastos=await api('gastos?fecha=gte.'+start+'&fecha=lte.'+end);
-    const gastosReales=gastos.filter(g=>g.categoria!=='🏦 Saldo inicial');
-    const totGastos=gastosReales.reduce((s,g)=>s+(g.valor||0),0);
-
-    const netaMes = tuMitad + ventasProd + detailingNeta - totGastos; // tu mitad + productos + detailing − gastos (el QR y los pendientes no se restan)
-
-    s('sal-ef-mes',        '$'+fmt(ef));
-    s('sal-qr-mes',        '$'+fmt(qr));
-    s('sal-pend-mes',      '$'+fmt(totPend));
-    s('sal-lavadores-mes', '$'+fmt(mitadLav));
-    s('sal-gastos-mes',    '$'+fmt(totGastos));
-    s('sal-neta-mes',      '$'+fmt(netaMes));
-
-    // Disponible para inversión = saldo inicial + acumulado desde hoy en adelante
-    // Solo suma ordenes/gastos/productos DESPUÉS de la fecha del saldo inicial
+    // ── Cuenta simple desde la fecha del saldo inicial hasta hoy ──────────────
+    // (mismas reglas que el Cierre y el Libro del mes: la plata cuenta el día que
+    // entra, los lavadores se pagan en efectivo, el QR queda en la cuenta)
     const fechaInicial = '2026-08-08'; // fecha desde la que empieza a acumular
-    const ordsNuevos = ords.filter(o=>o.fecha >= fechaInicial && o.estado!=='abierta');
-    const pendNuevos = ordsNuevos.filter(o=>o.estado==='pendiente_pago'||o.forma_pago==='pendiente');
-    
-    let efNuevo=0, qrNuevo=0;
-    ordsNuevos.filter(o=>o.estado==='cerrada'&&o.forma_pago!=='pendiente').forEach(o=>{
-      if(o.forma_pago==='efectivo')     efNuevo+=parseInt(o.total)||0;
-      else if(o.forma_pago==='qr')      qrNuevo+=parseInt(o.total)||0;
-      else if(o.forma_pago==='mixto'){
-        efNuevo+=parseInt(o.pago_efectivo)||0;
-        qrNuevo+=parseInt(o.pago_qr)||0;
-      }
+    const {dias} = await cuentaPorDia(fechaInicial, today());
+
+    // ── Resumen del mes actual ────────────────────────────────────────────────
+    const delMes = dias.filter(d=>d.fecha.slice(0,7)===mes);
+    const sumMes = k => delMes.reduce((a,d)=>a+(d[k]||0),0);
+    s('sal-ef-mes',        '$'+fmt(sumMes('ef')+sumMes('efAnt')));
+    s('sal-qr-mes',        '$'+fmt(sumMes('qr')+sumMes('qrAnt')));
+    s('sal-pend-mes',      '$'+fmt(sumMes('pend')));
+    s('sal-lavadores-mes', '$'+fmt(sumMes('mitad')));
+    s('sal-gastos-mes',    '$'+fmt(sumMes('gastos')));
+    s('sal-neta-mes',      '$'+fmt(sumMes('totalNuestro')));
+
+    // ── Mes a mes con acumulado ───────────────────────────────────────────────
+    const porMes = {};
+    dias.forEach(d=>{
+      const k = d.fecha.slice(0,7);
+      const m = porMes[k] || (porMes[k] = {lav:0, det:0, prod:0, gas:0, res:0});
+      m.lav += d.nosQuedaLav; m.det += d.detNeto; m.prod += d.prodMargen; m.gas += d.gastos; m.res += d.totalNuestro;
     });
-    
-    const totPendNuevo = pendNuevos.reduce((s,o)=>s+(o.total||0),0);
-    const totalNuevo = ordsNuevos.reduce((s,o)=>s+(o.total||0),0);
-    const mitadNuevo = Math.round(totalNuevo/2);
-    
-    // Ventas productos nuevas
-    let vpNuevo=0;
-    try{
-      const vpn=await api('ventas_productos?fecha=gte.'+fechaInicial);
-      vpNuevo=vpn.reduce((s,v)=>s+(v.total||0),0);
-    }catch{}
-    
-    // Gastos nuevos
-    const gastosNuevos=gastosReales.filter(g=>g.fecha>=fechaInicial);
-    const gastosEfNuevo=gastosNuevos.filter(g=>g.forma_pago==='efectivo').reduce((s,g)=>s+(g.valor||0),0);
-    const gastosQrNuevo=gastosNuevos.filter(g=>g.forma_pago==='qr').reduce((s,g)=>s+(g.valor||0),0);
-    
-    // Nota: no se resta totPendNuevo aquí — el dinero de órdenes pendientes nunca
-    // se sumó a efNuevo (no se ha cobrado), así que restarlo de nuevo duplicaba el descuento.
-    // Misma lógica que usa "Cierre del día": caja = efectivo cobrado − pago lavadores.
-    const dispCaja  = salInitCaja + efNuevo - mitadNuevo + vpNuevo - gastosEfNuevo;
-    const dispBanco = salInitBanco + qrNuevo - gastosQrNuevo;
+    let acum = 0;
+    const filasMes = Object.keys(porMes).sort().map(k=>{
+      const m = porMes[k]; acum += m.res;
+      const [yy,mm] = k.split('-');
+      return '<tr>'
+        +'<td style="font-weight:600">'+MES[parseInt(mm)-1]+' '+yy+'</td>'
+        +'<td>$'+fmt(m.lav)+'</td>'
+        +'<td style="color:#F0ABFC">$'+fmt(m.det)+'</td>'
+        +'<td>$'+fmt(m.prod)+'</td>'
+        +'<td style="color:#FCA5A5">$'+fmt(m.gas)+'</td>'
+        +'<td style="font-weight:800;color:'+(m.res>=0?'var(--gold)':'#FCA5A5')+'">$'+fmt(m.res)+'</td>'
+        +'<td style="font-weight:800;color:'+(acum>=0?'#6EE7B7':'#FCA5A5')+'">$'+fmt(acum)+'</td>'
+        +'</tr>';
+    });
+    const mesesEl = document.getElementById('sal-meses-rows');
+    if(mesesEl) mesesEl.innerHTML = filasMes.join('') || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">Sin movimientos</td></tr>';
+
+    // ── Disponible para inversión = saldo inicial + acumulado en caja / banco ─
+    // Caja: efectivo cobrado − pago a lavadores + productos y detailing en
+    // efectivo − gastos en efectivo. Banco: QR + productos y detailing por QR −
+    // gastos por QR.
+    const sumAll = k => dias.reduce((a,d)=>a+(d[k]||0),0);
+    const dispCaja  = salInitCaja  + sumAll('cajaLav')  + sumAll('detEfNeto') + sumAll('prodCaja')  - sumAll('gastosEf');
+    const dispBanco = salInitBanco + sumAll('bancoLav') + sumAll('detQrNeto') + sumAll('prodBanco') - sumAll('gastosQr');
     const dispTotal = dispCaja + dispBanco;
     s('inv-caja',  '$'+fmt(dispCaja));
     s('inv-banco', '$'+fmt(dispBanco));
