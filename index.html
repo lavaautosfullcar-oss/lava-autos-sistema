@@ -291,7 +291,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           <div class="cierre-row"><span style="color:var(--muted)">÷ 2 — Pago lavadores</span><span style="font-weight:700;color:#FCA5A5;font-family:'Georgia',serif" id="dc-mitad-lav">$0</span></div>
           <div class="cierre-row"><span style="color:var(--muted)">💵 Cobrado en efectivo</span><span style="font-weight:700;color:#6EE7B7;font-family:'Georgia',serif" id="dc-cob-ef">$0</span></div>
           <div class="cierre-row"><span style="color:var(--muted)">📲 Cobrado en QR</span><span style="font-weight:700;color:#C4B5FD;font-family:'Georgia',serif" id="dc-cob-qr">$0</span></div>
-          <div class="cierre-row" id="dc-cob-ant-row" style="display:none;padding-top:0"><span style="color:#FCD34D;font-size:11px">↳ incluye pendientes de otros días cobrados hoy</span><span style="font-weight:700;color:#FCD34D;font-size:12px;font-family:'Georgia',serif" id="dc-cob-ant">$0</span></div>
+          <div class="cierre-row" id="dc-cob-ant-row" style="display:none;padding-top:0"><span style="color:#FCD34D;font-size:11px">↳ incluye pendientes de otros días cobrados hoy · <a href="#" style="color:#FCD34D;text-decoration:underline" onclick="irACuadreDetalle();return false">cambiar fecha</a></span><span style="font-weight:700;color:#FCD34D;font-size:12px;font-family:'Georgia',serif" id="dc-cob-ant">$0</span></div>
           <div class="cierre-row" style="border-bottom:2px solid var(--border)"><span style="font-weight:700">= Nos corresponde (lavadas)</span><span style="font-size:18px;font-weight:800;color:#6EE7B7;font-family:'Georgia',serif" id="dc-tu-neta">$0</span></div>
 
           <div id="cierre-det-section" style="display:none">
@@ -978,7 +978,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           <div class="card-t"><span class="card-tg">🧾 Historial de pagos de factura</span></div>
           <div class="tbl-wrap">
             <table>
-              <thead><tr><th>Fecha de pago</th><th>Periodo facturado</th><th>Total</th><th>Forma de pago</th><th>Nota</th></tr></thead>
+              <thead><tr><th>Fecha de pago</th><th>Periodo facturado</th><th>Total</th><th>Forma de pago</th><th>Nota</th><th></th></tr></thead>
               <tbody id="emp-pagos-list"></tbody>
             </table>
           </div>
@@ -1110,6 +1110,26 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
   <div style="display:flex;gap:8px;margin-top:4px">
     <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarOrden()">✅ Crear orden</button>
     <button class="btn btn-g" onclick="cerrarModal('modal-orden')">Cancelar</button>
+  </div>
+</div>
+</div>
+
+<!-- Cambiar fecha del pago de una factura de empresa -->
+<div id="modal-fecha-pago" class="modal-bg" style="display:none">
+<div class="modal">
+  <div class="modal-title">📅 Cambiar fecha del pago de la factura</div>
+  <input type="hidden" id="fpago-id"/>
+  <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--muted)">Empresa:</span><span style="font-weight:700;color:var(--gold)" id="fpago-empresa"></span></div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--muted)">Periodo facturado:</span><span id="fpago-periodo"></span></div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--muted)">Valor:</span><span style="font-weight:700" id="fpago-valor"></span></div>
+    <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Fecha actual del pago:</span><span id="fpago-actual"></span></div>
+  </div>
+  <div class="field"><label>Día en que realmente entró la plata</label><input type="date" id="fpago-nueva"/></div>
+  <div style="font-size:11px;color:var(--muted)">Cambia también el día de cobro de las lavadas de esta factura, así el dinero queda en el cierre y el cuadre de ese día.</div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarFechaPago()">💾 Guardar</button>
+    <button class="btn btn-g" onclick="cerrarModal('modal-fecha-pago')">Cancelar</button>
   </div>
 </div>
 </div>
@@ -4979,10 +4999,11 @@ async function loadPagosEmpresa(){
         +'<td style="font-weight:700;color:#6EE7B7">$'+fmt(p.total)+'</td>'
         +'<td style="font-size:11px">'+pagoLabel+'</td>'
         +'<td style="font-size:11px;color:var(--muted)">'+(p.nota||'—')+'</td>'
+        +'<td><button class="btn btn-g" style="padding:2px 8px;font-size:11px" title="Cambiar el día en que entró la plata" onclick="abrirFechaPago('+p.id+')">✏️</button></td>'
         +'</tr>';
-    }).join('') : '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">Sin pagos registrados todavía</td></tr>';
+    }).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">Sin pagos registrados todavía</td></tr>';
   }catch(e){
-    el.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">⚠️ No se pudo conectar con la tabla "pagos_empresa" — puede que falte crearla en Supabase</td></tr>';
+    el.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">⚠️ No se pudo conectar con la tabla "pagos_empresa" — puede que falte crearla en Supabase</td></tr>';
   }
 }
 
@@ -5119,21 +5140,32 @@ let cuadreFecha = null;
 // productos y detailing; sale el pago a lavadores (50% de la planilla), los
 // insumos y comisión del detailing y los gastos pagados en efectivo.
 async function calcCuadreCaja(fecha){
-  const [lavadas, cobradas, det, vp, gs] = await Promise.all([
+  const [lavadas, cobradas, det, vp, gs, pagosEmp] = await Promise.all([
     api('ordenes?fecha=eq.'+fecha),
     ordenesCobradasRango(fecha, fecha),
     api('detailing?fecha=eq.'+fecha).catch(()=>[]),
     api('ventas_productos?fecha=eq.'+fecha).catch(()=>[]),
-    api('gastos?fecha=eq.'+fecha).catch(()=>[])
+    api('gastos?fecha=eq.'+fecha).catch(()=>[]),
+    api('pagos_empresa?fecha_pago=eq.'+fecha).catch(()=>[])
   ]);
 
-  // Cobros de lavadas (para el detalle y para poder cambiarles la fecha)
-  const cobros = cobradas.sort((a,b)=>(a.numero_orden||a.id)-(b.numero_orden||b.id)).map(o=>{
+  // Cobros de lavadas (para el detalle y para poder cambiarles la fecha). Las
+  // lavadas de una factura de empresa se agrupan en una sola fila por pago.
+  const grupos = {}, cobros = [];
+  cobradas.sort((a,b)=>(a.numero_orden||a.id)-(b.numero_orden||b.id)).forEach(o=>{
     const m = efQrDeOrden(o);
-    return {ordenId:o.id, numero:o.numero_orden||o.id, placa:o.placa||'', empresa:o.empresa_nombre||'',
-            fechaLavada:o.fecha, ant:o.fecha<fecha, ef:m.ef, qr:m.qr};
+    const pg = o.empresa_id ? pagosEmp.find(x=>x.empresa_id===o.empresa_id && o.fecha>=x.periodo_desde && o.fecha<=x.periodo_hasta) : null;
+    if(pg){
+      const g = grupos[pg.id] || (grupos[pg.id] = {pagoId:pg.id, empresa:pg.empresa_nombre, desde:pg.periodo_desde, hasta:pg.periodo_hasta, n:0, ef:0, qr:0});
+      g.n++; g.ef += m.ef; g.qr += m.qr;
+    } else {
+      cobros.push({ordenId:o.id, numero:o.numero_orden||o.id, placa:o.placa||'', empresa:o.empresa_nombre||'',
+                   fechaLavada:o.fecha, ant:o.fecha<fecha, ef:m.ef, qr:m.qr});
+    }
   });
-  const cobEf = cobros.reduce((s,r)=>s+r.ef,0), cobQr = cobros.reduce((s,r)=>s+r.qr,0);
+  const facturas = Object.values(grupos);
+  const cobEf = cobros.reduce((s,r)=>s+r.ef,0) + facturas.reduce((s,g)=>s+g.ef,0);
+  const cobQr = cobros.reduce((s,r)=>s+r.qr,0) + facturas.reduce((s,g)=>s+g.qr,0);
 
   let prodEf=0, prodQr=0;
   vp.forEach(v=>{
@@ -5163,10 +5195,17 @@ async function calcCuadreCaja(fecha){
 
   const entraEf = cobEf + prodEf + detEf;
   const saleEf  = mitad + detCostoEf + gastosEf;
-  return {fecha, base:CAJA_BASE, cobros, cobEf, cobQr, prodEf, prodQr, detEf, detQr, detCostoEf, detCostoQr,
+  return {fecha, base:CAJA_BASE, cobros, facturas, cobEf, cobQr, prodEf, prodQr, detEf, detQr, detCostoEf, detCostoQr,
           planilla, mitad, gastosEf, gastosQr,
           entraEf, saleEf, esperado: CAJA_BASE + entraEf - saleEf,
           entraQr: cobQr + prodQr + detQr, saleQr: detCostoQr + gastosQr};
+}
+
+// Desde el Cierre: abre el Cuadre con el detalle de cobros a la vista (para cambiar fechas)
+function irACuadreDetalle(){
+  go('cuadre', document.getElementById('nav-cuadre'));
+  const el = document.getElementById('cuadre-detalle');
+  if(el && el.style.display==='none') toggleCuadreDetalle();
 }
 
 function toggleCuadreDetalle(){
@@ -5203,7 +5242,13 @@ async function loadCuadre(){
     document.getElementById('cuadre-qr-nota').textContent = '📲 Por QR entró $'+fmt(qrNeto)+' — va a la cuenta, no a la caja.';
 
     // Detalle de cobros (oculto por defecto) con el lápiz para cambiar el día del cobro
-    document.getElementById('cuadre-det-rows').innerHTML = cu.cobros.length ? cu.cobros.map(r=>
+    const ddmm = f => f.split('-').reverse().slice(0,2).join('/');
+    const filasFact = cu.facturas.map(g=>
+      '<tr><td>💼 Factura '+g.empresa+' <span style="color:var(--muted);font-size:11px">('+ddmm(g.desde)+' – '+ddmm(g.hasta)+' · '+g.n+' lavada'+(g.n===1?'':'s')+')</span></td>'
+      +'<td style="font-weight:700">'+(g.ef?'<span style="color:#6EE7B7">💵 $'+fmt(g.ef)+'</span> ':'')+(g.qr?'<span style="color:#C4B5FD">📲 $'+fmt(g.qr)+'</span>':'')+'</td>'
+      +'<td><button class="btn btn-g" style="padding:2px 8px;font-size:11px" title="Cambiar el día en que entró el pago de la factura" onclick="abrirFechaPago('+g.pagoId+')">✏️</button></td></tr>'
+    ).join('');
+    document.getElementById('cuadre-det-rows').innerHTML = (cu.cobros.length || cu.facturas.length) ? filasFact + cu.cobros.map(r=>
       '<tr><td>#'+r.numero+' · '+r.placa+(r.empresa?' · '+r.empresa:'')
         +(r.ant?' <span style="color:#FCD34D;font-size:11px">(lavada del '+fmtFechaCorta(r.fechaLavada)+')</span>':'')+'</td>'
       +'<td style="font-weight:700">'+(r.ef?'<span style="color:#6EE7B7">💵 $'+fmt(r.ef)+'</span> ':'')+(r.qr?'<span style="color:#C4B5FD">📲 $'+fmt(r.qr)+'</span>':'')+'</td>'
@@ -5300,6 +5345,48 @@ async function borrarCuadre(id){
   if(!confirm('¿Borrar este cuadre del registro?')) return;
   try{ await api('cuadres_caja?id=eq.'+id,'DELETE'); showToast('Cuadre borrado'); loadCuadreHistorial(); }
   catch(e){ showToast('Error: '+e.message, true); }
+}
+
+// ── Cambiar la fecha del pago de una factura de empresa ──────────────────────
+let fpagoRow = null;
+async function abrirFechaPago(id){
+  try{
+    const rows = await api('pagos_empresa?id=eq.'+id);
+    const p = rows[0]; if(!p) return;
+    fpagoRow = p;
+    document.getElementById('fpago-id').value = id;
+    document.getElementById('fpago-empresa').textContent = p.empresa_nombre||'';
+    document.getElementById('fpago-periodo').textContent = p.periodo_desde.split('-').reverse().join('/')+' – '+p.periodo_hasta.split('-').reverse().join('/');
+    document.getElementById('fpago-valor').textContent = '$'+fmt(p.total);
+    document.getElementById('fpago-actual').textContent = p.fecha_pago.split('-').reverse().join('/');
+    document.getElementById('fpago-nueva').value = p.fecha_pago;
+    document.getElementById('modal-fecha-pago').style.display = 'flex';
+  }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+async function guardarFechaPago(){
+  if(!fpagoRow) return;
+  const p = fpagoRow, nueva = document.getElementById('fpago-nueva').value;
+  if(!nueva){ showToast('Elige la fecha', true); return; }
+  if(nueva === p.fecha_pago){ cerrarModal('modal-fecha-pago'); return; }
+  try{
+    // Lavadas de esa factura: las de la empresa dentro del periodo cuyo cobro quedó en la fecha anterior
+    const filtro = 'ordenes?empresa_id=eq.'+p.empresa_id+'&estado=eq.cerrada&fecha=gte.'+p.periodo_desde+'&fecha=lte.'+p.periodo_hasta;
+    let ords = [], conColumna = true;
+    try{ ords = await api(filtro+'&fecha_cobro=eq.'+p.fecha_pago); }
+    catch(e){ if(/fecha_cobro/i.test(e.message||'')) conColumna = false; else throw e; }
+    const ultima = ords.reduce((m,o)=>o.fecha>m?o.fecha:m,'');
+    if(ultima && nueva < ultima){
+      showToast('El pago no puede ser antes de la última lavada de la factura ('+ultima.split('-').reverse().join('/')+')', true); return;
+    }
+    await api('pagos_empresa?id=eq.'+p.id,'PATCH',{fecha_pago:nueva});
+    if(conColumna && ords.length) await api(filtro+'&fecha_cobro=eq.'+p.fecha_pago,'PATCH',{fecha_cobro:nueva});
+    cerrarModal('modal-fecha-pago');
+    showToast('Fecha del pago actualizada ✅');
+    loadPagosEmpresa();
+    if(document.getElementById('s-cuadre')?.classList.contains('on')) loadCuadre();
+    if(document.getElementById('s-cierre')?.classList.contains('on')) loadCierre();
+  }catch(e){ showToast('Error: '+e.message, true); }
 }
 
 // ── Cambiar la fecha de cobro de una orden (desde el Cuadre) ─────────────────
