@@ -288,11 +288,9 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           <div class="card-t"><span class="card-tg">✦ Desglose del cierre</span></div>
 
           <div class="cierre-row"><span style="color:var(--muted)">📋 Total del día (planilla)</span><span style="font-weight:700;font-family:'Georgia',serif" id="dc-total-dia">$0</span></div>
-          <div class="cierre-row"><span style="color:var(--muted)">÷ 2 — Pago lavadores</span><span style="font-weight:700;color:#FCA5A5;font-family:'Georgia',serif" id="dc-mitad-lav">$0</span></div>
-          <div class="cierre-row"><span style="color:var(--muted)">💵 Cobrado en efectivo</span><span style="font-weight:700;color:#6EE7B7;font-family:'Georgia',serif" id="dc-cob-ef">$0</span></div>
-          <div class="cierre-row"><span style="color:var(--muted)">📲 Cobrado en QR</span><span style="font-weight:700;color:#C4B5FD;font-family:'Georgia',serif" id="dc-cob-qr">$0</span></div>
-          <div class="cierre-row" id="dc-cob-ant-row" style="display:none;padding-top:0"><span style="color:#FCD34D;font-size:11px">↳ incluye pendientes de otros días cobrados hoy · <a href="#" style="color:#FCD34D;text-decoration:underline" onclick="irACuadreDetalle();return false">cambiar fecha</a></span><span style="font-weight:700;color:#FCD34D;font-size:12px;font-family:'Georgia',serif" id="dc-cob-ant">$0</span></div>
-          <div class="cierre-row" style="border-bottom:2px solid var(--border)"><span style="font-weight:700">= Nos corresponde (lavadas)</span><span style="font-size:18px;font-weight:800;color:#6EE7B7;font-family:'Georgia',serif" id="dc-tu-neta">$0</span></div>
+          <div class="cierre-row"><span style="color:var(--muted)">÷ 2 — Nos corresponde <span style="font-size:10px">(la otra mitad es de los lavadores)</span></span><span style="font-weight:700;color:#6EE7B7;font-family:'Georgia',serif" id="dc-mitad-lav">$0</span></div>
+          <div class="cierre-row" id="dc-falta-row" style="display:none"><span style="color:var(--muted)">− Falta por cobrar (carros sin pagar)</span><span style="font-weight:700;color:#FCD34D;font-family:'Georgia',serif" id="dc-falta">$0</span></div>
+          <div class="cierre-row" id="dc-cob-ant-row" style="display:none"><span style="color:var(--muted)">+ Pendientes de otros días cobrados hoy <a href="#" style="color:#FCD34D;font-size:11px;text-decoration:underline" onclick="irACuadreDetalle();return false">cambiar fecha</a></span><span style="font-weight:700;color:#6EE7B7;font-family:'Georgia',serif" id="dc-cob-ant">$0</span></div>
 
           <div id="cierre-det-section" style="display:none">
             <div class="cierre-row"><span style="color:var(--muted)"><span id="dc-det-label">✨ + Detailing</span><div style="font-size:10px;color:var(--muted);margin-top:2px" id="dc-det-nota"></div></span><span style="font-weight:700;color:#F0ABFC;font-family:'Georgia',serif" id="dc-det-neto">$0</span></div>
@@ -307,6 +305,8 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
             <span style="font-weight:700;color:var(--gold)">✦ TOTAL NUESTRO DEL DÍA</span>
             <span style="font-size:24px;font-weight:900;color:var(--gold);font-family:'Georgia',serif" id="dc-total-final">$0</span>
           </div>
+          <div class="cierre-row" style="margin-top:6px"><span style="color:var(--muted)">− Ya está en la cuenta (QR)</span><span style="font-weight:700;color:#C4B5FD;font-family:'Georgia',serif" id="dc-qr-cuenta">$0</span></div>
+          <div class="cierre-row" style="border-bottom:none"><span style="font-weight:700">= Efectivo que deja el día <span style="font-size:10px;color:var(--muted)">(sin contar la base de caja)</span></span><span style="font-size:18px;font-weight:800;color:#6EE7B7;font-family:'Georgia',serif" id="dc-efectivo-dia">$0</span></div>
         </div>
 
         <!-- Ventas productos card -->
@@ -2764,7 +2764,17 @@ async function loadCierre(){
     const detMedio = (det.qrV>0 && det.efV>0) ? 'pagado en QR y efectivo' : (det.qrV>0 ? 'pagado por QR' : 'pagado en efectivo');
 
     // ── Total nuestro del día ─────────────────────────────────────────────────
+    // Nos corresponde = mitad de la planilla; de ahí se resta lo que falta por
+    // cobrar (completo, porque a los lavadores ya se les pagó su mitad) y se suma
+    // lo de otros días que se cobró hoy. Es la misma cuenta de siempre:
+    //   cobrado − pago a lavadores = mitad − falta por cobrar + cobrado de otros días
+    const cobradoCarrosHoy = efHoy + qrHoy;
+    const faltaPorCobrar = totalDia - cobradoCarrosHoy;      // carros de hoy sin pagar o aún abiertos
+    const cobradoAnterior = efAnt + qrAnt;                    // pendientes de otros días cobrados hoy
     const totalFinal = nosQuedaLavadas + det.neto + totalProductos;
+    // Lo que ya está en la cuenta (QR) y lo que queda en efectivo
+    const qrEnCuenta = qr + ventasClientesQr + det.qrNeto;
+    const efectivoDia = totalFinal - qrEnCuenta;
 
     // ── Actualizar UI ─────────────────────────────────────────────────────────
     const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
@@ -2773,17 +2783,16 @@ async function loadCierre(){
     // KPIs arriba
     s('c-ef',        '$'+fmt(ef));
     s('c-qr',        '$'+fmt(qr));
-    s('c-pendiente', '$'+fmt(totPend));
+    s('c-pendiente', '$'+fmt(faltaPorCobrar));
     s('c-neta',      '$'+fmt(totalFinal));
 
     // Desglose corto
     s('dc-total-dia',  '$'+fmt(totalDia));
     s('dc-mitad-lav',  '$'+fmt(mitadLavadores));
-    s('dc-cob-ef',     '$'+fmt(ef));
-    s('dc-cob-qr',     '$'+fmt(qr));
-    s('dc-cob-ant',    '$'+fmt(efAnt+qrAnt));
-    show('dc-cob-ant-row', (efAnt+qrAnt)>0);
-    s('dc-tu-neta',    '$'+fmt(nosQuedaLavadas));
+    s('dc-falta',      '-$'+fmt(faltaPorCobrar));
+    show('dc-falta-row', faltaPorCobrar>0);
+    s('dc-cob-ant',    '+$'+fmt(cobradoAnterior));
+    show('dc-cob-ant-row', cobradoAnterior>0);
     s('dc-det-label',  '✨ + Detailing ('+detMedio+')');
     s('dc-det-nota',   'venta $'+fmt(det.venta)+' − insumos y comisión $'+fmt(det.costo));
     s('dc-det-neto',   '$'+fmt(det.neto));
@@ -2791,6 +2800,8 @@ async function loadCierre(){
     s('dc-prod-total', '$'+fmt(totalProductos));
     show('cierre-prod-section', totalProductos>0);
     s('dc-total-final','$'+fmt(totalFinal));
+    s('dc-qr-cuenta',  '-$'+fmt(qrEnCuenta));
+    s('dc-efectivo-dia','$'+fmt(efectivoDia));
 
     // Lo que debe haber en caja = el mismo número del Cuadre de caja
     try{
