@@ -343,7 +343,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <!-- CUADRE DE CAJA -->
       <div id="s-cuadre" class="screen">
         <div class="row">
-          <div><div class="page-title">🧮 Cuadre de caja</div><div class="page-sub">Lo que entra y sale de la caja en efectivo, día por día. La caja arranca cada día con la base fija.</div></div>
+          <div><div class="page-title">🧮 Cuadre de caja</div><div class="page-sub">Cuánto debe haber en la caja (efectivo) al final del día</div></div>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
             <input type="date" id="cuadre-fecha" onchange="loadCuadre()"
               style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none"/>
@@ -352,28 +352,26 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         </div>
 
         <div class="card">
-          <div class="card-t"><span class="card-tg">💵 Caja — efectivo</span></div>
-          <div class="tbl-wrap"><table>
-            <thead><tr><th>#</th><th>Concepto</th><th>Entra</th><th>Sale</th><th>Saldo en caja</th><th></th></tr></thead>
-            <tbody id="cuadre-rows"></tbody>
-            <tfoot id="cuadre-foot"></tfoot>
-          </table></div>
-          <div style="font-size:11px;color:var(--muted);margin-top:8px">El lápiz ✏️ cambia el día en que entró la plata de un cobro (por ejemplo, si lo pagaron otro día).</div>
+          <div id="cuadre-resumen"></div>
+          <div style="background:var(--gold-p);border:1px solid var(--gold-b);border-radius:8px;padding:12px;margin-top:10px;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-weight:700;color:var(--gold)">💵 DEBE HABER EN CAJA</span>
+            <span style="font-size:26px;font-weight:900;color:var(--gold);font-family:'Georgia',serif" id="cuadre-esperado">$0</span>
+          </div>
+          <div id="cuadre-qr-nota" style="font-size:12px;color:var(--muted);margin-top:10px"></div>
+          <div style="margin-top:10px"><button class="btn btn-g" style="font-size:11px" onclick="toggleCuadreDetalle()" id="cuadre-btn-detalle">Ver detalle de los cobros ▾</button></div>
+          <div id="cuadre-detalle" style="display:none;margin-top:10px">
+            <div class="tbl-wrap"><table>
+              <thead><tr><th>Lavada</th><th>Entró</th><th></th></tr></thead>
+              <tbody id="cuadre-det-rows"></tbody>
+            </table></div>
+            <div style="font-size:11px;color:var(--muted);margin-top:6px">El lápiz ✏️ cambia el día en que entró la plata (por ejemplo, si lo pagaron otro día).</div>
+          </div>
         </div>
 
         <div class="card" style="border-color:rgba(245,158,11,.3)">
-          <div class="card-t"><span class="card-tg">🔐 Conteo de la caja</span><span id="arqueo-estado" style="font-size:11px"></span></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-            <div>
-              <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Lo que debe haber en caja</div>
-              <div style="font-size:20px;font-weight:800;color:#6EE7B7;font-family:'Georgia',serif" id="cuadre-esperado">$0</div>
-            </div>
-            <div>
-              <div style="font-size:10px;color:var(--muted);margin-bottom:4px">¿Cuánto hay físicamente?</div>
-              <input type="number" id="arqueo-real" placeholder="0" oninput="calcArqueo()"
-                style="width:100%;background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:16px;font-family:'Segoe UI',sans-serif;outline:none"/>
-            </div>
-          </div>
+          <div class="card-t"><span class="card-tg">🔐 ¿Cuánto hay físicamente?</span><span id="arqueo-estado" style="font-size:11px"></span></div>
+          <input type="number" id="arqueo-real" placeholder="Cuenta la caja y escribe el valor" oninput="calcArqueo()"
+            style="width:100%;background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:10px;color:var(--text);font-size:18px;font-family:'Segoe UI',sans-serif;outline:none;margin-bottom:10px"/>
           <div id="arqueo-resultado" style="display:none;padding:12px;border-radius:8px;margin-bottom:10px;text-align:center">
             <div style="font-size:12px;margin-bottom:4px" id="arqueo-label"></div>
             <div style="font-size:24px;font-weight:900;font-family:'Georgia',serif" id="arqueo-diff"></div>
@@ -384,21 +382,86 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         </div>
 
         <div class="card">
-          <div class="card-t"><span class="card-tg">📲 Cuenta (QR) — movimiento del día</span></div>
-          <div class="tbl-wrap"><table>
-            <thead><tr><th>Concepto</th><th>Entra</th><th>Sale</th></tr></thead>
-            <tbody id="cuadre-qr-rows"></tbody>
-            <tfoot id="cuadre-qr-foot"></tfoot>
-          </table></div>
-        </div>
-
-        <div class="card">
           <div class="card-t"><span class="card-tg">📒 Registro de cuadres</span></div>
           <div class="tbl-wrap"><table>
             <thead><tr><th>Fecha</th><th>Debía haber</th><th>Contado</th><th>Diferencia</th><th>Nota</th><th></th></tr></thead>
             <tbody id="cuadre-hist-rows"></tbody>
             <tfoot id="cuadre-hist-foot"></tfoot>
           </table></div>
+        </div>
+      </div>
+
+      <!-- PRODUCTOS -->
+      <div id="s-productos" class="screen">
+        <div class="row">
+          <div><div class="page-title">🛒 Venta de productos</div><div class="page-sub" id="prod-fecha-lbl"></div></div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <div class="pay-toggle" style="margin:0">
+              <button class="pt pt-ef on-ef" id="prod-modo-hoy" onclick="selProdModo('hoy')">📅 Hoy</button>
+              <button class="pt pt-qr" id="prod-modo-historial" onclick="selProdModo('historial')">📊 Historial mensual</button>
+            </div>
+            <select id="prod-hist-mes" onchange="loadProductosHistorial()" style="display:none;background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none"></select>
+            <select id="prod-filtro" onchange="renderProductosFiltrado()"
+              style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none">
+              <option value="">Todos los productos</option>
+              <option value="Champú">Champú</option>
+              <option value="Uva">Uva</option>
+              <option value="Teflón">Teflón</option>
+              <option value="Grafito">Grafito</option>
+              <option value="Desengrasante">Desengrasante</option>
+              <option value="Restaurador partes negras">Restaurador partes negras</option>
+              <option value="Trapo">Trapo</option>
+              <option value="Ambientador">Ambientador</option>
+              <option value="Extintor">Extintor</option>
+              <option value="Otro">Otro</option>
+            </select>
+            <button class="btn btn-g" onclick="abrirModalCompraProducto()">🧾 Registrar compra</button>
+            <button class="btn btn-p" onclick="abrirModalProducto()">+ Registrar venta</button>
+          </div>
+        </div>
+
+        <div id="prod-vista-hoy">
+          <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+            <div class="kpi"><div class="kpi-l">💰 Total ventas</div><div class="kpi-v" style="color:var(--gold)" id="prod-total-dia">$0</div></div>
+            <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">👤 Ventas a clientes</div><div class="kpi-v" style="color:#6EE7B7" id="prod-total-clientes">$0</div></div>
+            <div class="kpi" style="border-left-color:#FCA5A5"><div class="kpi-l">👷 Descuentos concesores</div><div class="kpi-v" style="color:#FCA5A5" id="prod-descuentos">$0</div></div>
+            <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">📦 Unidades vendidas</div><div class="kpi-v" style="color:#C4B5FD" id="prod-unidades">0</div></div>
+          </div>
+          <div class="card">
+            <div class="card-t"><span class="card-tg">✦ Ventas registradas hoy</span></div>
+            <div id="prod-lista"></div>
+          </div>
+        </div>
+
+        <div id="prod-vista-historial" style="display:none">
+          <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+            <div class="kpi"><div class="kpi-l">💰 Vendido (mes)</div><div class="kpi-v" style="color:var(--gold)" id="ph-total-mes">$0</div></div>
+            <div class="kpi" style="border-left-color:#FCA5A5"><div class="kpi-l">🧾 Comprado (mes)</div><div class="kpi-v" style="color:#FCA5A5" id="ph-comprado-mes">$0</div></div>
+            <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">📈 Margen (mes)</div><div class="kpi-v" style="color:#6EE7B7" id="ph-margen-mes">$0</div></div>
+            <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">🏆 Más vendido</div><div class="kpi-v" style="color:#C4B5FD;font-size:15px" id="ph-mas-vendido">—</div></div>
+          </div>
+          <div class="kpis" style="grid-template-columns:repeat(2,1fr)">
+            <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">📦 Unidades vendidas</div><div class="kpi-v" style="color:#C4B5FD" id="ph-unidades-mes">0</div></div>
+            <div class="kpi" style="border-left-color:#FCA5A5"><div class="kpi-l">👷 Descuentos concesores</div><div class="kpi-v" style="color:#FCA5A5" id="ph-descuentos-mes">$0</div></div>
+          </div>
+          <div class="card">
+            <div class="card-t"><span class="card-tg">🏆 Ranking de productos del mes (de más a menos vendido)</span></div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>#</th><th>Producto</th><th>Unidades</th><th>👤 Clientes</th><th>👷 Concesores</th><th>Total vendido</th><th>🧾 Costo</th><th>📈 Margen</th></tr></thead>
+                <tbody id="ph-ranking"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-t"><span class="card-tg">🧾 Compras de mercancía este mes</span></div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Fecha</th><th>Producto</th><th>Cant.</th><th>Costo unit.</th><th>Total</th><th></th></tr></thead>
+                <tbody id="ph-compras-lista"></tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1332,10 +1395,11 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 <!-- Detailing -->
 <div id="modal-detailing" class="modal-bg" style="display:none">
 <div class="modal">
-  <div class="modal-title">✨ Registrar detailing</div>
+  <div class="modal-title" id="det-modal-title">✨ Registrar detailing</div>
+  <input type="hidden" id="det-edit-id" value=""/>
   <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Este servicio siempre lo hace <b style="color:var(--gold)">Mateo</b> — registra el trabajo ya hecho, como un ingreso extra.</div>
   <div class="form-grid" style="grid-template-columns:1fr 1fr">
-    <div class="field"><label>Fecha</label><input type="date" id="det-fecha"/></div>
+    <div class="field"><label>📅 Fecha en que se hizo y se entregó</label><input type="date" id="det-fecha"/></div>
     <div class="field"><label>Placa</label><input type="text" id="det-placa" placeholder="ABC 123" oninput="this.value=this.value.toUpperCase()"/></div>
   </div>
   <div class="field"><label>Tipo de vehículo (referencia)</label>
@@ -3066,26 +3130,34 @@ function calcDetNeta(){
   document.getElementById('det-neta-preview').textContent = '$'+fmt(valor-insumos-bonif);
 }
 
-async function abrirModalDetailing(){
-  document.getElementById('det-fecha').value = today();
-  document.getElementById('det-placa').value = '';
-  document.getElementById('det-tipo-veh').value = 'carro';
-  document.getElementById('det-valor').value = '';
-  document.getElementById('det-insumos').value = '';
-  document.getElementById('det-bonif').value = '';
-  document.getElementById('det-neta-preview').textContent = '$0';
-  gastoPayModeDet = 'efectivo';
-  document.getElementById('d-ef').classList.add('on-ef');
-  document.getElementById('d-qr').classList.remove('on-qr');
-  detTipo = 'simple';
-  document.getElementById('det-tipo-simple').classList.add('on-ef');
-  document.getElementById('det-tipo-mixto').classList.remove('on-qr');
-  document.getElementById('det-simple-fields').style.display='block';
-  document.getElementById('det-mixto-fields').style.display='none';
-  document.getElementById('det-mixto-ef').value='';
-  document.getElementById('det-mixto-qr').value='';
-  document.getElementById('det-mixto-check').textContent='Ingresa los valores';
-  document.getElementById('det-mixto-check').style.background='rgba(255,255,255,.04)';
+async function abrirModalDetailing(editId){
+  // Sin parámetro = detailing nuevo (fecha de hoy por defecto, se puede cambiar).
+  // Con id = editar uno ya registrado (por ejemplo, para corregirle la fecha).
+  const d = editId ? (detailingTodos||[]).find(x=>x.id===editId) : null;
+  document.getElementById('det-edit-id').value = d ? d.id : '';
+  document.getElementById('det-modal-title').textContent = d ? '✏️ Editar detailing' : '✨ Registrar detailing';
+  document.getElementById('det-fecha').value = d ? d.fecha : today();
+  document.getElementById('det-placa').value = d ? (d.placa||'') : '';
+  document.getElementById('det-tipo-veh').value = d ? (d.tipo_vehiculo||'carro') : 'carro';
+  document.getElementById('det-valor').value = d ? (d.valor||'') : '';
+  document.getElementById('det-insumos').value = d ? (d.costo_insumos||'') : '';
+  document.getElementById('det-bonif').value = d ? (d.comision_ayudante||'') : '';
+  calcDetNeta();
+
+  const mixto = !!(d && d.forma_pago==='mixto');
+  detTipo = mixto ? 'mixto' : 'simple';
+  gastoPayModeDet = (d && d.forma_pago==='qr') ? 'qr' : 'efectivo';
+  document.getElementById('det-tipo-simple').classList.toggle('on-ef', !mixto);
+  document.getElementById('det-tipo-mixto').classList.toggle('on-qr', mixto);
+  document.getElementById('d-ef').classList.toggle('on-ef', gastoPayModeDet==='efectivo');
+  document.getElementById('d-qr').classList.toggle('on-qr', gastoPayModeDet==='qr');
+  document.getElementById('det-simple-fields').style.display = mixto ? 'none' : 'block';
+  document.getElementById('det-mixto-fields').style.display = mixto ? 'block' : 'none';
+  document.getElementById('det-mixto-ef').value = mixto ? (d.pago_efectivo||'') : '';
+  document.getElementById('det-mixto-qr').value = mixto ? (d.pago_qr||'') : '';
+  document.getElementById('det-mixto-check').textContent = 'Ingresa los valores';
+  document.getElementById('det-mixto-check').style.background = 'rgba(255,255,255,.04)';
+  if(mixto) calcDetMixto();
 
   document.getElementById('modal-detailing').style.display='flex';
 }
@@ -3149,13 +3221,16 @@ async function guardarDetailing(){
   }
 
   try{
-    await api('detailing','POST',{
+    const body = {
       fecha, placa, tipo_vehiculo: tipoVeh,
       ayudante_nombre: 'Mateo',
       valor, costo_insumos: insumos, comision_ayudante: bonif,
       forma_pago: formaPago, pago_efectivo: pagoEf, pago_qr: pagoQr
-    });
-    cerrarModal('modal-detailing'); showToast('Detailing registrado ✅'); loadDetailing();
+    };
+    const editId = document.getElementById('det-edit-id').value;
+    if(editId) await api('detailing?id=eq.'+editId,'PATCH',body);
+    else await api('detailing','POST',body);
+    cerrarModal('modal-detailing'); showToast(editId?'Detailing actualizado ✅':'Detailing registrado ✅'); loadDetailing();
   }catch(e){
     showToast('No se pudo guardar — puede que falte crear la tabla "detailing" en Supabase',true);
   }
@@ -3188,7 +3263,7 @@ async function loadDetailing(){
         +'<td style="color:#93C5FD">$'+fmt(d.comision_ayudante)+'</td>'
         +'<td style="color:#6EE7B7;font-weight:700">$'+fmt(neta)+'</td>'
         +'<td><span class="badge '+(d.forma_pago==='mixto'?'bmx':d.forma_pago==='qr'?'bqr':'bg')+'">'+(d.forma_pago==='mixto'?'🔀 Mixto':d.forma_pago==='qr'?'📲 QR':'💵 Ef')+'</span></td>'
-        +'<td><button class="btn btn-r" style="padding:3px 8px;font-size:10px" onclick="borrarDetailing('+d.id+')">🗑️</button></td>'
+        +'<td style="white-space:nowrap"><button class="btn btn-g" style="padding:3px 8px;font-size:10px" title="Editar (cambiar la fecha, valores, etc.)" onclick="abrirModalDetailing('+d.id+')">✏️</button> <button class="btn btn-r" style="padding:3px 8px;font-size:10px" onclick="borrarDetailing('+d.id+')">🗑️</button></td>'
         +'</tr>';
     }).join('') : '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">Sin detailing registrados</td></tr>';
   }catch(e){
@@ -5039,11 +5114,10 @@ let arqueoEsperado = 0;
 let cuadreActual = null;
 let cuadreFecha = null;
 
-// Arma el cuadre de caja de un día: movimientos en efectivo (caja) y por QR (cuenta).
-// La caja arranca con la base fija; entra lo cobrado en efectivo (incluidos
-// pendientes de otros días cobrados ese día), productos y detailing; sale el pago
-// a lavadores (50% de la planilla), los insumos y comisión del detailing y los
-// gastos pagados en efectivo.
+// Arma el cuadre de caja de un día. La caja arranca con la base fija; entra lo
+// cobrado en efectivo (incluidos pendientes de otros días cobrados ese día),
+// productos y detailing; sale el pago a lavadores (50% de la planilla), los
+// insumos y comisión del detailing y los gastos pagados en efectivo.
 async function calcCuadreCaja(fecha){
   const [lavadas, cobradas, det, vp, gs] = await Promise.all([
     api('ordenes?fecha=eq.'+fecha),
@@ -5052,56 +5126,54 @@ async function calcCuadreCaja(fecha){
     api('ventas_productos?fecha=eq.'+fecha).catch(()=>[]),
     api('gastos?fecha=eq.'+fecha).catch(()=>[])
   ]);
-  const ef = [], qr = [];
 
-  cobradas.sort((a,b)=>(a.numero_orden||a.id)-(b.numero_orden||b.id)).forEach(o=>{
+  // Cobros de lavadas (para el detalle y para poder cambiarles la fecha)
+  const cobros = cobradas.sort((a,b)=>(a.numero_orden||a.id)-(b.numero_orden||b.id)).map(o=>{
     const m = efQrDeOrden(o);
-    const ant = o.fecha < fecha;
-    const label = 'Lavada #'+(o.numero_orden||o.id)+' · '+(o.placa||'')+(o.empresa_nombre?' · '+o.empresa_nombre:'')
-      +(ant?' <span style="color:#FCD34D;font-size:11px">(lavada del '+fmtFechaCorta(o.fecha)+')</span>':'');
-    if(m.ef>0) ef.push({concepto:label, entra:m.ef, sale:0, ordenId:o.id});
-    if(m.qr>0) qr.push({concepto:label, entra:m.qr, sale:0, ordenId:o.id});
+    return {ordenId:o.id, numero:o.numero_orden||o.id, placa:o.placa||'', empresa:o.empresa_nombre||'',
+            fechaLavada:o.fecha, ant:o.fecha<fecha, ef:m.ef, qr:m.qr};
   });
+  const cobEf = cobros.reduce((s,r)=>s+r.ef,0), cobQr = cobros.reduce((s,r)=>s+r.qr,0);
 
+  let prodEf=0, prodQr=0;
   vp.forEach(v=>{
-    const t = v.total||0, nombre = v.producto+((v.cantidad||1)>1?' x'+v.cantidad:'');
+    const t = v.total||0;
     if(v.tipo_venta==='cliente' || !v.concesero){
       const fp = v.forma_pago || 'efectivo';
-      let e=0, q=0;
-      if(fp==='mixto'){ e=v.pago_efectivo||0; q=v.pago_qr||0; } else if(fp==='qr') q=t; else e=t;
-      if(e>0) ef.push({concepto:'Producto: '+nombre+' (cliente)', entra:e, sale:0});
-      if(q>0) qr.push({concepto:'Producto: '+nombre+' (cliente)', entra:q, sale:0});
-    } else {
-      ef.push({concepto:'Producto: '+nombre+' — descuento a '+v.concesero, entra:t, sale:0});
-    }
+      if(fp==='mixto'){ prodEf += v.pago_efectivo||0; prodQr += v.pago_qr||0; }
+      else if(fp==='qr') prodQr += t; else prodEf += t;
+    } else prodEf += t; // descuento a un lavador: queda como efectivo
   });
 
+  let detEf=0, detQr=0, detCostoEf=0, detCostoQr=0;
   det.forEach(r=>{
-    const x = detDesglose(r), pl = r.placa||'';
-    const costEf = x.ef - x.efNeto, costQr = x.qr - x.qrNeto;
-    if(x.ef>0)   ef.push({concepto:'Detailing '+pl+' (efectivo)', entra:x.ef, sale:0});
-    if(costEf>0) ef.push({concepto:'Detailing '+pl+' — insumos y comisión', entra:0, sale:costEf});
-    if(x.qr>0)   qr.push({concepto:'Detailing '+pl+' (QR)', entra:x.qr, sale:0});
-    if(costQr>0) qr.push({concepto:'Detailing '+pl+' — insumos y comisión (se retira de la cuenta)', entra:0, sale:costQr});
+    const x = detDesglose(r);
+    detEf += x.ef; detQr += x.qr;
+    detCostoEf += x.ef - x.efNeto; detCostoQr += x.qr - x.qrNeto;
   });
 
   const planilla = lavadas.reduce((s,o)=>s+(o.total||0),0);
   const mitad = Math.round(planilla/2);
-  if(mitad>0) ef.push({concepto:'Pago a lavadores — 50% de la planilla ($'+fmt(planilla)+')', entra:0, sale:mitad});
 
+  let gastosEf=0, gastosQr=0;
   gs.filter(esGastoReal).forEach(g=>{
-    const v = g.valor||0, label = 'Gasto: '+(g.descripcion||'')+' <span style="color:var(--muted);font-size:11px">('+g.categoria+')</span>';
-    if(g.forma_pago==='efectivo') ef.push({concepto:label, entra:0, sale:v});
-    else if(g.forma_pago==='qr')  qr.push({concepto:label, entra:0, sale:v});
+    const v = g.valor||0;
+    if(g.forma_pago==='efectivo') gastosEf += v; else if(g.forma_pago==='qr') gastosQr += v;
   });
 
-  // Primero lo que entra, después lo que sale
-  const orden = rows => [...rows.filter(r=>r.entra>0), ...rows.filter(r=>!(r.entra>0))];
-  const efRows = orden(ef), qrRows = orden(qr);
-  const entraEf = efRows.reduce((s,r)=>s+(r.entra||0),0), saleEf = efRows.reduce((s,r)=>s+(r.sale||0),0);
-  const entraQr = qrRows.reduce((s,r)=>s+(r.entra||0),0), saleQr = qrRows.reduce((s,r)=>s+(r.sale||0),0);
-  return {fecha, base:CAJA_BASE, efRows, qrRows, entraEf, saleEf, entraQr, saleQr,
-          esperado: CAJA_BASE + entraEf - saleEf, planilla, mitad};
+  const entraEf = cobEf + prodEf + detEf;
+  const saleEf  = mitad + detCostoEf + gastosEf;
+  return {fecha, base:CAJA_BASE, cobros, cobEf, cobQr, prodEf, prodQr, detEf, detQr, detCostoEf, detCostoQr,
+          planilla, mitad, gastosEf, gastosQr,
+          entraEf, saleEf, esperado: CAJA_BASE + entraEf - saleEf,
+          entraQr: cobQr + prodQr + detQr, saleQr: detCostoQr + gastosQr};
+}
+
+function toggleCuadreDetalle(){
+  const el = document.getElementById('cuadre-detalle'), btn = document.getElementById('cuadre-btn-detalle');
+  const abrir = el.style.display==='none';
+  el.style.display = abrir ? 'block' : 'none';
+  btn.textContent = abrir ? 'Ocultar detalle de los cobros ▴' : 'Ver detalle de los cobros ▾';
 }
 
 function cuadreHoy(){ const el=document.getElementById('cuadre-fecha'); if(el){ el.value=today(); } loadCuadre(); }
@@ -5114,37 +5186,29 @@ async function loadCuadre(){
     const cu = await calcCuadreCaja(cuadreFecha);
     cuadreActual = cu;
 
-    // Tabla de caja
-    let saldo = cu.base, n = 1;
-    let rows = '<tr style="background:rgba(255,255,255,.03)"><td>'+(n++)+'</td><td style="font-weight:700">🏦 Base de caja (fija, arranca el día)</td>'
-      +'<td style="color:#6EE7B7;font-weight:700">$'+fmt(cu.base)+'</td><td></td><td style="font-weight:800">$'+fmt(saldo)+'</td><td></td></tr>';
-    cu.efRows.forEach(r=>{
-      saldo += (r.entra||0) - (r.sale||0);
-      rows += '<tr>'
-        +'<td style="color:var(--muted)">'+(n++)+'</td>'
-        +'<td>'+r.concepto+'</td>'
-        +'<td style="color:#6EE7B7;font-weight:700">'+(r.entra?'$'+fmt(r.entra):'')+'</td>'
-        +'<td style="color:#FCA5A5;font-weight:700">'+(r.sale?'$'+fmt(r.sale):'')+'</td>'
-        +'<td style="font-weight:800;color:'+(saldo>=0?'var(--text)':'#FCA5A5')+'">$'+fmt(saldo)+'</td>'
-        +'<td>'+(r.ordenId?'<button class="btn btn-g" style="padding:2px 8px;font-size:11px" title="Cambiar el día del cobro" onclick="abrirFechaCobro('+r.ordenId+')">✏️</button>':'')+'</td>'
-        +'</tr>';
-    });
-    document.getElementById('cuadre-rows').innerHTML = rows;
-    document.getElementById('cuadre-foot').innerHTML = '<tr style="background:var(--gold-p);font-weight:800">'
-      +'<td></td><td style="color:var(--gold)">DEBE HABER EN CAJA</td>'
-      +'<td style="color:#6EE7B7">$'+fmt(cu.base+cu.entraEf)+'</td><td style="color:#FCA5A5">$'+fmt(cu.saleEf)+'</td>'
-      +'<td style="color:var(--gold);font-size:16px">$'+fmt(cu.esperado)+'</td><td></td></tr>';
+    // Resumen corto: base, lo que entra y lo que sale
+    const fila = (txt,val,color,suave)=>'<div class="cierre-row"><span style="color:'+(suave?'var(--muted)':'var(--text)')+'">'+txt+'</span>'
+      +'<span style="font-weight:700;color:'+color+';font-family:Georgia,serif">'+val+'</span></div>';
+    let html = fila('🏦 Base de caja (fija, arranca el día)','$'+fmt(cu.base),'var(--text)');
+    html += fila('💵 Cobrado en efectivo','+$'+fmt(cu.cobEf),'#6EE7B7');
+    if(cu.prodEf>0)     html += fila('🛒 Productos en efectivo','+$'+fmt(cu.prodEf),'#6EE7B7');
+    if(cu.detEf>0)      html += fila('✨ Detailing en efectivo','+$'+fmt(cu.detEf),'#6EE7B7');
+    html += fila('👷 Pago a lavadores (50% de la planilla)','-$'+fmt(cu.mitad),'#FCA5A5');
+    if(cu.detCostoEf>0) html += fila('✨ Insumos y comisión del detailing','-$'+fmt(cu.detCostoEf),'#FCA5A5');
+    if(cu.gastosEf>0)   html += fila('📋 Gastos pagados en efectivo','-$'+fmt(cu.gastosEf),'#FCA5A5');
+    document.getElementById('cuadre-resumen').innerHTML = html;
     document.getElementById('cuadre-esperado').textContent = '$'+fmt(cu.esperado);
 
-    // Tabla de cuenta (QR)
-    document.getElementById('cuadre-qr-rows').innerHTML = cu.qrRows.map(r=>
-      '<tr><td>'+r.concepto+'</td>'
-      +'<td style="color:#C4B5FD;font-weight:700">'+(r.entra?'$'+fmt(r.entra):'')+'</td>'
-      +'<td style="color:#FCA5A5;font-weight:700">'+(r.sale?'$'+fmt(r.sale):'')+'</td></tr>'
-    ).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:16px">Sin movimientos por QR este día</td></tr>';
-    document.getElementById('cuadre-qr-foot').innerHTML = '<tr style="background:rgba(139,92,246,.1);font-weight:800">'
-      +'<td style="color:#C4B5FD">MOVIMIENTO NETO DE LA CUENTA</td>'
-      +'<td colspan="2" style="color:#C4B5FD">$'+fmt(cu.entraQr-cu.saleQr)+'</td></tr>';
+    const qrNeto = cu.entraQr - cu.saleQr;
+    document.getElementById('cuadre-qr-nota').textContent = '📲 Por QR entró $'+fmt(qrNeto)+' — va a la cuenta, no a la caja.';
+
+    // Detalle de cobros (oculto por defecto) con el lápiz para cambiar el día del cobro
+    document.getElementById('cuadre-det-rows').innerHTML = cu.cobros.length ? cu.cobros.map(r=>
+      '<tr><td>#'+r.numero+' · '+r.placa+(r.empresa?' · '+r.empresa:'')
+        +(r.ant?' <span style="color:#FCD34D;font-size:11px">(lavada del '+fmtFechaCorta(r.fechaLavada)+')</span>':'')+'</td>'
+      +'<td style="font-weight:700">'+(r.ef?'<span style="color:#6EE7B7">💵 $'+fmt(r.ef)+'</span> ':'')+(r.qr?'<span style="color:#C4B5FD">📲 $'+fmt(r.qr)+'</span>':'')+'</td>'
+      +'<td><button class="btn btn-g" style="padding:2px 8px;font-size:11px" title="Cambiar el día del cobro" onclick="abrirFechaCobro('+r.ordenId+')">✏️</button></td></tr>'
+    ).join('') : '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:14px">Sin cobros este día</td></tr>';
 
     // Conteo: limpiar y, si ya hay un cuadre guardado ese día, mostrarlo
     document.getElementById('arqueo-real').value = '';
