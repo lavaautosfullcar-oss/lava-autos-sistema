@@ -184,6 +184,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <div class="ni" onclick="go('turnos',this)" id="nav-turnos"><span class="ni-ico">🎫</span>Turnos</div>
       <div class="ni hidden" onclick="go('detailing',this)" id="nav-detailing"><span class="ni-ico">✨</span>Detailing</div>
       <div class="ni hidden" onclick="go('cierre',this)" id="nav-cierre"><span class="ni-ico">💰</span>Cierre del día</div>
+      <div class="ni hidden" onclick="go('cuadre',this)" id="nav-cuadre"><span class="ni-ico">🧮</span>Cuadre de caja</div>
       <div class="ni hidden" onclick="go('gastos',this)" id="nav-gastos"><span class="ni-ico">📋</span>Gastos</div>
       <div class="ni hidden" onclick="go('inversiones',this)" id="nav-inversiones"><span class="ni-ico">🏗️</span>Inversiones</div>
       <div class="nav-sep hidden" id="sep-reportes">Reportes</div>
@@ -282,30 +283,23 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           <div style="font-size:32px;font-weight:900;font-family:'Georgia',serif;color:var(--gold)" id="c-neta">$0</div>
         </div>
 
-        <!-- Desglose -->
+        <!-- Desglose (corto) -->
         <div class="card">
           <div class="card-t"><span class="card-tg">✦ Desglose del cierre</span></div>
 
-          <div class="cierre-row"><span style="color:var(--muted)">📋 Total del día (planilla — todo lo lavado hoy)</span><span style="font-weight:700;font-family:'Georgia',serif" id="dc-total-dia">$0</span></div>
-          <div class="cierre-row"><span style="color:var(--muted)">÷ 2 — Pago lavadores (50%, siempre en efectivo)</span><span style="font-weight:700;color:#FCA5A5;font-family:'Georgia',serif" id="dc-mitad-lav">$0</span></div>
-          <div class="cierre-row"><span style="color:var(--muted)">💵 Cobrado hoy en efectivo</span><span style="font-weight:700;color:#6EE7B7;font-family:'Georgia',serif" id="dc-cob-ef">$0</span></div>
-          <div class="cierre-row"><span style="color:var(--muted)">📲 Cobrado hoy por QR</span><span style="font-weight:700;color:#C4B5FD;font-family:'Georgia',serif" id="dc-cob-qr">$0</span></div>
-          <div class="cierre-row" id="dc-cob-ant-row" style="display:none"><span style="color:var(--muted);font-size:12px">↳ de eso: pendientes de otros días cobrados hoy (entran completos)</span><span style="font-weight:700;color:#FCD34D;font-family:'Georgia',serif" id="dc-cob-ant">$0</span></div>
-          <div class="cierre-row" style="border-bottom:2px solid var(--border)"><span style="font-weight:700">= Lo que nos queda de las lavadas</span><span style="font-size:18px;font-weight:800;color:#6EE7B7;font-family:'Georgia',serif" id="dc-tu-neta">$0</span></div>
-          <div class="cierre-row"><span style="color:var(--muted);font-size:12px">⏳ Pendientes de hoy por cobrar (aún no entran)</span><span style="font-weight:700;color:#FCD34D;font-family:'Georgia',serif" id="dc-pendientes">$0</span></div>
+          <div class="cierre-row"><span style="color:var(--muted)">📋 Total del día (planilla)</span><span style="font-weight:700;font-family:'Georgia',serif" id="dc-total-dia">$0</span></div>
+          <div class="cierre-row"><span style="color:var(--muted)">÷ 2 — Pago lavadores</span><span style="font-weight:700;color:#FCA5A5;font-family:'Georgia',serif" id="dc-mitad-lav">$0</span></div>
+          <div class="cierre-row"><span style="color:var(--muted)">💵 Cobrado en efectivo</span><span style="font-weight:700;color:#6EE7B7;font-family:'Georgia',serif" id="dc-cob-ef">$0</span></div>
+          <div class="cierre-row"><span style="color:var(--muted)">📲 Cobrado en QR</span><span style="font-weight:700;color:#C4B5FD;font-family:'Georgia',serif" id="dc-cob-qr">$0</span></div>
+          <div class="cierre-row" id="dc-cob-ant-row" style="display:none;padding-top:0"><span style="color:#FCD34D;font-size:11px">↳ incluye pendientes de otros días cobrados hoy</span><span style="font-weight:700;color:#FCD34D;font-size:12px;font-family:'Georgia',serif" id="dc-cob-ant">$0</span></div>
+          <div class="cierre-row" style="border-bottom:2px solid var(--border)"><span style="font-weight:700">= Nos corresponde (lavadas)</span><span style="font-size:18px;font-weight:800;color:#6EE7B7;font-family:'Georgia',serif" id="dc-tu-neta">$0</span></div>
 
-          <!-- Detailing -->
           <div id="cierre-det-section" style="display:none">
-            <div class="cierre-row"><span style="color:var(--muted)">✨ Detailing cobrado hoy</span><span style="font-weight:700;color:#F0ABFC;font-family:'Georgia',serif" id="dc-det-venta">$0</span></div>
-            <div class="cierre-row"><span style="color:var(--muted)">— Insumos y comisión (se pagan hoy)</span><span style="font-weight:700;color:#FCA5A5;font-family:'Georgia',serif" id="dc-det-costo">$0</span></div>
-            <div class="cierre-row" style="border-bottom:2px solid var(--border)"><span style="font-weight:700">= Neto del detailing</span><span style="font-size:18px;font-weight:800;color:#F0ABFC;font-family:'Georgia',serif" id="dc-det-neto">$0</span></div>
+            <div class="cierre-row"><span style="color:var(--muted)"><span id="dc-det-label">✨ + Detailing</span><div style="font-size:10px;color:var(--muted);margin-top:2px" id="dc-det-nota"></div></span><span style="font-weight:700;color:#F0ABFC;font-family:'Georgia',serif" id="dc-det-neto">$0</span></div>
           </div>
 
-          <!-- Productos -->
           <div id="cierre-prod-section" style="display:none">
-            <div class="cierre-row"><span style="color:var(--muted)">🛒 Productos a concesores</span><span style="font-weight:700;color:#6EE7B7;font-family:'Georgia',serif" id="dc-prod-concesor">$0</span></div>
-            <div class="cierre-row"><span style="color:var(--muted)">🛒 Productos a clientes</span><span style="font-weight:700;color:#6EE7B7;font-family:'Georgia',serif" id="dc-prod-cliente">$0</span></div>
-            <div class="cierre-row" style="border-bottom:2px solid var(--border)"><span style="color:var(--muted)">🛒 Total productos</span><span style="font-weight:700;color:#6EE7B7;font-family:'Georgia',serif" id="dc-prod-total">$0</span></div>
+            <div class="cierre-row"><span style="color:var(--muted)">🛒 + Productos vendidos</span><span style="font-weight:700;color:#6EE7B7;font-family:'Georgia',serif" id="dc-prod-total">$0</span></div>
           </div>
 
           <!-- Total final -->
@@ -313,12 +307,6 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
             <span style="font-weight:700;color:var(--gold)">✦ TOTAL NUESTRO DEL DÍA</span>
             <span style="font-size:24px;font-weight:900;color:var(--gold);font-family:'Georgia',serif" id="dc-total-final">$0</span>
           </div>
-          <div id="dc-total-detalle" style="font-size:11px;color:var(--muted);margin-top:6px;text-align:right"></div>
-
-          <div class="divider"></div>
-          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">¿Dónde está tu plata?</div>
-          <div class="cierre-row"><span style="color:var(--muted)">💵 En caja (efectivo)</span><span style="font-weight:700;color:#6EE7B7;font-family:'Georgia',serif" id="dc-caja-ef">$0</span></div>
-          <div class="cierre-row" style="border:none"><span style="color:var(--muted)">📲 En cuenta (QR)</span><span style="font-weight:700;color:#C4B5FD;font-family:'Georgia',serif" id="dc-cuenta-qr">$0</span></div>
         </div>
 
         <!-- Ventas productos card -->
@@ -339,13 +327,46 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           <div class="tbl-wrap"><table><thead><tr><th>Concesor</th><th>Generó</th><th>Le toca (50%)</th><th>A pagar</th><th>Estado</th></tr></thead><tbody id="cierre-concs"></tbody></table></div>
         </div>
 
-        <!-- Arqueo -->
+        <!-- Cuadre de caja (acceso) -->
         <div class="card" style="border-color:rgba(245,158,11,.3)">
-          <div class="card-t"><span class="card-tg">🔐 Arqueo de caja</span><span id="arqueo-estado" style="font-size:11px"></span></div>
+          <div class="card-t"><span class="card-tg">🧮 Cuadre de caja</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+            <div>
+              <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Lo que debería haber en caja hoy (incluye la base)</div>
+              <div style="font-size:22px;font-weight:800;color:#6EE7B7;font-family:'Georgia',serif" id="arqueo-esperado">$0</div>
+            </div>
+            <button class="btn btn-p" style="padding:10px 16px" onclick="go('cuadre',document.getElementById('nav-cuadre'))">🧮 Abrir cuadre de caja</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CUADRE DE CAJA -->
+      <div id="s-cuadre" class="screen">
+        <div class="row">
+          <div><div class="page-title">🧮 Cuadre de caja</div><div class="page-sub">Lo que entra y sale de la caja en efectivo, día por día. La caja arranca cada día con la base fija.</div></div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <input type="date" id="cuadre-fecha" onchange="loadCuadre()"
+              style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none"/>
+            <button class="btn btn-g" onclick="cuadreHoy()">Hoy</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-t"><span class="card-tg">💵 Caja — efectivo</span></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>#</th><th>Concepto</th><th>Entra</th><th>Sale</th><th>Saldo en caja</th><th></th></tr></thead>
+            <tbody id="cuadre-rows"></tbody>
+            <tfoot id="cuadre-foot"></tfoot>
+          </table></div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px">El lápiz ✏️ cambia el día en que entró la plata de un cobro (por ejemplo, si lo pagaron otro día).</div>
+        </div>
+
+        <div class="card" style="border-color:rgba(245,158,11,.3)">
+          <div class="card-t"><span class="card-tg">🔐 Conteo de la caja</span><span id="arqueo-estado" style="font-size:11px"></span></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
             <div>
-              <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Lo que debería haber en caja</div>
-              <div style="font-size:20px;font-weight:800;color:#6EE7B7;font-family:'Georgia',serif" id="arqueo-esperado">$0</div>
+              <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Lo que debe haber en caja</div>
+              <div style="font-size:20px;font-weight:800;color:#6EE7B7;font-family:'Georgia',serif" id="cuadre-esperado">$0</div>
             </div>
             <div>
               <div style="font-size:10px;color:var(--muted);margin-bottom:4px">¿Cuánto hay físicamente?</div>
@@ -357,82 +378,27 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
             <div style="font-size:12px;margin-bottom:4px" id="arqueo-label"></div>
             <div style="font-size:24px;font-weight:900;font-family:'Georgia',serif" id="arqueo-diff"></div>
           </div>
-          <button class="btn btn-p" style="width:100%;padding:10px" onclick="guardarArqueo()">💾 Guardar arqueo del día</button>
+          <div class="field"><label>Nota (opcional)</label><input type="text" id="arqueo-nota" placeholder="Ej: faltaron $5.000 de un vuelto"/></div>
+          <button class="btn btn-p" style="width:100%;padding:10px" onclick="guardarArqueo()">💾 Guardar cuadre del día</button>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px">Queda en el registro de cuadres (abajo). No se suma a los gastos.</div>
         </div>
 
-      </div>
-
-      <!-- PRODUCTOS -->
-      <div id="s-productos" class="screen">
-        <div class="row">
-          <div><div class="page-title">🛒 Venta de productos</div><div class="page-sub" id="prod-fecha-lbl"></div></div>
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <div class="pay-toggle" style="margin:0">
-              <button class="pt pt-ef on-ef" id="prod-modo-hoy" onclick="selProdModo('hoy')">📅 Hoy</button>
-              <button class="pt pt-qr" id="prod-modo-historial" onclick="selProdModo('historial')">📊 Historial mensual</button>
-            </div>
-            <select id="prod-hist-mes" onchange="loadProductosHistorial()" style="display:none;background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none"></select>
-            <select id="prod-filtro" onchange="renderProductosFiltrado()"
-              style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none">
-              <option value="">Todos los productos</option>
-              <option value="Champú">Champú</option>
-              <option value="Uva">Uva</option>
-              <option value="Teflón">Teflón</option>
-              <option value="Grafito">Grafito</option>
-              <option value="Desengrasante">Desengrasante</option>
-              <option value="Restaurador partes negras">Restaurador partes negras</option>
-              <option value="Trapo">Trapo</option>
-              <option value="Ambientador">Ambientador</option>
-              <option value="Extintor">Extintor</option>
-              <option value="Otro">Otro</option>
-            </select>
-            <button class="btn btn-g" onclick="abrirModalCompraProducto()">🧾 Registrar compra</button>
-            <button class="btn btn-p" onclick="abrirModalProducto()">+ Registrar venta</button>
-          </div>
+        <div class="card">
+          <div class="card-t"><span class="card-tg">📲 Cuenta (QR) — movimiento del día</span></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Concepto</th><th>Entra</th><th>Sale</th></tr></thead>
+            <tbody id="cuadre-qr-rows"></tbody>
+            <tfoot id="cuadre-qr-foot"></tfoot>
+          </table></div>
         </div>
 
-        <div id="prod-vista-hoy">
-          <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
-            <div class="kpi"><div class="kpi-l">💰 Total ventas</div><div class="kpi-v" style="color:var(--gold)" id="prod-total-dia">$0</div></div>
-            <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">👤 Ventas a clientes</div><div class="kpi-v" style="color:#6EE7B7" id="prod-total-clientes">$0</div></div>
-            <div class="kpi" style="border-left-color:#FCA5A5"><div class="kpi-l">👷 Descuentos concesores</div><div class="kpi-v" style="color:#FCA5A5" id="prod-descuentos">$0</div></div>
-            <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">📦 Unidades vendidas</div><div class="kpi-v" style="color:#C4B5FD" id="prod-unidades">0</div></div>
-          </div>
-          <div class="card">
-            <div class="card-t"><span class="card-tg">✦ Ventas registradas hoy</span></div>
-            <div id="prod-lista"></div>
-          </div>
-        </div>
-
-        <div id="prod-vista-historial" style="display:none">
-          <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
-            <div class="kpi"><div class="kpi-l">💰 Vendido (mes)</div><div class="kpi-v" style="color:var(--gold)" id="ph-total-mes">$0</div></div>
-            <div class="kpi" style="border-left-color:#FCA5A5"><div class="kpi-l">🧾 Comprado (mes)</div><div class="kpi-v" style="color:#FCA5A5" id="ph-comprado-mes">$0</div></div>
-            <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">📈 Margen (mes)</div><div class="kpi-v" style="color:#6EE7B7" id="ph-margen-mes">$0</div></div>
-            <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">🏆 Más vendido</div><div class="kpi-v" style="color:#C4B5FD;font-size:15px" id="ph-mas-vendido">—</div></div>
-          </div>
-          <div class="kpis" style="grid-template-columns:repeat(2,1fr)">
-            <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">📦 Unidades vendidas</div><div class="kpi-v" style="color:#C4B5FD" id="ph-unidades-mes">0</div></div>
-            <div class="kpi" style="border-left-color:#FCA5A5"><div class="kpi-l">👷 Descuentos concesores</div><div class="kpi-v" style="color:#FCA5A5" id="ph-descuentos-mes">$0</div></div>
-          </div>
-          <div class="card">
-            <div class="card-t"><span class="card-tg">🏆 Ranking de productos del mes (de más a menos vendido)</span></div>
-            <div class="tbl-wrap">
-              <table>
-                <thead><tr><th>#</th><th>Producto</th><th>Unidades</th><th>👤 Clientes</th><th>👷 Concesores</th><th>Total vendido</th><th>🧾 Costo</th><th>📈 Margen</th></tr></thead>
-                <tbody id="ph-ranking"></tbody>
-              </table>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-t"><span class="card-tg">🧾 Compras de mercancía este mes</span></div>
-            <div class="tbl-wrap">
-              <table>
-                <thead><tr><th>Fecha</th><th>Producto</th><th>Cant.</th><th>Costo unit.</th><th>Total</th><th></th></tr></thead>
-                <tbody id="ph-compras-lista"></tbody>
-              </table>
-            </div>
-          </div>
+        <div class="card">
+          <div class="card-t"><span class="card-tg">📒 Registro de cuadres</span></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Fecha</th><th>Debía haber</th><th>Contado</th><th>Diferencia</th><th>Nota</th><th></th></tr></thead>
+            <tbody id="cuadre-hist-rows"></tbody>
+            <tfoot id="cuadre-hist-foot"></tfoot>
+          </table></div>
         </div>
       </div>
 
@@ -1085,6 +1051,24 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 </div>
 </div>
 
+<!-- Cambiar fecha de cobro -->
+<div id="modal-fecha-cobro" class="modal-bg" style="display:none">
+<div class="modal">
+  <div class="modal-title">📅 Cambiar fecha del cobro</div>
+  <input type="hidden" id="fcobro-id"/>
+  <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--muted)">Orden / placa:</span><span style="font-weight:700;color:var(--gold)" id="fcobro-info"></span></div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--muted)">Fecha de la lavada:</span><span id="fcobro-lavada"></span></div>
+    <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Valor:</span><span style="font-weight:700" id="fcobro-valor"></span></div>
+  </div>
+  <div class="field"><label>Día que realmente entró la plata</label><input type="date" id="fcobro-nueva"/></div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button class="btn btn-p" style="flex:1;padding:10px" onclick="guardarFechaCobro()">💾 Guardar</button>
+    <button class="btn btn-g" onclick="cerrarModal('modal-fecha-cobro')">Cancelar</button>
+  </div>
+</div>
+</div>
+
 <!-- Cobrar / Cerrar Orden -->
 <div id="modal-cobrar" class="modal-bg" style="display:none">
 <div class="modal">
@@ -1094,6 +1078,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
     <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--muted)">Concesero:</span><span id="cobrar-conc"></span></div>
     <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Total a cobrar:</span><span style="font-weight:700;font-size:18px;color:var(--gold)" id="cobrar-total"></span></div>
   </div>
+  <div class="field"><label>Fecha del cobro (el día que entró la plata)</label><input type="date" id="cobrar-fecha"/></div>
   <div class="field"><label>¿Cómo pagó el cliente?</label>
     <div class="pay-toggle" style="margin-bottom:10px">
       <button class="pt pt-ef on-ef" onclick="selCobrarTipo('simple',this)" id="cobrar-tipo-simple">💵/📲 Un solo pago</button>
@@ -1159,6 +1144,10 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
   <div class="form-grid" style="grid-template-columns:1fr 1fr">
     <div class="field"><label>Concesor</label><select id="edit-ord-conc"></select></div>
     <div class="field"><label>Placa</label><input type="text" id="edit-ord-placa" autocomplete="off" oninput="this.value=this.value.toUpperCase()"/></div>
+  </div>
+  <div class="form-grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label>Fecha de la lavada</label><input type="date" id="edit-ord-fecha"/></div>
+    <div class="field" id="edit-ord-fcobro-wrap"><label>Fecha del cobro</label><input type="date" id="edit-ord-fcobro"/></div>
   </div>
   <div class="field"><label>Tipo de vehículo</label>
     <div style="display:flex;gap:5px;flex-wrap:wrap" id="edit-tipo-btns">
@@ -1713,7 +1702,7 @@ function doLogout(){
   document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('sel'));
   document.querySelector('.role-btn')?.classList.add('sel');
   // Reset nav
-  ['nav-cierre','nav-productos','nav-detailing','nav-gastos','nav-inversiones','nav-dashboard','nav-historial','nav-susuerte',
+  ['nav-cierre','nav-cuadre','nav-productos','nav-detailing','nav-gastos','nav-inversiones','nav-dashboard','nav-historial','nav-susuerte',
    'nav-pendientes','nav-conceseros','nav-servicios-cfg','nav-saldos',
    'sep-reportes','sep-empresas','sep-config',
    'bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
@@ -1725,7 +1714,7 @@ function setupNav(){
   const isOwner=currentUser.rol==='dueno';
   const isCajero=currentUser.rol==='cajero';
   // Reset all first
-  ['nav-cierre','nav-productos','nav-detailing','nav-gastos','nav-inversiones','nav-dashboard','nav-historial','nav-susuerte',
+  ['nav-cierre','nav-cuadre','nav-productos','nav-detailing','nav-gastos','nav-inversiones','nav-dashboard','nav-historial','nav-susuerte',
    'nav-pendientes','nav-conceseros','nav-servicios-cfg','nav-saldos',
    'sep-reportes','sep-empresas','sep-config',
    'bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
@@ -1733,6 +1722,7 @@ function setupNav(){
   // Administrador: ordenes + productos + cierre + historial + pendientes
   if(isCajero){
     document.getElementById('nav-cierre')?.classList.remove('hidden');
+    document.getElementById('nav-cuadre')?.classList.remove('hidden');
     document.getElementById('bn-cierre')?.classList.remove('hidden');
     document.getElementById('nav-historial')?.classList.remove('hidden');
     document.getElementById('nav-pendientes')?.classList.remove('hidden');
@@ -1742,7 +1732,7 @@ function setupNav(){
   }
   // Dueño: todo
   if(isOwner){
-    ['nav-cierre','nav-productos','nav-detailing','nav-gastos','nav-inversiones','nav-dashboard','nav-historial','nav-susuerte',
+    ['nav-cierre','nav-cuadre','nav-productos','nav-detailing','nav-gastos','nav-inversiones','nav-dashboard','nav-historial','nav-susuerte',
      'nav-pendientes','nav-conceseros','nav-servicios-cfg','nav-saldos',
      'sep-reportes','sep-empresas','sep-config',
      'bn-cierre','bn-gastos','bn-dashboard','bn-conceseros'].forEach(id=>
@@ -1773,6 +1763,7 @@ function go(s,el){
     loadPlanilla();
   }
   else if(s==='cierre') loadCierre();
+  else if(s==='cuadre') loadCuadre();
   else if(s==='historial') initHistorial();
   else if(s==='saldos') loadSaldos();
   else if(s==='productos') selProdModo('hoy');
@@ -1878,7 +1869,7 @@ function renderOrdenes(ords){
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
           <span style="color:var(--muted);font-size:11px">${fmtTime(o.hora_entrada)}</span>
           <span style="font-weight:700;font-size:14px">$${fmt(o.total)}</span>
-          <span class="badge ${o.estado==='abierta'?'ba':'bg'}">${o.estado==='abierta'?'Abierta':'Cerrada'}</span>
+          <span class="badge ${o.estado==='abierta'?'ba':'bg'}">${o.estado==='abierta'?'Abierta':(o.estado==='sin_cobro'?'Sin cobro':'Cerrada')}</span>
           ${o.estado==='abierta'?`
             <button class="btn btn-p" style="padding:4px 10px;font-size:10px" onclick="abrirCobrar(${o.id})">💰 Cobrar</button>
             <button class="btn" style="padding:4px 10px;font-size:10px;background:rgba(245,158,11,.15);color:#FCD34D;border:1px solid rgba(245,158,11,.3);border-radius:7px;cursor:pointer;font-weight:700;font-family:'Segoe UI',sans-serif" onclick="marcarPendientePago(${o.id})">⏳ Pdte pago</button>
@@ -2117,6 +2108,7 @@ async function guardarOrden(){
 }
 
 // ── COBRAR ────────────────────────────────────────────────────────────────────
+let cobrarOrdenFecha = null;
 async function abrirCobrar(id){
   try{
     const ords=await api('ordenes?id=eq.'+id);
@@ -2125,6 +2117,8 @@ async function abrirCobrar(id){
     cobrarPayMode='efectivo';
     cobrarTipo='simple';
     cobrarTotal=o.total||0;
+    cobrarOrdenFecha=o.fecha;
+    document.getElementById('cobrar-fecha').value=today(); // por defecto hoy; se puede cambiar
     document.getElementById('cobrar-num').textContent=o.numero_orden;
     document.getElementById('cobrar-placa').textContent=o.placa;
     document.getElementById('cobrar-conc').textContent=o.concesero_nombre||'';
@@ -2181,6 +2175,10 @@ function calcMixto(){
 
 async function confirmarCobrar(){
   try{
+    const fechaCobro = document.getElementById('cobrar-fecha')?.value || today();
+    if(cobrarOrdenFecha && fechaCobro < cobrarOrdenFecha){
+      showToast('La fecha del cobro no puede ser antes de la fecha de la lavada ('+cobrarOrdenFecha+')', true); return;
+    }
     let pagoFinal=cobrarPayMode;
     let efMonto=0, qrMonto=0;
     if(cobrarTipo==='mixto'){
@@ -2195,7 +2193,7 @@ async function confirmarCobrar(){
       forma_pago:pagoFinal,
       pago_efectivo:cobrarTipo==='mixto'?efMonto:(cobrarPayMode==='efectivo'?cobrarTotal:0),
       pago_qr:cobrarTipo==='mixto'?qrMonto:(cobrarPayMode==='qr'?cobrarTotal:0)
-    }, today());
+    }, fechaCobro);
     if(ordenActual){ordenActual.forma_pago=pagoFinal;imprimirTicket(ordenActual);}
     cerrarModal('modal-cobrar');
     showToast('Orden cobrada ✅');
@@ -2212,6 +2210,7 @@ async function reimprimir(id){
 }
 
 // ── EDITAR ORDEN ──────────────────────────────────────────────────────────────
+let editOrdOrig = null;
 async function abrirEditarOrd(id){
   try{
     // Reload conceseros if empty (misma protección que abrirModalOrden)
@@ -2224,6 +2223,11 @@ async function abrirEditarOrd(id){
     document.getElementById('edit-ord-id').value=id;
     document.getElementById('edit-ord-num').textContent=o.numero_orden;
     document.getElementById('edit-ord-placa').value=o.placa;
+    // Fechas: la de la lavada (planilla y lavadores) y la del cobro (caja y QR)
+    editOrdOrig={fecha:o.fecha, fecha_cobro:o.fecha_cobro||null, estado:o.estado};
+    document.getElementById('edit-ord-fecha').value=o.fecha||today();
+    document.getElementById('edit-ord-fcobro').value=o.fecha_cobro||'';
+    document.getElementById('edit-ord-fcobro-wrap').style.display = (o.estado==='cerrada') ? '' : 'none';
     const sel=document.getElementById('edit-ord-conc');
     sel.innerHTML=conceseros.map(c=>`<option value="${c.id}" data-nombre="${c.nombre}" ${c.nombre===o.concesero_nombre?'selected':''}>${c.nombre}</option>`).join('');
     editSelectedSvcs=svcs.map(s=>(({id:s.id,nombre:s.servicio_nombre,precio:s.valor_unit})));
@@ -2327,6 +2331,17 @@ async function guardarEditarOrden(){
   const editEmpId = chkCli&&editEmpSel?.value?parseInt(editEmpSel.value):null;
   const editEmpNombre = chkCli&&editEmpSel?.value?editEmpSel.options[editEmpSel.selectedIndex]?.dataset.nombre||'':'';
   const patch={placa,concesero_id:concId,concesero_nombre:concNombre,total};
+  // Fechas (si se cambiaron)
+  const nuevaFecha=document.getElementById('edit-ord-fecha').value;
+  const nuevaFCobro=document.getElementById('edit-ord-fcobro').value;
+  if(nuevaFecha && editOrdOrig && nuevaFecha!==editOrdOrig.fecha) patch.fecha=nuevaFecha;
+  if(editOrdOrig && editOrdOrig.estado==='cerrada'){
+    const fechaFinal = patch.fecha || editOrdOrig.fecha;
+    if(nuevaFCobro && nuevaFCobro!==(editOrdOrig.fecha_cobro||'')) patch.fecha_cobro=nuevaFCobro;
+    else if(patch.fecha && editOrdOrig.fecha_cobro===editOrdOrig.fecha) patch.fecha_cobro=patch.fecha; // se cobró el mismo día: mover también el cobro
+    const fcFinal = patch.fecha_cobro || editOrdOrig.fecha_cobro;
+    if(fcFinal && fcFinal < fechaFinal){ showToast('La fecha del cobro no puede ser antes de la fecha de la lavada',true); return; }
+  }
   if(chkCli){
     if(editEmpId){
       patch.empresa_id = editEmpId;
@@ -2341,7 +2356,12 @@ async function guardarEditarOrden(){
     }
   }
   try{
-    await api('ordenes?id=eq.'+id,'PATCH',patch);
+    try{ await api('ordenes?id=eq.'+id,'PATCH',patch); }
+    catch(e){
+      // Si todavía no existe la columna fecha_cobro, guarda lo demás sin ella
+      if(patch.fecha_cobro!==undefined && /fecha_cobro/i.test(e.message||'')){ delete patch.fecha_cobro; await api('ordenes?id=eq.'+id,'PATCH',patch); }
+      else throw e;
+    }
     await api('orden_servicios?orden_id=eq.'+id,'DELETE');
     for(const s of editSelectedSvcs){
       await api('orden_servicios','POST',{orden_id:parseInt(id),servicio_nombre:s.nombre,cantidad:1,valor_unit:s.precio,subtotal:s.precio});
@@ -2460,6 +2480,12 @@ function imprimirTicket(o){
 //     día y salen del mismo medio por el que entró la plata (efectivo → caja,
 //     QR → cuenta).
 
+// Base fija con la que arranca la caja todos los días (no es del día anterior)
+const CAJA_BASE = 300000;
+// Categorías de "gastos" que NO son gastos reales (no entran a ninguna cuenta)
+const CATS_NO_GASTO = ['🏦 Saldo inicial','🛒 Venta producto','🔐 Arqueo de caja'];
+const esGastoReal = g => !CATS_NO_GASTO.includes(g.categoria);
+
 // Cuánto de una orden cobrada fue en efectivo y cuánto por QR
 function efQrDeOrden(o){
   const t = parseInt(o.total)||0;
@@ -2552,7 +2578,7 @@ async function cuentaPorDia(start, end){
     } else d.prodCaja += t; // descuento a concesor: queda como efectivo
   });
   cp.forEach(c=>{ D(c.fecha).prodCompras += c.costo_total||0; });
-  gs.filter(g=>g.categoria!=='🏦 Saldo inicial' && g.categoria!=='🛒 Venta producto').forEach(g=>{
+  gs.filter(esGastoReal).forEach(g=>{
     const d = D(g.fecha), v = g.valor||0;
     d.gastos += v;
     if(g.forma_pago==='efectivo') d.gastosEf += v;
@@ -2642,19 +2668,19 @@ async function loadCierre(){
     // ── Detailing de HOY ──────────────────────────────────────────────────────
     // Entra el día que se hace. Insumos y comisión se pagan ese mismo día y salen
     // del mismo medio por el que entró la plata (efectivo → caja, QR → cuenta).
-    const det = {venta:0, costo:0, neto:0, efNeto:0, qrNeto:0, n:0};
+    const det = {venta:0, costo:0, neto:0, efNeto:0, qrNeto:0, efV:0, qrV:0, n:0};
     try{
       const rowsDet = await api('detailing?fecha=eq.'+hoy);
       rowsDet.forEach(r=>{
         const x = detDesglose(r);
-        det.venta+=x.valor; det.costo+=x.costo; det.neto+=x.neto; det.efNeto+=x.efNeto; det.qrNeto+=x.qrNeto; det.n++;
+        det.venta+=x.valor; det.costo+=x.costo; det.neto+=x.neto; det.efNeto+=x.efNeto; det.qrNeto+=x.qrNeto;
+        det.efV+=x.ef; det.qrV+=x.qr; det.n++;
       });
     }catch(e){ console.warn('detailing hoy:', e.message); }
+    const detMedio = (det.qrV>0 && det.efV>0) ? 'pagado en QR y efectivo' : (det.qrV>0 ? 'pagado por QR' : 'pagado en efectivo');
 
     // ── Total nuestro del día ─────────────────────────────────────────────────
-    const totalFinal  = nosQuedaLavadas + det.neto + totalProductos;
-    const cajaTotal   = cajaEf + totalProductosEf + det.efNeto;
-    const cuentaTotal = cuentaQR + ventasClientesQr + det.qrNeto;
+    const totalFinal = nosQuedaLavadas + det.neto + totalProductos;
 
     // ── Actualizar UI ─────────────────────────────────────────────────────────
     const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
@@ -2666,7 +2692,7 @@ async function loadCierre(){
     s('c-pendiente', '$'+fmt(totPend));
     s('c-neta',      '$'+fmt(totalFinal));
 
-    // Desglose — lavadas
+    // Desglose corto
     s('dc-total-dia',  '$'+fmt(totalDia));
     s('dc-mitad-lav',  '$'+fmt(mitadLavadores));
     s('dc-cob-ef',     '$'+fmt(ef));
@@ -2674,33 +2700,20 @@ async function loadCierre(){
     s('dc-cob-ant',    '$'+fmt(efAnt+qrAnt));
     show('dc-cob-ant-row', (efAnt+qrAnt)>0);
     s('dc-tu-neta',    '$'+fmt(nosQuedaLavadas));
-    s('dc-pendientes', '$'+fmt(totPend));
-
-    // Desglose — detailing
-    s('dc-det-venta', '$'+fmt(det.venta));
-    s('dc-det-costo', '-$'+fmt(det.costo));
-    s('dc-det-neto',  '$'+fmt(det.neto));
+    s('dc-det-label',  '✨ + Detailing ('+detMedio+')');
+    s('dc-det-nota',   'venta $'+fmt(det.venta)+' − insumos y comisión $'+fmt(det.costo));
+    s('dc-det-neto',   '$'+fmt(det.neto));
     show('cierre-det-section', det.n>0);
+    s('dc-prod-total', '$'+fmt(totalProductos));
+    show('cierre-prod-section', totalProductos>0);
+    s('dc-total-final','$'+fmt(totalFinal));
 
-    // Desglose — productos
-    s('dc-prod-concesor', '$'+fmt(ventasConcesores));
-    s('dc-prod-cliente',  '$'+fmt(ventasClientes));
-    s('dc-prod-total',    '$'+fmt(totalProductos));
-    const prodSec = document.getElementById('cierre-prod-section');
-    if(prodSec) prodSec.style.display = totalProductos>0 ? 'block' : 'none';
-
-    // Total y dónde está la plata
-    s('dc-total-final',   '$'+fmt(totalFinal));
-    s('dc-total-detalle', 'Lavadas $'+fmt(nosQuedaLavadas)+'  +  Detailing $'+fmt(det.neto)+'  +  Productos $'+fmt(totalProductos));
-    s('dc-caja-ef',       '$'+fmt(cajaTotal));
-    s('dc-cuenta-qr',     '$'+fmt(cuentaTotal));
-
-    // Arqueo: lo que físicamente debe haber en caja = efectivo que entró hoy −
-    // pago a lavadores + productos en efectivo + detailing en efectivo (ya
-    // descontados sus insumos y comisión).
-    arqueoEsperado = cajaTotal;
-    const arqueoElx = document.getElementById('arqueo-esperado');
-    if(arqueoElx) arqueoElx.textContent = '$'+fmt(arqueoEsperado);
+    // Lo que debe haber en caja = el mismo número del Cuadre de caja
+    try{
+      const cuadre = await calcCuadreCaja(hoy);
+      arqueoEsperado = cuadre.esperado;
+      s('arqueo-esperado', '$'+fmt(cuadre.esperado));
+    }catch(e){ console.warn('cuadre en cierre:', e.message); }
 
     // ── Conceseros ────────────────────────────────────────────────────────────
     const cm={};
@@ -2774,7 +2787,7 @@ async function loadGastos(){
     const gmAll=await api('gastos?fecha=gte.'+mesStart+'&order=fecha.desc,id.desc');
     // El saldo inicial no es un gasto real: se excluye de totales y del listado,
     // sin borrar los registros (se siguen usando para calcular el saldo en Configuración > Saldos).
-    gastosMesActual=gmAll.filter(g=>g.categoria!=='🏦 Saldo inicial');
+    gastosMesActual=gmAll.filter(esGastoReal);
 
     // Poblar el filtro de categorías: las fijas + cualquier categoría personalizada
     // que ya se haya usado (para que no se pierdan las que agreguen los socios).
@@ -3281,7 +3294,7 @@ async function loadDashResumen(){
     const pendTotal = ords.filter(o=>o.estado==='pendiente_pago').reduce((s,o)=>s+(o.total||0),0);
 
     // Gastos (excluir saldo inicial y ventas productos)
-    const gastosReales = gastos.filter(g=>g.categoria!=='🏦 Saldo inicial');
+    const gastosReales = gastos.filter(esGastoReal);
     const gastosTotal = gastosReales.filter(g=>g.categoria!=='🛒 Venta producto').reduce((s,g)=>s+(g.valor||0),0);
     // Load ventas productos from dedicated table
     let ventasProd = 0;
@@ -3557,7 +3570,7 @@ async function loadDashFinanzas(){
 
     // Gastos del mes (lista para la tabla)
     const gastos=await api('gastos?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
-    const gastosReales=gastos.filter(g=>g.categoria!=='🏦 Saldo inicial' && g.categoria!=='🛒 Venta producto');
+    const gastosReales=gastos.filter(esGastoReal);
     const totGastos=tot.gastos;
     let totGastosEf=0,totGastosQr=0;
     gastosReales.forEach(g=>{
@@ -3683,7 +3696,7 @@ async function exportarExcel(){
     const start=dashMes+'-01', end=dashMes+'-'+String(_lastDay).padStart(2,'0');
     const {dias, tot} = await cuentaPorDia(start, end);
     const gastosAll=await api('gastos?fecha=gte.'+start+'&fecha=lte.'+end+'&order=fecha.asc');
-    const gastos=gastosAll.filter(g=>g.categoria!=='🏦 Saldo inicial');
+    const gastos=gastosAll.filter(esGastoReal);
 
     // Build CSV — misma cuenta simple que el Libro del mes
     let csv='INGRESOS '+dashMes+'\n';
@@ -5022,13 +5035,169 @@ function renderPendientesFiltrado(){
 // ── ARQUEO DE CAJA ───────────────────────────────────────────────────────────
 let arqueoEsperado = 0;
 
+// ══ CUADRE DE CAJA ═══════════════════════════════════════════════════════════
+let cuadreActual = null;
+let cuadreFecha = null;
+
+// Arma el cuadre de caja de un día: movimientos en efectivo (caja) y por QR (cuenta).
+// La caja arranca con la base fija; entra lo cobrado en efectivo (incluidos
+// pendientes de otros días cobrados ese día), productos y detailing; sale el pago
+// a lavadores (50% de la planilla), los insumos y comisión del detailing y los
+// gastos pagados en efectivo.
+async function calcCuadreCaja(fecha){
+  const [lavadas, cobradas, det, vp, gs] = await Promise.all([
+    api('ordenes?fecha=eq.'+fecha),
+    ordenesCobradasRango(fecha, fecha),
+    api('detailing?fecha=eq.'+fecha).catch(()=>[]),
+    api('ventas_productos?fecha=eq.'+fecha).catch(()=>[]),
+    api('gastos?fecha=eq.'+fecha).catch(()=>[])
+  ]);
+  const ef = [], qr = [];
+
+  cobradas.sort((a,b)=>(a.numero_orden||a.id)-(b.numero_orden||b.id)).forEach(o=>{
+    const m = efQrDeOrden(o);
+    const ant = o.fecha < fecha;
+    const label = 'Lavada #'+(o.numero_orden||o.id)+' · '+(o.placa||'')+(o.empresa_nombre?' · '+o.empresa_nombre:'')
+      +(ant?' <span style="color:#FCD34D;font-size:11px">(lavada del '+fmtFechaCorta(o.fecha)+')</span>':'');
+    if(m.ef>0) ef.push({concepto:label, entra:m.ef, sale:0, ordenId:o.id});
+    if(m.qr>0) qr.push({concepto:label, entra:m.qr, sale:0, ordenId:o.id});
+  });
+
+  vp.forEach(v=>{
+    const t = v.total||0, nombre = v.producto+((v.cantidad||1)>1?' x'+v.cantidad:'');
+    if(v.tipo_venta==='cliente' || !v.concesero){
+      const fp = v.forma_pago || 'efectivo';
+      let e=0, q=0;
+      if(fp==='mixto'){ e=v.pago_efectivo||0; q=v.pago_qr||0; } else if(fp==='qr') q=t; else e=t;
+      if(e>0) ef.push({concepto:'Producto: '+nombre+' (cliente)', entra:e, sale:0});
+      if(q>0) qr.push({concepto:'Producto: '+nombre+' (cliente)', entra:q, sale:0});
+    } else {
+      ef.push({concepto:'Producto: '+nombre+' — descuento a '+v.concesero, entra:t, sale:0});
+    }
+  });
+
+  det.forEach(r=>{
+    const x = detDesglose(r), pl = r.placa||'';
+    const costEf = x.ef - x.efNeto, costQr = x.qr - x.qrNeto;
+    if(x.ef>0)   ef.push({concepto:'Detailing '+pl+' (efectivo)', entra:x.ef, sale:0});
+    if(costEf>0) ef.push({concepto:'Detailing '+pl+' — insumos y comisión', entra:0, sale:costEf});
+    if(x.qr>0)   qr.push({concepto:'Detailing '+pl+' (QR)', entra:x.qr, sale:0});
+    if(costQr>0) qr.push({concepto:'Detailing '+pl+' — insumos y comisión (se retira de la cuenta)', entra:0, sale:costQr});
+  });
+
+  const planilla = lavadas.reduce((s,o)=>s+(o.total||0),0);
+  const mitad = Math.round(planilla/2);
+  if(mitad>0) ef.push({concepto:'Pago a lavadores — 50% de la planilla ($'+fmt(planilla)+')', entra:0, sale:mitad});
+
+  gs.filter(esGastoReal).forEach(g=>{
+    const v = g.valor||0, label = 'Gasto: '+(g.descripcion||'')+' <span style="color:var(--muted);font-size:11px">('+g.categoria+')</span>';
+    if(g.forma_pago==='efectivo') ef.push({concepto:label, entra:0, sale:v});
+    else if(g.forma_pago==='qr')  qr.push({concepto:label, entra:0, sale:v});
+  });
+
+  // Primero lo que entra, después lo que sale
+  const orden = rows => [...rows.filter(r=>r.entra>0), ...rows.filter(r=>!(r.entra>0))];
+  const efRows = orden(ef), qrRows = orden(qr);
+  const entraEf = efRows.reduce((s,r)=>s+(r.entra||0),0), saleEf = efRows.reduce((s,r)=>s+(r.sale||0),0);
+  const entraQr = qrRows.reduce((s,r)=>s+(r.entra||0),0), saleQr = qrRows.reduce((s,r)=>s+(r.sale||0),0);
+  return {fecha, base:CAJA_BASE, efRows, qrRows, entraEf, saleEf, entraQr, saleQr,
+          esperado: CAJA_BASE + entraEf - saleEf, planilla, mitad};
+}
+
+function cuadreHoy(){ const el=document.getElementById('cuadre-fecha'); if(el){ el.value=today(); } loadCuadre(); }
+
+async function loadCuadre(){
+  const inp = document.getElementById('cuadre-fecha');
+  if(inp && !inp.value) inp.value = today();
+  cuadreFecha = inp ? inp.value : today();
+  try{
+    const cu = await calcCuadreCaja(cuadreFecha);
+    cuadreActual = cu;
+
+    // Tabla de caja
+    let saldo = cu.base, n = 1;
+    let rows = '<tr style="background:rgba(255,255,255,.03)"><td>'+(n++)+'</td><td style="font-weight:700">🏦 Base de caja (fija, arranca el día)</td>'
+      +'<td style="color:#6EE7B7;font-weight:700">$'+fmt(cu.base)+'</td><td></td><td style="font-weight:800">$'+fmt(saldo)+'</td><td></td></tr>';
+    cu.efRows.forEach(r=>{
+      saldo += (r.entra||0) - (r.sale||0);
+      rows += '<tr>'
+        +'<td style="color:var(--muted)">'+(n++)+'</td>'
+        +'<td>'+r.concepto+'</td>'
+        +'<td style="color:#6EE7B7;font-weight:700">'+(r.entra?'$'+fmt(r.entra):'')+'</td>'
+        +'<td style="color:#FCA5A5;font-weight:700">'+(r.sale?'$'+fmt(r.sale):'')+'</td>'
+        +'<td style="font-weight:800;color:'+(saldo>=0?'var(--text)':'#FCA5A5')+'">$'+fmt(saldo)+'</td>'
+        +'<td>'+(r.ordenId?'<button class="btn btn-g" style="padding:2px 8px;font-size:11px" title="Cambiar el día del cobro" onclick="abrirFechaCobro('+r.ordenId+')">✏️</button>':'')+'</td>'
+        +'</tr>';
+    });
+    document.getElementById('cuadre-rows').innerHTML = rows;
+    document.getElementById('cuadre-foot').innerHTML = '<tr style="background:var(--gold-p);font-weight:800">'
+      +'<td></td><td style="color:var(--gold)">DEBE HABER EN CAJA</td>'
+      +'<td style="color:#6EE7B7">$'+fmt(cu.base+cu.entraEf)+'</td><td style="color:#FCA5A5">$'+fmt(cu.saleEf)+'</td>'
+      +'<td style="color:var(--gold);font-size:16px">$'+fmt(cu.esperado)+'</td><td></td></tr>';
+    document.getElementById('cuadre-esperado').textContent = '$'+fmt(cu.esperado);
+
+    // Tabla de cuenta (QR)
+    document.getElementById('cuadre-qr-rows').innerHTML = cu.qrRows.map(r=>
+      '<tr><td>'+r.concepto+'</td>'
+      +'<td style="color:#C4B5FD;font-weight:700">'+(r.entra?'$'+fmt(r.entra):'')+'</td>'
+      +'<td style="color:#FCA5A5;font-weight:700">'+(r.sale?'$'+fmt(r.sale):'')+'</td></tr>'
+    ).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:16px">Sin movimientos por QR este día</td></tr>';
+    document.getElementById('cuadre-qr-foot').innerHTML = '<tr style="background:rgba(139,92,246,.1);font-weight:800">'
+      +'<td style="color:#C4B5FD">MOVIMIENTO NETO DE LA CUENTA</td>'
+      +'<td colspan="2" style="color:#C4B5FD">$'+fmt(cu.entraQr-cu.saleQr)+'</td></tr>';
+
+    // Conteo: limpiar y, si ya hay un cuadre guardado ese día, mostrarlo
+    document.getElementById('arqueo-real').value = '';
+    document.getElementById('arqueo-nota').value = '';
+    document.getElementById('arqueo-resultado').style.display = 'none';
+    document.getElementById('arqueo-estado').textContent = '';
+    await loadCuadreHistorial();
+    const guardado = (window._cuadresHist||[]).find(h=>h.fecha===cuadreFecha);
+    if(guardado){
+      document.getElementById('arqueo-real').value = guardado.contado;
+      document.getElementById('arqueo-nota').value = guardado.nota||'';
+      calcArqueo();
+      document.getElementById('arqueo-estado').textContent = 'Ya guardado este día';
+    }
+  }catch(e){
+    showToast('Error cargando el cuadre: '+e.message, true);
+  }
+}
+
+async function loadCuadreHistorial(){
+  const body = document.getElementById('cuadre-hist-rows');
+  const foot = document.getElementById('cuadre-hist-foot');
+  try{
+    const hist = await api('cuadres_caja?order=fecha.desc&limit=60');
+    window._cuadresHist = hist;
+    if(body) body.innerHTML = hist.map(h=>
+      '<tr>'
+      +'<td style="font-family:monospace;color:var(--muted)">'+h.fecha.split('-').reverse().join('/')+'</td>'
+      +'<td>$'+fmt(h.esperado)+'</td>'
+      +'<td>$'+fmt(h.contado)+'</td>'
+      +'<td style="font-weight:800;color:'+(h.diferencia===0?'#6EE7B7':(h.diferencia<0?'#FCA5A5':'#FCD34D'))+'">'+(h.diferencia>0?'+':'')+'$'+fmt(h.diferencia)+'</td>'
+      +'<td style="font-size:11px;color:var(--muted)">'+(h.nota||'')+'</td>'
+      +'<td><button class="btn btn-r" style="padding:2px 8px;font-size:10px" onclick="borrarCuadre('+h.id+')">🗑️</button></td>'
+      +'</tr>'
+    ).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">Aún no hay cuadres guardados</td></tr>';
+    const acum = hist.reduce((s,h)=>s+(h.diferencia||0),0);
+    if(foot) foot.innerHTML = hist.length ? '<tr style="background:var(--gold-p);font-weight:800"><td colspan="3" style="color:var(--gold)">DIFERENCIA ACUMULADA (últimos '+hist.length+')</td><td colspan="3" style="color:'+(acum<0?'#FCA5A5':'#FCD34D')+'">'+(acum>0?'+':'')+'$'+fmt(acum)+'</td></tr>' : '';
+  }catch(e){
+    window._cuadresHist = [];
+    if(body) body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">⚠️ No se pudo leer el registro de cuadres — falta correr el SQL de la tabla "cuadres_caja" en Supabase.</td></tr>';
+    if(foot) foot.innerHTML = '';
+  }
+}
+
 function calcArqueo(){
-  const real = parseInt(document.getElementById('arqueo-real')?.value)||0;
-  const diff = real - arqueoEsperado;
+  if(!cuadreActual) return;
+  const raw = document.getElementById('arqueo-real')?.value;
   const res = document.getElementById('arqueo-resultado');
   const lbl = document.getElementById('arqueo-label');
   const dif = document.getElementById('arqueo-diff');
   if(!res) return;
+  if(raw===''||raw==null){ res.style.display='none'; return; }
+  const diff = (parseInt(raw)||0) - cuadreActual.esperado;
   res.style.display = 'block';
   if(diff === 0){
     res.style.background = 'rgba(16,185,129,.15)';
@@ -5045,21 +5214,56 @@ function calcArqueo(){
   }
 }
 
+// El descuadre queda en su propio registro (tabla cuadres_caja), NO en los gastos.
 async function guardarArqueo(){
-  const real = parseInt(document.getElementById('arqueo-real')?.value)||0;
-  if(!real){ showToast('Ingresa el valor físico en caja', true); return; }
-  const diff = real - arqueoEsperado;
+  if(!cuadreActual) return;
+  const raw = document.getElementById('arqueo-real')?.value;
+  if(raw===''||raw==null){ showToast('Ingresa cuánto hay físicamente en caja', true); return; }
+  const real = parseInt(raw)||0;
+  const diff = real - cuadreActual.esperado;
+  const nota = (document.getElementById('arqueo-nota')?.value||'').trim();
   try{
-    await api('gastos','POST',{
-      categoria: '🔐 Arqueo de caja',
-      descripcion: 'Arqueo: esperado $'+fmt(arqueoEsperado)+' · real $'+fmt(real)+' · diferencia $'+fmt(diff),
-      valor: Math.abs(diff),
-      forma_pago: 'efectivo',
-      fecha: today()
-    });
+    await api('cuadres_caja?fecha=eq.'+cuadreFecha,'DELETE'); // un solo cuadre por día
+    await api('cuadres_caja','POST',{fecha:cuadreFecha, base:CAJA_BASE, esperado:cuadreActual.esperado, contado:real, diferencia:diff, nota:nota||null});
     const el = document.getElementById('arqueo-estado');
     if(el) el.textContent = diff===0?'✅ Cuadrado':diff<0?'⚠️ Falta $'+fmt(Math.abs(diff)):'💛 Sobra $'+fmt(diff);
-    showToast('Arqueo guardado ✅');
+    showToast('Cuadre guardado ✅');
+    loadCuadreHistorial();
+  }catch(e){ showToast('No se pudo guardar — ¿falta correr el SQL de "cuadres_caja"? '+e.message, true); }
+}
+
+async function borrarCuadre(id){
+  if(!confirm('¿Borrar este cuadre del registro?')) return;
+  try{ await api('cuadres_caja?id=eq.'+id,'DELETE'); showToast('Cuadre borrado'); loadCuadreHistorial(); }
+  catch(e){ showToast('Error: '+e.message, true); }
+}
+
+// ── Cambiar la fecha de cobro de una orden (desde el Cuadre) ─────────────────
+let fcobroOrden = null;
+async function abrirFechaCobro(id){
+  try{
+    const ords = await api('ordenes?id=eq.'+id);
+    const o = ords[0]; if(!o) return;
+    fcobroOrden = o;
+    document.getElementById('fcobro-id').value = id;
+    document.getElementById('fcobro-info').textContent = '#'+(o.numero_orden||o.id)+' · '+(o.placa||'');
+    document.getElementById('fcobro-lavada').textContent = o.fecha.split('-').reverse().join('/');
+    document.getElementById('fcobro-valor').textContent = '$'+fmt(o.total);
+    document.getElementById('fcobro-nueva').value = o.fecha_cobro || o.fecha;
+    document.getElementById('modal-fecha-cobro').style.display = 'flex';
+  }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+async function guardarFechaCobro(){
+  if(!fcobroOrden) return;
+  const nueva = document.getElementById('fcobro-nueva').value;
+  if(!nueva){ showToast('Elige la fecha', true); return; }
+  if(nueva < fcobroOrden.fecha){ showToast('La fecha del cobro no puede ser antes de la lavada ('+fcobroOrden.fecha+')', true); return; }
+  try{
+    await api('ordenes?id=eq.'+fcobroOrden.id,'PATCH',{fecha_cobro:nueva});
+    cerrarModal('modal-fecha-cobro');
+    showToast('Fecha del cobro actualizada ✅');
+    loadCuadre();
   }catch(e){ showToast('Error: '+e.message, true); }
 }
 
