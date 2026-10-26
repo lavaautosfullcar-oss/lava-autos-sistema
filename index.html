@@ -25,7 +25,7 @@ html,body{height:100%;background:var(--navy-d);color:var(--text);font-family:'Se
 .role-name{font-size:11px;font-weight:700;color:var(--text)}
 .role-desc{font-size:9px;color:var(--muted);margin-top:1px}
 .pin-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
-.pin-input{width:100%;background:var(--navy-d);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:18px;text-align:center;letter-spacing:6px;outline:none;font-family:monospace}
+.pin-input{width:100%;background:var(--navy-d);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:18px;text-align:center;letter-spacing:3px;outline:none;font-family:monospace}
 .pin-input:focus{border-color:var(--gold)}
 .btn-login{width:100%;margin-top:14px;padding:12px;background:var(--gold);color:var(--navy-d);border:none;border-radius:8px;font-weight:800;font-size:14px;cursor:pointer}
 .login-err{color:#FCA5A5;font-size:11px;margin-top:8px;min-height:16px}
@@ -155,8 +155,8 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <div class="role-btn sel" onclick="selRole('dueno',this)"><div class="role-icon">👑</div><div class="role-name">Propietario</div><div class="role-desc">Acceso total</div></div>
       <div class="role-btn" onclick="selRole('cajero',this)"><div class="role-icon">🖥️</div><div class="role-name">Administrador</div><div class="role-desc">Órdenes</div></div>
     </div>
-    <div class="pin-label">PIN de acceso</div>
-    <input class="pin-input" type="password" maxlength="6" id="pin-input" placeholder="••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <div class="pin-label">Clave de acceso</div>
+    <input class="pin-input" type="password" maxlength="64" id="pin-input" autocomplete="off" placeholder="••••" onkeydown="if(event.key==='Enter')doLogin()"/>
     <button class="btn-login" onclick="doLogin()">Ingresar</button>
     <div class="login-err" id="login-err"></div>
   </div>
@@ -1750,7 +1750,8 @@ const MES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Di
 const COLORS=['#C9A84C','#E8C96A','#8BA3BB','#6B7280','#4B5563','#9CA3AF'];
 
 // ── AUTH ─────────────────────────────────────────────────────────────────────
-const PINS={dueno:'1234',cajero:'0000'};
+const PIN_HASH={dueno:'130516a061b32e0e9b3073cf65b1576f80617ef780c15b4d0b643419d4356726',cajero:'9af15b336e6a9619928537df30b2e6a2376569fcf9d7e773eccede65606529a0'};
+async function sha256Hex(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
 
 function selRole(role,el){
   selRoleVal=role;
@@ -1758,10 +1759,12 @@ function selRole(role,el){
   el.classList.add('sel');
 }
 
-function doLogin(){
+async function doLogin(){
   const pin=document.getElementById('pin-input').value;
   const err=document.getElementById('login-err');
-  if(PINS[selRoleVal]===pin){
+  let okLogin=false;
+  try{ okLogin=(await sha256Hex(pin))===PIN_HASH[selRoleVal]; }catch(e){ err.textContent='Abre el sistema desde la dirección segura (https).'; return; }
+  if(okLogin){
     currentUser={rol:selRoleVal,nombre:selRoleVal==='dueno'?'Dueño':'Cajero'};
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app').classList.add('visible');
@@ -1771,7 +1774,7 @@ function doLogin(){
     try{ setupNav(); }catch(e){ console.error('setupNav error:', e); }
     initApp();
   } else {
-    err.textContent='PIN incorrecto.';
+    err.textContent='Clave incorrecta.';
     document.getElementById('pin-input').value='';
   }
 }
