@@ -1591,15 +1591,15 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
   <div class="field"><label>Producto</label>
     <select id="prod-nombre" onchange="setProdPrecio()" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%">
       <option value="">— Seleccionar producto —</option>
-      <option value="Champú" data-precio="3000">Champú — $3.000</option>
-      <option value="Uva" data-precio="2000">Uva — $2.000</option>
-      <option value="Teflón" data-precio="3000">Teflón — $3.000</option>
-      <option value="Grafito" data-precio="3000">Grafito — $3.000</option>
-      <option value="Desengrasante" data-precio="3000">Desengrasante — $3.000</option>
-      <option value="Restaurador partes negras" data-precio="3000">Restaurador partes negras — $3.000</option>
-      <option value="Trapo" data-precio="5000">Trapo — $5.000</option>
-      <option value="Ambientador" data-precio="0">Ambientador — precio variable</option>
-      <option value="Extintor" data-precio="0">Extintor — precio variable</option>
+      <option value="Champú" data-precio="3000">Champú</option>
+      <option value="Uva" data-precio="2000">Uva</option>
+      <option value="Teflón" data-precio="3000">Teflón</option>
+      <option value="Grafito" data-precio="3000">Grafito</option>
+      <option value="Desengrasante" data-precio="3000">Desengrasante</option>
+      <option value="Restaurador partes negras" data-precio="3000">Restaurador partes negras</option>
+      <option value="Trapo" data-precio="5000">Trapo</option>
+      <option value="Ambientador" data-precio="0">Ambientador</option>
+      <option value="Extintor" data-precio="0">Extintor</option>
       <option value="Otro" data-precio="0">Otro</option>
     </select>
   </div>
@@ -5797,19 +5797,28 @@ async function cargarCatalogo(){
   try{
     catalogo = await api('catalogo_productos?order=orden.asc,nombre.asc');
     catalogoOk = true;
+    if(!catalogo.length){
+      // Tabla creada pero vacía: se cargan los productos que ya se vendían
+      const base = [['Champú',3000],['Uva',2000],['Teflón',3000],['Grafito',3000],['Desengrasante',3000],
+                    ['Restaurador partes negras',3000],['Trapo',5000],['Ambientador',0],['Extintor',0]];
+      try{
+        await api('catalogo_productos','POST', base.map((b,i)=>({nombre:b[0], tipo:'venta', precio:b[1], unidad:'und', stock_minimo:0, activo:true, orden:i+1})));
+        catalogo = await api('catalogo_productos?order=orden.asc,nombre.asc');
+      }catch(e2){ console.warn('sembrar catálogo:', e2.message); }
+    }
   }catch(e){ catalogo = []; catalogoOk = false; }
   poblarSelectsProductos();
 }
 
 function poblarSelectsProductos(){
-  if(!catalogoOk) return;
+  if(!catalogoOk || !catalogo.some(p=>p.tipo==='venta')) return;
   const venta = catalogo.filter(p=>p.tipo==='venta');
   const activos = venta.filter(p=>p.activo);
   const sv = document.getElementById('prod-nombre');
   if(sv){
     const cur = sv.value;
     sv.innerHTML = '<option value="">— Seleccionar producto —</option>'
-      + activos.map(p=>'<option value="'+escHtml(p.nombre)+'" data-precio="'+(p.precio||0)+'">'+escHtml(p.nombre)+(p.precio?' — $'+fmt(p.precio):' — precio variable')+'</option>').join('')
+      + activos.map(p=>'<option value="'+escHtml(p.nombre)+'" data-precio="'+(p.precio||0)+'">'+escHtml(p.nombre)+'</option>').join('')
       + '<option value="Otro" data-precio="0">Otro</option>';
     sv.value = cur;
   }
