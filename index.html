@@ -181,6 +181,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <div class="ni on" onclick="go('ordenes',this)" id="nav-ordenes"><span class="ni-ico">🧾</span>Órdenes del día</div>
       <div class="ni" onclick="go('planilla',this)" id="nav-planilla"><span class="ni-ico">📋</span>Planilla</div>
       <div class="ni" onclick="go('productos',this)" id="nav-productos"><span class="ni-ico">🛒</span>Productos</div>
+      <div class="ni" onclick="go('inventario',this)" id="nav-inventario"><span class="ni-ico">📦</span>Inventario</div>
       <div class="ni" onclick="go('turnos',this)" id="nav-turnos"><span class="ni-ico">🎫</span>Turnos</div>
       <div class="ni hidden" onclick="go('detailing',this)" id="nav-detailing"><span class="ni-ico">✨</span>Detailing</div>
       <div class="ni hidden" onclick="go('cierre',this)" id="nav-cierre"><span class="ni-ico">💰</span>Cierre del día</div>
@@ -970,6 +971,56 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         </div>
       </div>
 
+      <!-- INVENTARIO -->
+      <div id="s-inventario" class="screen">
+        <div class="row">
+          <div><div class="page-title">📦 Inventario</div><div class="page-sub">Stock de productos e insumos — se descuenta solo con cada venta y se suma con cada compra</div></div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <div class="pay-toggle" style="margin:0">
+              <button class="pt pt-ef on-ef" id="inv-tab-stock" onclick="selInvTab('stock')">📦 Stock</button>
+              <button class="pt pt-qr" id="inv-tab-cat" onclick="selInvTab('cat')">🏷️ Catálogo</button>
+            </div>
+            <button class="btn btn-g" onclick="loadInventario()">🔄</button>
+          </div>
+        </div>
+
+        <div id="inv-vista-stock">
+          <div id="inv-alerta"></div>
+          <div class="card">
+            <div class="card-t"><span class="card-tg">📦 Existencias</span>
+              <select id="inv-filtro" onchange="renderInventario()" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%;width:auto;padding:5px 8px;font-size:12px">
+                <option value="">Todo</option><option value="venta">Se venden</option><option value="insumo">Insumos</option>
+              </select>
+            </div>
+            <div class="tbl-wrap"><table>
+              <thead><tr><th>Producto</th><th>Stock</th><th>Mínimo</th><th>Comprado</th><th>Vendido</th><th>Otros mov.</th><th></th></tr></thead>
+              <tbody id="inv-rows"></tbody>
+            </table></div>
+            <div style="font-size:11px;color:var(--muted);margin-top:8px">Stock = comprado − vendido + otros movimientos. Para arrancar, usa <b>📝 Mover</b> → "Conteo" y escribe cuántas unidades hay hoy. Las compras de productos que se venden se registran en Productos → 🧾 Registrar compra y suman solas al stock.</div>
+          </div>
+          <div class="card">
+            <div class="card-t"><span class="card-tg">🕘 Últimos movimientos (conteos, entradas, consumos, mermas)</span></div>
+            <div class="tbl-wrap"><table>
+              <thead><tr><th>Fecha</th><th>Producto</th><th>Tipo</th><th>Cantidad</th><th>Nota</th><th></th></tr></thead>
+              <tbody id="inv-movs"></tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <div id="inv-vista-cat" style="display:none">
+          <div class="card">
+            <div class="card-t"><span class="card-tg">🏷️ Catálogo de productos e insumos</span>
+              <button class="btn btn-p" style="padding:5px 12px;font-size:12px" onclick="abrirModalCatalogo()">+ Agregar</button>
+            </div>
+            <div class="tbl-wrap"><table>
+              <thead><tr><th>Nombre</th><th>Tipo</th><th>Precio de venta</th><th>Unidad</th><th>Mínimo</th><th>Estado</th><th></th></tr></thead>
+              <tbody id="cat-rows"></tbody>
+            </table></div>
+            <div style="font-size:11px;color:var(--muted);margin-top:8px">Si cambias un nombre, se cambia también en todo el historial (ventas, compras y movimientos). Los desactivados dejan de salir al vender pero conservan su historial.</div>
+          </div>
+        </div>
+      </div>
+
       <!-- EMPRESAS -->
       <div id="s-empresas" class="screen">
         <div class="row">
@@ -1595,6 +1646,63 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 </div>
 </div>
 
+<!-- Modal movimiento de inventario -->
+<div id="modal-inv-mov" class="modal-bg" style="display:none">
+<div class="modal">
+  <div class="modal-h"><span>📝 Movimiento de inventario</span><span class="modal-x" onclick="cerrarModal('modal-inv-mov')">✕</span></div>
+  <div class="field"><label>Producto</label><input type="text" id="inv-mov-prod" readonly style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%"/></div>
+  <div class="field"><label>¿Qué pasó?</label>
+    <select id="inv-mov-tipo" onchange="invMovTipoCambio()" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%">
+      <option value="conteo">📋 Conteo — fijar cuántas hay ahora</option>
+      <option value="entrada">➕ Entrada (llegó mercancía/insumo)</option>
+      <option value="consumo">🧴 Consumo (se gastó en el lavado)</option>
+      <option value="merma">🗑️ Pérdida / dañado / regalado</option>
+    </select>
+  </div>
+  <div class="form-grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label id="inv-mov-cant-lbl">Unidades que hay ahora</label><input type="number" id="inv-mov-cant" min="0" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%"/></div>
+    <div class="field"><label>Fecha</label><input type="date" id="inv-mov-fecha" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%"/></div>
+  </div>
+  <div id="inv-mov-info" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
+  <div class="field"><label>Nota (opcional)</label><input type="text" id="inv-mov-nota" placeholder="Ej: conteo del domingo" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%"/></div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-p" style="flex:1;padding:10px" id="inv-mov-btn" onclick="guardarMovInventario()">💾 Guardar</button>
+    <button class="btn btn-g" onclick="cerrarModal('modal-inv-mov')">Cancelar</button>
+  </div>
+</div>
+</div>
+
+<!-- Modal catálogo -->
+<div id="modal-catalogo" class="modal-bg" style="display:none">
+<div class="modal">
+  <div class="modal-h"><span id="cat-modal-titulo">🏷️ Producto</span><span class="modal-x" onclick="cerrarModal('modal-catalogo')">✕</span></div>
+  <input type="hidden" id="cat-id"/>
+  <div class="field"><label>Nombre</label><input type="text" id="cat-nombre" placeholder="Ej: Cera líquida" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%"/></div>
+  <div class="form-grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label>Tipo</label>
+      <select id="cat-tipo" onchange="catTipoCambio()" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%">
+        <option value="venta">🛒 Se vende</option>
+        <option value="insumo">🧴 Insumo (uso interno)</option>
+      </select>
+    </div>
+    <div class="field" id="cat-precio-wrap"><label>Precio de venta (0 = variable)</label><input type="number" id="cat-precio" min="0" placeholder="0" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%"/></div>
+  </div>
+  <div class="form-grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label>Unidad</label>
+      <select id="cat-unidad" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%">
+        <option>und</option><option>litro</option><option>galón</option><option>kg</option><option>caja</option><option>paquete</option>
+      </select>
+    </div>
+    <div class="field"><label>Avisar cuando queden (mínimo)</label><input type="number" id="cat-minimo" min="0" placeholder="0" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%"/></div>
+  </div>
+  <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:14px;cursor:pointer"><input type="checkbox" id="cat-activo" checked/> Activo (sale al registrar ventas y compras)</label>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-p" style="flex:1;padding:10px" id="cat-btn" onclick="guardarCatalogo()">💾 Guardar</button>
+    <button class="btn btn-g" onclick="cerrarModal('modal-catalogo')">Cancelar</button>
+  </div>
+</div>
+</div>
+
 <!-- Modal compra de producto (costo/insumos) -->
 <div id="modal-compra-producto" class="modal-bg" style="display:none">
 <div class="modal">
@@ -1895,6 +2003,7 @@ function go(s,el){
   else if(s==='cuadre') loadCuadre();
   else if(s==='historial') initHistorial();
   else if(s==='saldos') loadSaldos();
+  else if(s==='inventario') loadInventario();
   else if(s==='productos') selProdModo('hoy');
   else if(s==='turnos') loadTurnos();
   else if(s==='empresas') loadEmpresas();
@@ -1928,6 +2037,7 @@ async function initApp(){
     const dbSvcs=await api('servicios?activo=eq.true&order=tipo,nombre');
     servicios=dbSvcs.length>0?dbSvcs:SERVICIOS_ALL;
     try{ empresas=await api('empresas?activo=eq.true&order=nombre'); }catch{}
+    cargarCatalogo();
     loadOrdenes();
     checkBday();
     if(currentUser.rol==='dueno') loadDashMeses();
@@ -5674,6 +5784,239 @@ async function guardarSaldoInicial(){
   }catch(e){ showToast('Error: '+e.message, true); }
 }
 
+
+// ── CATÁLOGO E INVENTARIO ───────────────────────────────────────────────────
+let catalogo = [];        // todos los productos/insumos del catálogo
+let catalogoOk = false;   // false = la tabla aún no existe → se usan las listas fijas de siempre
+let invRows = [], invMovs = [];
+
+function escHtml(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+const encN = n => encodeURIComponent(n);
+
+async function cargarCatalogo(){
+  try{
+    catalogo = await api('catalogo_productos?order=orden.asc,nombre.asc');
+    catalogoOk = true;
+  }catch(e){ catalogo = []; catalogoOk = false; }
+  poblarSelectsProductos();
+}
+
+function poblarSelectsProductos(){
+  if(!catalogoOk) return;
+  const venta = catalogo.filter(p=>p.tipo==='venta');
+  const activos = venta.filter(p=>p.activo);
+  const sv = document.getElementById('prod-nombre');
+  if(sv){
+    const cur = sv.value;
+    sv.innerHTML = '<option value="">— Seleccionar producto —</option>'
+      + activos.map(p=>'<option value="'+escHtml(p.nombre)+'" data-precio="'+(p.precio||0)+'">'+escHtml(p.nombre)+(p.precio?' — $'+fmt(p.precio):' — precio variable')+'</option>').join('')
+      + '<option value="Otro" data-precio="0">Otro</option>';
+    sv.value = cur;
+  }
+  const sf = document.getElementById('prod-filtro');
+  if(sf){
+    const cur = sf.value;
+    sf.innerHTML = '<option value="">Todos los productos</option>'
+      + venta.map(p=>'<option value="'+escHtml(p.nombre)+'">'+escHtml(p.nombre)+'</option>').join('')
+      + '<option value="Otro">Otro</option>';
+    sf.value = cur;
+  }
+  const sc = document.getElementById('cp-producto');
+  if(sc){
+    const cur = sc.value;
+    sc.innerHTML = activos.map(p=>'<option value="'+escHtml(p.nombre)+'">'+escHtml(p.nombre)+'</option>').join('')
+      + '<option value="Otro">Otro</option>';
+    if(cur) sc.value = cur;
+  }
+}
+
+function selInvTab(t){
+  document.getElementById('inv-vista-stock').style.display = t==='stock' ? 'block' : 'none';
+  document.getElementById('inv-vista-cat').style.display = t==='cat' ? 'block' : 'none';
+  document.getElementById('inv-tab-stock').className = 'pt pt-ef'+(t==='stock'?' on-ef':'');
+  document.getElementById('inv-tab-cat').className = 'pt pt-qr'+(t==='cat'?' on-qr':'');
+  if(t==='cat') renderCatalogo();
+}
+
+async function loadInventario(){
+  const esDueno = currentUser && currentUser.rol==='dueno';
+  const tabCat = document.getElementById('inv-tab-cat');
+  if(tabCat) tabCat.style.display = esDueno ? '' : 'none';
+  await cargarCatalogo();
+  if(!catalogoOk){
+    document.getElementById('inv-rows').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">⚠️ Falta crear las tablas del inventario en Supabase. Corre el archivo <b>migracion_inventario.sql</b> y vuelve a abrir esta pantalla.</td></tr>';
+    return;
+  }
+  try{
+    const [ventas, compras, movs] = await Promise.all([
+      api('ventas_productos?select=producto,cantidad'),
+      api('compras_productos?select=producto,cantidad').catch(()=>[]),
+      api('movimientos_inventario?order=id.desc')
+    ]);
+    const suma = (arr,campo)=>{ const o={}; arr.forEach(r=>{ o[r.producto]=(o[r.producto]||0)+(r[campo]||0); }); return o; };
+    const v = suma(ventas,'cantidad'), c = suma(compras,'cantidad'), m = suma(movs,'cantidad');
+    invMovs = movs;
+    invRows = catalogo.map(p=>{
+      const comprado = c[p.nombre]||0, vendido = p.tipo==='venta' ? (v[p.nombre]||0) : 0, mov = m[p.nombre]||0;
+      return Object.assign({}, p, {comprado, vendido, mov, stock: comprado - vendido + mov});
+    });
+    renderInventario();
+  }catch(e){ showToast('Error cargando inventario: '+e.message, true); }
+}
+
+function renderInventario(){
+  const filtro = document.getElementById('inv-filtro')?.value || '';
+  const bajos = invRows.filter(r=>r.activo && r.stock_minimo>0 && r.stock<=r.stock_minimo);
+  document.getElementById('inv-alerta').innerHTML = bajos.length
+    ? '<div class="card" style="border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.08)"><div style="font-weight:700;color:#FCA5A5;margin-bottom:4px">⚠️ Stock bajo ('+bajos.length+')</div><div style="font-size:13px">'
+      + bajos.map(r=>escHtml(r.nombre)+' ('+r.stock+' '+escHtml(r.unidad||'und')+')').join(' · ')+'</div></div>'
+    : '';
+  const filas = invRows.filter(r=>!filtro || r.tipo===filtro)
+    .sort((a,b)=>(b.activo-a.activo)||a.nombre.localeCompare(b.nombre));
+  document.getElementById('inv-rows').innerHTML = filas.map(r=>{
+    const bajo = r.activo && r.stock_minimo>0 && r.stock<=r.stock_minimo;
+    const col = r.stock<0 ? '#FCA5A5' : (bajo ? '#FCD34D' : '#6EE7B7');
+    return '<tr style="opacity:'+(r.activo?1:.5)+'">'
+      +'<td style="font-weight:600">'+escHtml(r.nombre)+' <span style="font-size:10px;color:var(--muted)">'+(r.tipo==='insumo'?'🧴 insumo':'🛒')+'</span></td>'
+      +'<td style="font-weight:800;font-size:15px;color:'+col+'">'+r.stock+' <span style="font-size:10px;color:var(--muted);font-weight:400">'+escHtml(r.unidad||'und')+'</span></td>'
+      +'<td>'+(r.stock_minimo||'-')+'</td>'
+      +'<td>'+r.comprado+'</td><td>'+(r.tipo==='venta'?r.vendido:'-')+'</td>'
+      +'<td style="color:var(--muted)">'+(r.mov>0?'+':'')+r.mov+'</td>'
+      +'<td><button class="btn btn-g" style="padding:3px 8px;font-size:11px" onclick="abrirMovInventario('+r.id+')">📝 Mover</button></td>'
+    +'</tr>';
+  }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">Sin productos en el catálogo</td></tr>';
+
+  const tipoTxt = {conteo:'📋 Conteo', entrada:'➕ Entrada', consumo:'🧴 Consumo', merma:'🗑️ Pérdida'};
+  document.getElementById('inv-movs').innerHTML = invMovs.slice(0,40).map(m=>
+    '<tr><td style="font-family:monospace;font-size:11px;color:var(--muted)">'+m.fecha+'</td>'
+    +'<td>'+escHtml(m.producto)+'</td><td>'+(tipoTxt[m.tipo]||m.tipo)+'</td>'
+    +'<td style="font-weight:700;color:'+(m.cantidad>=0?'#6EE7B7':'#FCA5A5')+'">'+(m.cantidad>0?'+':'')+m.cantidad+'</td>'
+    +'<td style="color:var(--muted);font-size:12px">'+escHtml(m.nota||'')+'</td>'
+    +'<td><button class="btn btn-r" style="padding:2px 6px;font-size:10px" onclick="borrarMovInventario('+m.id+')">🗑️</button></td></tr>'
+  ).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">Sin movimientos todavía</td></tr>';
+}
+
+// ── Movimientos ──
+let invMovProd = null;
+function abrirMovInventario(id){
+  const r = invRows.find(x=>x.id===id); if(!r) return;
+  invMovProd = r;
+  document.getElementById('inv-mov-prod').value = r.nombre;
+  document.getElementById('inv-mov-tipo').value = 'conteo';
+  document.getElementById('inv-mov-cant').value = '';
+  document.getElementById('inv-mov-nota').value = '';
+  document.getElementById('inv-mov-fecha').value = today();
+  invMovTipoCambio();
+  document.getElementById('modal-inv-mov').style.display = 'flex';
+}
+function invMovTipoCambio(){
+  const t = document.getElementById('inv-mov-tipo').value;
+  const lbl = {conteo:'Unidades que hay ahora', entrada:'Unidades que llegaron', consumo:'Unidades gastadas', merma:'Unidades perdidas'};
+  document.getElementById('inv-mov-cant-lbl').textContent = lbl[t];
+  document.getElementById('inv-mov-info').textContent = invMovProd
+    ? (t==='conteo' ? 'Stock actual en el sistema: '+invMovProd.stock+'. Se guarda la diferencia para que quede en lo que cuentes.' : 'Stock actual: '+invMovProd.stock)
+    : '';
+}
+let invMovEnProceso = false;
+async function guardarMovInventario(){
+  if(invMovEnProceso || !invMovProd) return;
+  const tipo = document.getElementById('inv-mov-tipo').value;
+  const raw = document.getElementById('inv-mov-cant').value;
+  const cant = parseInt(raw);
+  if(raw==='' || isNaN(cant) || cant<0){ showToast('Escribe la cantidad', true); return; }
+  let signed = tipo==='entrada' ? cant : (tipo==='conteo' ? cant - invMovProd.stock : -cant);
+  if(signed===0){ showToast('Ya está en esa cantidad, no hay nada que ajustar', true); return; }
+  const btn = document.getElementById('inv-mov-btn');
+  invMovEnProceso = true; if(btn) btn.disabled = true;
+  try{
+    await api('movimientos_inventario','POST',{
+      fecha: document.getElementById('inv-mov-fecha').value || today(),
+      producto: invMovProd.nombre, tipo, cantidad: signed,
+      nota: document.getElementById('inv-mov-nota').value.trim() || null
+    });
+    cerrarModal('modal-inv-mov');
+    showToast('📦 Inventario actualizado');
+    loadInventario();
+  }catch(e){ showToast('Error: '+e.message, true); }
+  finally{ invMovEnProceso = false; if(btn) btn.disabled = false; }
+}
+async function borrarMovInventario(id){
+  if(!confirm('¿Eliminar este movimiento? El stock vuelve a lo de antes.')) return;
+  try{ await api('movimientos_inventario?id=eq.'+id,'DELETE'); showToast('Movimiento eliminado'); loadInventario(); }
+  catch(e){ showToast('Error: '+e.message, true); }
+}
+
+// ── Catálogo (editar nombres/precios, agregar productos) ──
+function renderCatalogo(){
+  document.getElementById('cat-rows').innerHTML = catalogo.map(p=>
+    '<tr style="opacity:'+(p.activo?1:.5)+'">'
+    +'<td style="font-weight:600">'+escHtml(p.nombre)+'</td>'
+    +'<td>'+(p.tipo==='insumo'?'🧴 Insumo':'🛒 Se vende')+'</td>'
+    +'<td>'+(p.tipo==='venta' ? (p.precio?'$'+fmt(p.precio):'variable') : '-')+'</td>'
+    +'<td>'+escHtml(p.unidad||'und')+'</td>'
+    +'<td>'+(p.stock_minimo||'-')+'</td>'
+    +'<td>'+(p.activo?'<span style="color:#6EE7B7">Activo</span>':'<span style="color:var(--muted)">Desactivado</span>')+'</td>'
+    +'<td><button class="btn btn-g" style="padding:3px 8px;font-size:11px" onclick="abrirModalCatalogo('+p.id+')">✏️ Editar</button></td></tr>'
+  ).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">Catálogo vacío — agrega el primer producto</td></tr>';
+}
+function catTipoCambio(){
+  document.getElementById('cat-precio-wrap').style.display = document.getElementById('cat-tipo').value==='venta' ? 'block' : 'none';
+}
+function abrirModalCatalogo(id){
+  const p = id ? catalogo.find(x=>x.id===id) : null;
+  document.getElementById('cat-modal-titulo').textContent = p ? '✏️ Editar producto' : '➕ Nuevo producto';
+  document.getElementById('cat-id').value = p ? p.id : '';
+  document.getElementById('cat-nombre').value = p ? p.nombre : '';
+  document.getElementById('cat-tipo').value = p ? p.tipo : 'venta';
+  document.getElementById('cat-precio').value = p ? (p.precio||0) : '';
+  document.getElementById('cat-unidad').value = p ? (p.unidad||'und') : 'und';
+  document.getElementById('cat-minimo').value = p ? (p.stock_minimo||0) : '';
+  document.getElementById('cat-activo').checked = p ? !!p.activo : true;
+  catTipoCambio();
+  document.getElementById('modal-catalogo').style.display = 'flex';
+}
+let catEnProceso = false;
+async function guardarCatalogo(){
+  if(catEnProceso) return;
+  const id = parseInt(document.getElementById('cat-id').value)||null;
+  const nombre = document.getElementById('cat-nombre').value.trim();
+  const tipo = document.getElementById('cat-tipo').value;
+  if(!nombre){ showToast('Escribe el nombre', true); return; }
+  if(nombre.toLowerCase()==='otro'){ showToast('"Otro" ya existe por defecto, usa otro nombre', true); return; }
+  if(catalogo.some(x=>x.id!==id && x.nombre.toLowerCase()===nombre.toLowerCase())){ showToast('Ya existe un producto con ese nombre', true); return; }
+  const datos = {
+    nombre, tipo,
+    precio: tipo==='venta' ? (parseInt(document.getElementById('cat-precio').value)||0) : 0,
+    unidad: document.getElementById('cat-unidad').value,
+    stock_minimo: parseInt(document.getElementById('cat-minimo').value)||0,
+    activo: document.getElementById('cat-activo').checked
+  };
+  const anterior = id ? catalogo.find(x=>x.id===id) : null;
+  const renombra = anterior && anterior.nombre !== nombre;
+  if(renombra && !confirm('Vas a cambiar "'+anterior.nombre+'" por "'+nombre+'".\n\nTambién se cambia en todo el historial (ventas, compras y movimientos). ¿Continuar?')) return;
+  const btn = document.getElementById('cat-btn');
+  catEnProceso = true; if(btn) btn.disabled = true;
+  try{
+    if(id){
+      await api('catalogo_productos?id=eq.'+id,'PATCH',datos);
+      if(renombra){
+        const nuevo = {producto:nombre}, viejo = encN(anterior.nombre);
+        await api('ventas_productos?producto=eq.'+viejo,'PATCH',nuevo);
+        await api('compras_productos?producto=eq.'+viejo,'PATCH',nuevo).catch(()=>{});
+        await api('movimientos_inventario?producto=eq.'+viejo,'PATCH',nuevo).catch(()=>{});
+      }
+    } else {
+      datos.orden = (catalogo.reduce((m,x)=>Math.max(m,x.orden||0),0))+1;
+      await api('catalogo_productos','POST',datos);
+    }
+    cerrarModal('modal-catalogo');
+    showToast(id ? '✅ Producto actualizado' : '✅ Producto agregado');
+    await loadInventario();
+    renderCatalogo();
+  }catch(e){ showToast('Error: '+e.message, true); }
+  finally{ catEnProceso = false; if(btn) btn.disabled = false; }
+}
+
 // ── PRODUCTOS ────────────────────────────────────────────────────────────────
 const PRODUCTOS_PRECIOS = {
   'Champú': 3000, 'Uva': 2000, 'Teflón': 3000, 'Grafito': 3000,
@@ -6028,7 +6371,7 @@ async function loadProductosHistorial(){
 }
 
 function abrirModalCompraProducto(){
-  document.getElementById('cp-producto').value = 'Champú';
+  { const _cp = document.getElementById('cp-producto'); if(_cp && _cp.options.length) _cp.selectedIndex = 0; }
   document.getElementById('cp-cantidad').value = '1';
   document.getElementById('cp-costo-unit').value = '';
   document.getElementById('cp-fecha').value = today();
