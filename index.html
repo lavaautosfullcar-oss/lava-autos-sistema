@@ -155,8 +155,8 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <div class="role-btn sel" onclick="selRole('dueno',this)"><div class="role-icon">👑</div><div class="role-name">Propietario</div><div class="role-desc">Acceso total</div></div>
       <div class="role-btn" onclick="selRole('cajero',this)"><div class="role-icon">🖥️</div><div class="role-name">Administrador</div><div class="role-desc">Órdenes</div></div>
     </div>
-    <div class="pin-label">Clave de acceso</div>
-    <input class="pin-input" type="password" maxlength="64" id="pin-input" autocomplete="off" placeholder="••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <div class="pin-label">PIN de acceso</div>
+    <input class="pin-input" type="password" inputmode="numeric" maxlength="64" id="pin-input" autocomplete="off" placeholder="••••" onkeydown="if(event.key==='Enter')doLogin()"/>
     <button class="btn-login" onclick="doLogin()">Ingresar</button>
     <div class="login-err" id="login-err"></div>
   </div>
@@ -420,6 +420,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
               <option value="Extintor">Extintor</option>
               <option value="Otro">Otro</option>
             </select>
+            <button class="btn btn-g" id="btn-nuevo-producto" onclick="abrirModalCatalogo()">🏷️ Nuevo producto</button>
             <button class="btn btn-g" onclick="abrirModalCompraProducto()">🧾 Registrar compra</button>
             <button class="btn btn-p" onclick="abrirModalProducto()">+ Registrar venta</button>
           </div>
@@ -1602,6 +1603,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <option value="Extintor" data-precio="0">Extintor</option>
       <option value="Otro" data-precio="0">Otro</option>
     </select>
+    <div id="prod-nuevo-link" style="margin-top:6px"><a href="#" onclick="abrirModalCatalogo();return false" style="font-size:12px;color:var(--gold)">➕ Agregar un producto nuevo a la lista</a></div>
   </div>
   <div class="form-grid" style="grid-template-columns:1fr 1fr">
     <div class="field"><label>Cantidad</label>
@@ -1900,8 +1902,13 @@ const MES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Di
 const COLORS=['#C9A84C','#E8C96A','#8BA3BB','#6B7280','#4B5563','#9CA3AF'];
 
 // ── AUTH ─────────────────────────────────────────────────────────────────────
-const PIN_HASH={dueno:'130516a061b32e0e9b3073cf65b1576f80617ef780c15b4d0b643419d4356726',cajero:'9af15b336e6a9619928537df30b2e6a2376569fcf9d7e773eccede65606529a0'};
-async function sha256Hex(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+const PIN_HASH={dueno:'54a58f2d84aaed252e95789818eaa7722bbb524d5da7b416d3281d103f4f34c7',cajero:'f87ec3995aa9dbbf3a87a10d24c9b213e0e566c5b8f777af33121406ba26419c'};
+// Clave guardada solo como huella lenta (PBKDF2, 300.000 vueltas): no se puede leer en el código
+async function sha256Hex(t){
+  const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(t),'PBKDF2',false,['deriveBits']);
+  const b=await crypto.subtle.deriveBits({name:'PBKDF2',salt:new TextEncoder().encode('lavaautos-fullcar-v1'),iterations:300000,hash:'SHA-256'},k,256);
+  return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');
+}
 
 function selRole(role,el){
   selRoleVal=role;
@@ -6020,8 +6027,8 @@ async function guardarCatalogo(){
     }
     cerrarModal('modal-catalogo');
     showToast(id ? '✅ Producto actualizado' : '✅ Producto agregado');
-    await loadInventario();
-    renderCatalogo();
+    await cargarCatalogo();
+    if(document.getElementById('s-inventario')?.classList.contains('on')){ await loadInventario(); renderCatalogo(); }
   }catch(e){ showToast('Error: '+e.message, true); }
   finally{ catEnProceso = false; if(btn) btn.disabled = false; }
 }
@@ -6035,6 +6042,8 @@ const PRODUCTOS_PRECIOS = {
 let ventasProductosHoy = [];
 
 async function loadProductos(){
+  { const dueno = currentUser && currentUser.rol==='dueno';
+    ['btn-nuevo-producto','prod-nuevo-link'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display = dueno ? '' : 'none'; }); }
   document.getElementById('prod-fecha-lbl').textContent =
     new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
   try{
