@@ -5212,7 +5212,8 @@ async function calcCuadreCaja(fecha){
   });
 
   const entraEf = cobEf + prodEf + detEf;
-  const saleEf  = mitad + detCostoEf + gastosEf;
+  // Los gastos del día NO se restan del cuadre (no salen de la plata del diario)
+  const saleEf  = mitad + detCostoEf;
   return {fecha, base:CAJA_BASE, cobros, facturas, cobEf, cobQr, prodEf, prodQr, detEf, detQr, detCostoEf, detCostoQr,
           planilla, mitad, gastosEf, gastosQr,
           entraEf, saleEf, esperado: CAJA_BASE + entraEf - saleEf,
@@ -5257,7 +5258,6 @@ async function loadCuadre(){
     if(cu.prodEf>0)     html += fila('🛒 Productos en efectivo','+$'+fmt(cu.prodEf),'#6EE7B7');
     if(cu.detEf>0)      html += fila('✨ Detailing en efectivo','+$'+fmt(cu.detEf),'#6EE7B7');
     if(cu.detCostoEf>0) html += fila('✨ Insumos y comisión del detailing','-$'+fmt(cu.detCostoEf),'#FCA5A5');
-    if(cu.gastosEf>0)   html += fila('📋 Gastos pagados en efectivo','-$'+fmt(cu.gastosEf),'#FCA5A5');
     if(yaPague) html += fila('👷 Ya pagado a lavadores (50% de la planilla)','-$'+fmt(cu.mitad),'#FCA5A5');
     document.getElementById('cuadre-resumen').innerHTML = html;
     document.getElementById('cuadre-esperado').textContent = '$'+fmt(cu.esperadoVista);
