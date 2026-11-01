@@ -826,9 +826,16 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
             <div class="page-title">🏦 Estado financiero</div>
             <div class="page-sub">Saldos disponibles — Alejandra · Mateo · Juan Carlos</div>
           </div>
-          <button class="btn btn-g" onclick="loadSaldos()">🔄 Actualizar</button>
+          <button class="btn btn-g" onclick="recargarSaldos()">🔄 Actualizar</button>
         </div>
 
+        <!-- Pestañas -->
+        <div class="pay-toggle" style="margin:0 0 12px">
+          <button class="pt pt-ef on-ef" id="sal-tab-gen" onclick="selSaldosTab('gen')">🏦 Saldos</button>
+          <button class="pt pt-ef" id="sal-tab-oct" onclick="selSaldosTab('oct')">📆 Saldos desde octubre</button>
+        </div>
+
+        <div id="sal-vista-gen">
         <!-- KPIs principales -->
         <div class="kpis" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">
           <div class="kpi" style="border-left-color:#6EE7B7">
@@ -928,6 +935,37 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
               <div style="font-size:11px;color:var(--gold);margin-bottom:4px">✦ Total disponible</div>
               <div style="font-size:22px;font-weight:900;color:var(--gold);font-family:Georgia,serif" id="inv-total">$0</div>
             </div>
+          </div>
+        </div>
+
+        </div><!-- /sal-vista-gen -->
+
+        <!-- Saldos a partir de octubre -->
+        <div id="sal-vista-oct" style="display:none">
+          <div class="kpis" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">
+            <div class="kpi" style="border-left-color:var(--gold)">
+              <div class="kpi-l">✦ Acumulado desde octubre</div>
+              <div class="kpi-v" style="color:var(--gold);font-size:24px" id="so-acum">$0</div>
+              <div class="kpi-s">Lo que nos ha quedado en total</div>
+            </div>
+            <div class="kpi" style="border-left-color:#6EE7B7">
+              <div class="kpi-l">📅 Este mes</div>
+              <div class="kpi-v" style="color:#6EE7B7;font-size:24px" id="so-mes">$0</div>
+              <div class="kpi-s" id="so-mes-lbl"></div>
+            </div>
+            <div class="kpi" style="border-left-color:#C4B5FD">
+              <div class="kpi-l">📆 Mes anterior</div>
+              <div class="kpi-v" style="color:#C4B5FD;font-size:24px" id="so-ant">$0</div>
+              <div class="kpi-s" id="so-ant-lbl"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-t"><span class="card-tg">📆 Mes a mes — cuánto nos quedó (octubre, noviembre, diciembre…)</span></div>
+            <div class="tbl-wrap"><table>
+              <thead><tr><th>Mes</th><th>Lavadas (nos queda)</th><th>Detailing</th><th>Productos</th><th>Gastos</th><th>✦ Nos quedó en el mes</th><th>Acumulado</th></tr></thead>
+              <tbody id="so-rows"></tbody>
+            </table></div>
+            <div style="font-size:11px;color:var(--muted);margin-top:8px">Misma cuenta del sistema: lavadas = lo cobrado (por el día que entró la plata) − la mitad de los lavadores; más detailing y productos, menos gastos. El acumulado arranca en octubre y sigue sumando mes a mes. No incluye el saldo inicial.</div>
           </div>
         </div>
       </div>
@@ -5557,6 +5595,54 @@ async function loadSaldos(){
     s('inv-total', '$'+fmt(dispTotal));
 
   }catch(e){ showToast('Error cargando saldos: '+e.message, true); }
+}
+
+// ── Pestañas de Saldos + vista "desde octubre" ──────────────────────────────
+const SALDOS_OCT_DESDE = '2026-10-01';
+let saldosTab = 'gen';
+function selSaldosTab(t){
+  saldosTab = t;
+  document.getElementById('sal-vista-gen').style.display = t==='gen' ? 'block' : 'none';
+  document.getElementById('sal-vista-oct').style.display = t==='oct' ? 'block' : 'none';
+  document.getElementById('sal-tab-gen').className = 'pt pt-ef'+(t==='gen'?' on-ef':'');
+  document.getElementById('sal-tab-oct').className = 'pt pt-ef'+(t==='oct'?' on-ef':'');
+  if(t==='oct') loadSaldosOctubre();
+}
+function recargarSaldos(){ if(saldosTab==='oct') loadSaldosOctubre(); else loadSaldos(); }
+
+async function loadSaldosOctubre(){
+  try{
+    const {dias} = await cuentaPorDia(SALDOS_OCT_DESDE, today());
+    const porMes = {};
+    dias.forEach(d=>{
+      const k = d.fecha.slice(0,7);
+      const m = porMes[k] || (porMes[k] = {lav:0, det:0, prod:0, gas:0, res:0});
+      m.lav += d.nosQuedaLav; m.det += d.detNeto; m.prod += d.prodMargen; m.gas += d.gastos; m.res += d.totalNuestro;
+    });
+    const claves = Object.keys(porMes).sort();
+    let acum = 0;
+    const filas = claves.map(k=>{
+      const m = porMes[k]; acum += m.res;
+      const [yy,mm] = k.split('-');
+      return '<tr>'
+        +'<td style="font-weight:600">'+MES[parseInt(mm)-1]+' '+yy+'</td>'
+        +'<td>$'+fmt(m.lav)+'</td>'
+        +'<td style="color:#F0ABFC">$'+fmt(m.det)+'</td>'
+        +'<td>$'+fmt(m.prod)+'</td>'
+        +'<td style="color:#FCA5A5">$'+fmt(m.gas)+'</td>'
+        +'<td style="font-weight:800;color:'+(m.res>=0?'var(--gold)':'#FCA5A5')+'">$'+fmt(m.res)+'</td>'
+        +'<td style="font-weight:800;color:'+(acum>=0?'#6EE7B7':'#FCA5A5')+'">$'+fmt(acum)+'</td>'
+        +'</tr>';
+    });
+    document.getElementById('so-rows').innerHTML = filas.join('') || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">Sin movimientos</td></tr>';
+    const nom = k => { const [yy,mm]=k.split('-'); return MES[parseInt(mm)-1]+' '+yy; };
+    const hoyK = today().slice(0,7), prev = new Date(); prev.setDate(1); prev.setMonth(prev.getMonth()-1);
+    const prevK = prev.getFullYear()+'-'+String(prev.getMonth()+1).padStart(2,'0');
+    const set=(id,v)=>{const el=document.getElementById(id); if(el) el.textContent=v;};
+    set('so-acum','$'+fmt(acum));
+    set('so-mes','$'+fmt(porMes[hoyK]?.res||0));   set('so-mes-lbl', nom(hoyK));
+    set('so-ant', porMes[prevK] ? '$'+fmt(porMes[prevK].res) : '—'); set('so-ant-lbl', nom(prevK));
+  }catch(e){ showToast('Error cargando saldos desde octubre: '+e.message, true); }
 }
 
 async function guardarSaldoInicial(){
