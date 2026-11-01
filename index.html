@@ -343,7 +343,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <!-- CUADRE DE CAJA -->
       <div id="s-cuadre" class="screen">
         <div class="row">
-          <div><div class="page-title">🧮 Cuadre de caja</div><div class="page-sub">Cuánto debe haber en la caja (efectivo) al final del día</div></div>
+          <div><div class="page-title">🧮 Cuadre de caja</div><div class="page-sub">Cuánto debe haber en la caja (efectivo) en este momento — sirve para cuadrar a cualquier hora</div></div>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
             <input type="date" id="cuadre-fecha" onchange="loadCuadre()"
               style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none"/>
@@ -357,6 +357,10 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
             <span style="font-weight:700;color:var(--gold)">💵 DEBE HABER EN CAJA</span>
             <span style="font-size:26px;font-weight:900;color:var(--gold);font-family:'Georgia',serif" id="cuadre-esperado">$0</span>
           </div>
+          <div id="cuadre-lav"></div>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:10px;cursor:pointer">
+            <input type="checkbox" id="cuadre-ya-pague" onchange="loadCuadre()"/> Ya les pagué a los lavadores (restar su 50%)
+          </label>
           <div id="cuadre-qr-nota" style="font-size:12px;color:var(--muted);margin-top:10px"></div>
           <div style="margin-top:10px"><button class="btn btn-g" style="font-size:11px" onclick="toggleCuadreDetalle()" id="cuadre-btn-detalle">Ver detalle de los cobros ▾</button></div>
           <div id="cuadre-detalle" style="display:none;margin-top:10px">
@@ -5212,6 +5216,7 @@ async function calcCuadreCaja(fecha){
   return {fecha, base:CAJA_BASE, cobros, facturas, cobEf, cobQr, prodEf, prodQr, detEf, detQr, detCostoEf, detCostoQr,
           planilla, mitad, gastosEf, gastosQr,
           entraEf, saleEf, esperado: CAJA_BASE + entraEf - saleEf,
+          enCajaAhora: CAJA_BASE + entraEf - (saleEf - mitad),
           entraQr: cobQr + prodQr + detQr, saleQr: detCostoQr + gastosQr};
 }
 
@@ -5237,7 +5242,12 @@ async function loadCuadre(){
   cuadreFecha = inp ? inp.value : today();
   try{
     const cu = await calcCuadreCaja(cuadreFecha);
-    cuadreActual = cu;
+    // Por defecto la plata de los lavadores NO se resta (sigue dentro de la caja
+    // hasta que se les paga). Si ya se les pagó, se marca la casilla y se resta.
+    const yaPague = !!document.getElementById('cuadre-ya-pague')?.checked;
+    cu.yaPague = yaPague;
+    cu.esperadoVista = yaPague ? cu.esperado : cu.enCajaAhora;
+    cuadreActual = Object.assign({}, cu, {esperado: cu.esperadoVista});
 
     // Resumen corto: base, lo que entra y lo que sale
     const fila = (txt,val,color,suave)=>'<div class="cierre-row"><span style="color:'+(suave?'var(--muted)':'var(--text)')+'">'+txt+'</span>'
@@ -5246,11 +5256,17 @@ async function loadCuadre(){
     html += fila('💵 Cobrado en efectivo','+$'+fmt(cu.cobEf),'#6EE7B7');
     if(cu.prodEf>0)     html += fila('🛒 Productos en efectivo','+$'+fmt(cu.prodEf),'#6EE7B7');
     if(cu.detEf>0)      html += fila('✨ Detailing en efectivo','+$'+fmt(cu.detEf),'#6EE7B7');
-    html += fila('👷 Pago a lavadores (50% de la planilla)','-$'+fmt(cu.mitad),'#FCA5A5');
     if(cu.detCostoEf>0) html += fila('✨ Insumos y comisión del detailing','-$'+fmt(cu.detCostoEf),'#FCA5A5');
     if(cu.gastosEf>0)   html += fila('📋 Gastos pagados en efectivo','-$'+fmt(cu.gastosEf),'#FCA5A5');
+    if(yaPague) html += fila('👷 Ya pagado a lavadores (50% de la planilla)','-$'+fmt(cu.mitad),'#FCA5A5');
     document.getElementById('cuadre-resumen').innerHTML = html;
-    document.getElementById('cuadre-esperado').textContent = '$'+fmt(cu.esperado);
+    document.getElementById('cuadre-esperado').textContent = '$'+fmt(cu.esperadoVista);
+    const lavEl = document.getElementById('cuadre-lav');
+    if(lavEl){
+      lavEl.innerHTML = yaPague ? '' :
+        '<div class="cierre-row" style="margin-top:8px"><span>👷 De ese total, es de los lavadores (50% de la planilla)</span><span style="font-weight:700;color:#FCD34D;font-family:Georgia,serif">$'+fmt(cu.mitad)+'</span></div>'
+        +'<div class="cierre-row"><span>🏠 Después de pagarles, quedan en caja</span><span style="font-weight:700;color:#6EE7B7;font-family:Georgia,serif">$'+fmt(cu.esperado)+'</span></div>';
+    }
 
     const qrNeto = cu.entraQr - cu.saleQr;
     document.getElementById('cuadre-qr-nota').textContent = '📲 Por QR entró $'+fmt(qrNeto)+' — va a la cuenta, no a la caja.';
@@ -5976,6 +5992,7 @@ async function borrarCompraProducto(id){
 
 // ── TURNOS (hora de llegada de cada lavador, por orden) ─────────────────────
 let turnosHoy = [];
+let turnoCandidatoId = null;
 
 // Reglas de qué NO cuenta como turno:
 //  1) Una orden con taxi, pistolazo o moto NO cuenta, aunque tenga adicionales.
@@ -6066,16 +6083,21 @@ function renderTurnosLista(conteoNormales={}, conteoExcluidos={}){
     const normales = conteoNormales[t.concesero_id]||0;
     const excluidos = conteoExcluidos[t.concesero_id]||0;
     const seFue = !!t.hora_salida;
+    const ocupado = !seFue && !!t.ocupado;
     const horaSalida = seFue ? new Date(t.hora_salida).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',hour12:true}) : null;
     return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.05);opacity:'+(seFue?'.55':'1')+'">'
       +'<div style="display:flex;align-items:center;gap:10px">'
         +'<span style="font-weight:800;color:var(--gold);font-family:Georgia,serif;font-size:16px">#'+(i+1)+'</span>'
         +'<span style="font-weight:700;font-size:13px">'+(t.concesero_nombre||'')+'</span>'
+        +(ocupado?'<span style="font-size:10px;color:#FCD34D">⏳ ocupado</span>':'')
         +'<span style="font-family:monospace;color:var(--muted);font-size:11px">'+hora+(seFue?' → '+horaSalida:'')+'</span>'
       +'</div>'
       +'<div style="display:flex;align-items:center;gap:10px">'
         +'<span style="font-size:12px;color:#6EE7B7" title="Lavadas que cuentan para el turno">🚗 '+normales+'</span>'
         +(excluidos?'<span style="font-size:10px;color:var(--muted)" title="Taxis, pistolazos, motos (con o sin adicionales) o adicionales menores de $25.000 — no cuentan">('+excluidos+' aparte)</span>':'')
+        +(seFue ? '' : (ocupado
+          ? '<button class="btn btn-g" style="padding:3px 8px;font-size:10px;color:#FCD34D" title="Ya se desocupó: vuelve a la rotación" onclick="marcarOcupadoTurno('+t.id+',false)">⏳ Ocupado → ✅ Libre</button>'
+          : '<button class="btn btn-g" style="padding:3px 8px;font-size:10px" title="Está lavando: se salta su turno" onclick="marcarOcupadoTurno('+t.id+',true)">⏳ Ocupado</button>'))
         +(seFue
           ? '<span style="font-size:10px;color:var(--muted)">🚪 se fue</span>'
           : '<button class="btn btn-g" style="padding:3px 8px;font-size:10px" onclick="marcarSalidaTurno('+t.id+')">🚪 Marcar salida</button>')
@@ -6097,16 +6119,49 @@ function renderTurnosLista(conteoNormales={}, conteoExcluidos={}){
   // El siguiente turno es, entre los que siguen activos (no han marcado
   // salida), el que menos lavadas "normales" lleva hoy; si hay empate,
   // gana el que llegó primero.
-  let candidato = activos[0], minNormales = conteoNormales[activos[0].concesero_id]||0;
-  activos.forEach(t=>{
+  // Los que están marcados "ocupado" se saltan (conservan su lugar: cuando se
+  // desocupan vuelven a la rotación y, al llevar menos lavadas, les toca pronto).
+  const libres = activos.filter(t=>!t.ocupado);
+  if(!libres.length){
+    sigEl.innerHTML = '<div style="text-align:center;padding:14px">'
+      +'<div style="font-size:14px;color:#FCD34D;font-weight:700">⏳ Todos los lavadores están ocupados</div>'
+      +'<div style="font-size:11px;color:var(--muted);margin:4px 0 10px">Cuando alguien se desocupe, márcalo como libre en la lista.</div>'
+      +'<button class="btn btn-g" style="font-size:11px" onclick="liberarTodosTurnos()">✅ Marcar a todos como libres</button>'
+    +'</div>';
+    return;
+  }
+  let candidato = libres[0], minNormales = conteoNormales[libres[0].concesero_id]||0;
+  libres.forEach(t=>{
     const n = conteoNormales[t.concesero_id]||0;
     if(n < minNormales){ minNormales = n; candidato = t; }
   });
+  turnoCandidatoId = candidato.id;
+  const ocupados = activos.filter(t=>t.ocupado).map(t=>t.concesero_nombre);
   sigEl.innerHTML = '<div style="text-align:center;padding:14px">'
     +'<div style="font-size:12px;color:var(--muted);letter-spacing:1px;margin-bottom:4px">👉 SIGUIENTE TURNO</div>'
     +'<div style="font-size:26px;font-weight:800;color:var(--gold);font-family:Georgia,serif">'+candidato.concesero_nombre+'</div>'
     +'<div style="font-size:11px;color:var(--muted);margin-top:2px">lleva '+minNormales+' lavada'+(minNormales===1?'':'s')+' hoy</div>'
+    +'<button class="btn btn-p" style="margin-top:10px;padding:8px 18px" onclick="saltarTurno('+candidato.id+')">⏭️ Siguiente (está ocupado)</button>'
+    +(ocupados.length?'<div style="font-size:11px;color:#FCD34D;margin-top:8px">⏳ Ocupados: '+ocupados.join(', ')+'</div>':'')
   +'</div>';
+}
+
+async function marcarOcupadoTurno(id, ocupado){
+  try{
+    await api('turnos?id=eq.'+id,'PATCH',{ocupado:!!ocupado});
+    showToast(ocupado?'⏳ Marcado como ocupado — pasa el siguiente':'✅ Libre otra vez');
+    loadTurnos();
+  }catch(e){
+    showToast('Falta correr el SQL "migracion_ocupado_turnos.sql" en Supabase ('+e.message+')', true);
+  }
+}
+// Botón "Siguiente": el que tiene el turno está ocupado → se salta al que sigue
+function saltarTurno(id){ marcarOcupadoTurno(id, true); }
+async function liberarTodosTurnos(){
+  try{
+    await api('turnos?fecha=eq.'+today()+'&ocupado=eq.true','PATCH',{ocupado:false});
+    showToast('✅ Todos libres'); loadTurnos();
+  }catch(e){ showToast('Error: '+e.message, true); }
 }
 
 async function marcarSalidaTurno(id){
