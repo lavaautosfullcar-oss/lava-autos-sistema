@@ -500,19 +500,20 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <!-- DETAILING -->
       <div id="s-detailing" class="screen">
         <div class="row">
-          <div><div class="page-title">✨ Detailing</div><div class="page-sub">Ingresos extra por detailing (los hace Mateo)</div></div>
+          <div><div class="page-title">✨ Detailing</div><div class="page-sub">Ingresos extra por detailing (Mateo, con ayudantes opcionales)</div></div>
           <button class="btn btn-p" onclick="abrirModalDetailing()">+ Registrar detailing</button>
         </div>
         <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
           <div class="kpi"><div class="kpi-l">💰 Facturado (mes)</div><div class="kpi-v" style="color:var(--gold);font-size:15px" id="det-total-mes">$0</div></div>
           <div class="kpi" style="border-left-color:#FCA5A5"><div class="kpi-l">🧴 Insumos (mes)</div><div class="kpi-v" style="color:#FCA5A5;font-size:15px" id="det-insumos-mes">$0</div></div>
-          <div class="kpi" style="border-left-color:#93C5FD"><div class="kpi-l">👷 Comisión Mateo (mes)</div><div class="kpi-v" style="color:#93C5FD;font-size:15px" id="det-bonif-mes">$0</div></div>
+          <div class="kpi" style="border-left-color:#93C5FD"><div class="kpi-l">👷 Comisiones (mes)</div><div class="kpi-v" style="color:#93C5FD;font-size:15px" id="det-bonif-mes">$0</div></div>
           <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">✦ Ganancia neta (mes)</div><div class="kpi-v" style="color:#6EE7B7;font-size:15px" id="det-neta-mes">$0</div></div>
         </div>
+        <div id="det-comis-resumen" style="font-size:12px;color:var(--muted);margin:-4px 0 12px"></div>
         <div class="card">
           <div class="tbl-wrap">
             <table>
-              <thead><tr><th>Fecha</th><th>Placa</th><th>Tipo</th><th>Valor</th><th>Insumos</th><th>Comisión Mateo</th><th>Ganancia neta</th><th>Pago</th><th></th></tr></thead>
+              <thead><tr><th>Fecha</th><th>Placa</th><th>Tipo</th><th>Valor</th><th>Insumos</th><th>Comisiones</th><th>Ganancia neta</th><th>Pago</th><th></th></tr></thead>
               <tbody id="detailing-list"></tbody>
             </table>
           </div>
@@ -1557,7 +1558,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
 <div class="modal">
   <div class="modal-title" id="det-modal-title">✨ Registrar detailing</div>
   <input type="hidden" id="det-edit-id" value=""/>
-  <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Este servicio siempre lo hace <b style="color:var(--gold)">Mateo</b> — registra el trabajo ya hecho, como un ingreso extra.</div>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Registra el trabajo ya hecho, como un ingreso extra. Lo hace <b style="color:var(--gold)">Mateo</b> y puede llevar ayudantes (lavadores): reparte la comisión abajo.</div>
   <div class="form-grid" style="grid-template-columns:1fr 1fr">
     <div class="field"><label>📅 Fecha en que se hizo y se entregó</label><input type="date" id="det-fecha"/></div>
     <div class="field"><label>Placa</label><input type="text" id="det-placa" placeholder="ABC 123" oninput="this.value=this.value.toUpperCase()"/></div>
@@ -1568,10 +1569,16 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <option value="camioneta">🚙 Camioneta</option>
     </select>
   </div>
-  <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr">
+  <div class="field"><label>Servicio realizado (sale en la orden impresa)</label><input type="text" id="det-desc" placeholder="Ej: Brillado completo + restauración de plásticos"/></div>
+  <div class="form-grid" style="grid-template-columns:1fr 1fr">
     <div class="field"><label>Valor cobrado</label><input type="number" id="det-valor" placeholder="0" oninput="calcDetNeta()"/></div>
     <div class="field"><label>Costo insumos</label><input type="number" id="det-insumos" placeholder="0" oninput="calcDetNeta()"/></div>
-    <div class="field"><label>Comisión Mateo</label><input type="number" id="det-bonif" placeholder="0" oninput="calcDetNeta()"/></div>
+  </div>
+  <div class="field">
+    <label>👷 Comisiones — ¿quién lo hizo y cuánto se le paga?</label>
+    <div id="det-comis-list"></div>
+    <button class="btn btn-g" type="button" style="padding:4px 10px;font-size:11px;margin-top:4px" onclick="addDetComis()">+ Agregar ayudante</button>
+    <div style="font-size:11px;color:var(--muted);margin-top:4px">Total comisiones: <b id="det-comis-total" style="color:#93C5FD">$0</b></div>
   </div>
   <div style="background:rgba(255,255,255,.04);border-radius:8px;padding:10px 12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
     <span style="font-size:12px;color:var(--muted)">✦ Ganancia neta estimada</span>
@@ -3399,10 +3406,46 @@ let gastoPayModeDet = 'efectivo';
 let detTipo = 'simple';
 let detailingTodos = [];
 
+// Comisiones: lista de {nombre, valor}. El total se guarda en comision_ayudante
+// (así toda la contabilidad sigue igual) y el detalle por persona en "comisiones".
+let detComis = [];
+function sumDetComis(){ return detComis.reduce((a,c)=>a+(parseInt(c.valor)||0),0); }
+function nombresComisionables(){
+  const set = ['Mateo'];
+  (conceseros||[]).forEach(c=>{ if(c.nombre && !set.includes(c.nombre)) set.push(c.nombre); });
+  return set;
+}
+function renderDetComis(){
+  const nombres = nombresComisionables();
+  detComis.forEach(c=>{ if(c.nombre && !nombres.includes(c.nombre)) nombres.push(c.nombre); });
+  document.getElementById('det-comis-list').innerHTML = detComis.map((c,i)=>
+    '<div style="display:flex;gap:6px;margin-bottom:6px;align-items:center">'
+    +'<select style="flex:1.2" onchange="detComis['+i+'].nombre=this.value">'
+      + nombres.map(n=>'<option value="'+escHtml(n)+'"'+(n===c.nombre?' selected':'')+'>'+escHtml(n)+'</option>').join('')
+    +'</select>'
+    +'<input type="number" style="flex:1" placeholder="Comisión $" value="'+(c.valor||'')+'" oninput="detComis['+i+'].valor=parseInt(this.value)||0;calcDetNeta()"/>'
+    +(detComis.length>1?'<button class="btn btn-r" type="button" style="padding:3px 8px;font-size:11px" onclick="quitarDetComis('+i+')">✕</button>':'')
+    +'</div>').join('');
+  calcDetNeta();
+}
+function addDetComis(){
+  const usados = detComis.map(c=>c.nombre);
+  const libre = nombresComisionables().find(n=>!usados.includes(n)) || 'Mateo';
+  detComis.push({nombre:libre, valor:0});
+  renderDetComis();
+}
+function quitarDetComis(i){ detComis.splice(i,1); renderDetComis(); }
+function comisionesDeFila(d){
+  if(Array.isArray(d.comisiones) && d.comisiones.length) return d.comisiones.filter(c=>(c.valor||0)>0 || d.comisiones.length===1);
+  const v = d.comision_ayudante||0;
+  return v>0 ? [{nombre: d.ayudante_nombre||'Mateo', valor:v}] : [];
+}
+
 function calcDetNeta(){
   const valor = parseInt(document.getElementById('det-valor').value)||0;
   const insumos = parseInt(document.getElementById('det-insumos').value)||0;
-  const bonif = parseInt(document.getElementById('det-bonif').value)||0;
+  const bonif = sumDetComis();
+  const t = document.getElementById('det-comis-total'); if(t) t.textContent = '$'+fmt(bonif);
   document.getElementById('det-neta-preview').textContent = '$'+fmt(valor-insumos-bonif);
 }
 
@@ -3417,8 +3460,11 @@ async function abrirModalDetailing(editId){
   document.getElementById('det-tipo-veh').value = d ? (d.tipo_vehiculo||'carro') : 'carro';
   document.getElementById('det-valor').value = d ? (d.valor||'') : '';
   document.getElementById('det-insumos').value = d ? (d.costo_insumos||'') : '';
-  document.getElementById('det-bonif').value = d ? (d.comision_ayudante||'') : '';
-  calcDetNeta();
+  document.getElementById('det-desc').value = d ? (d.descripcion||'') : '';
+  if(!conceseros.length){ try{ conceseros = await api('conceseros?activo=eq.true&order=nombre'); }catch{} }
+  const previas = d ? comisionesDeFila(d) : [];
+  detComis = previas.length ? previas.map(c=>({nombre:c.nombre, valor:c.valor||0})) : [{nombre:'Mateo', valor:0}];
+  renderDetComis();
 
   const mixto = !!(d && d.forma_pago==='mixto');
   detTipo = mixto ? 'mixto' : 'simple';
@@ -3482,7 +3528,7 @@ async function guardarDetailing(){
   const tipoVeh = document.getElementById('det-tipo-veh').value;
   const valor = parseInt(document.getElementById('det-valor').value)||0;
   const insumos = parseInt(document.getElementById('det-insumos').value)||0;
-  const bonif = parseInt(document.getElementById('det-bonif').value)||0;
+  const bonif = sumDetComis();
   if(!fecha||!placa||!valor){showToast('Completa fecha, placa y valor',true);return;}
 
   let formaPago = gastoPayModeDet, pagoEf = 0, pagoQr = 0;
@@ -3497,16 +3543,31 @@ async function guardarDetailing(){
   }
 
   try{
+    const comisLimpias = detComis.filter(c=>(c.valor||0)>0).map(c=>({nombre:c.nombre, valor:c.valor}));
+    const nombresCom = comisLimpias.map(c=>c.nombre);
     const body = {
       fecha, placa, tipo_vehiculo: tipoVeh,
-      ayudante_nombre: 'Mateo',
+      ayudante_nombre: nombresCom.length ? nombresCom.join(', ') : 'Mateo',
       valor, costo_insumos: insumos, comision_ayudante: bonif,
       forma_pago: formaPago, pago_efectivo: pagoEf, pago_qr: pagoQr
     };
+    const extra = { comisiones: comisLimpias, descripcion: document.getElementById('det-desc').value.trim() || null };
     const editId = document.getElementById('det-edit-id').value;
-    if(editId) await api('detailing?id=eq.'+editId,'PATCH',body);
-    else await api('detailing','POST',body);
-    cerrarModal('modal-detailing'); showToast(editId?'Detailing actualizado ✅':'Detailing registrado ✅'); loadDetailing();
+    const guardar = async (b)=>{ if(editId) await api('detailing?id=eq.'+editId,'PATCH',b); else await api('detailing','POST',b); };
+    let aviso = '';
+    try{ await guardar(Object.assign({}, body, extra)); }
+    catch(e1){
+      // Si faltan las columnas nuevas, se guarda igual lo de siempre y se avisa
+      await guardar(body);
+      aviso = ' (falta correr migracion_detailing.sql para guardar los nombres de comisión y la descripción)';
+    }
+    cerrarModal('modal-detailing');
+    showToast((editId?'Detailing actualizado ✅':'Detailing registrado ✅')+aviso, !!aviso);
+    await loadDetailing();
+    if(!editId){
+      const nuevo = detailingTodos.find(x=>x.placa===placa && x.fecha===fecha);
+      if(nuevo && confirm('¿Imprimir la orden de servicio de este detailing?')) imprimirOrdenDetailing(nuevo.id);
+    }
   }catch(e){
     showToast('No se pudo guardar — puede que falte crear la tabla "detailing" en Supabase',true);
   }
@@ -3527,19 +3588,25 @@ async function loadDetailing(){
     document.getElementById('det-insumos-mes').textContent = '$'+fmt(insumosMes);
     document.getElementById('det-bonif-mes').textContent = '$'+fmt(bonifMes);
     document.getElementById('det-neta-mes').textContent = '$'+fmt(netaMes);
+    const porPersona = {};
+    delMes.forEach(d=>comisionesDeFila(d).forEach(c=>{ porPersona[c.nombre] = (porPersona[c.nombre]||0)+(c.valor||0); }));
+    const rs = document.getElementById('det-comis-resumen');
+    if(rs) rs.innerHTML = Object.keys(porPersona).length
+      ? '👷 Comisiones del mes por persona: '+Object.entries(porPersona).map(([n,v])=>'<b style="color:#93C5FD">'+escHtml(n)+'</b> $'+fmt(v)).join(' · ')
+      : '';
 
     document.getElementById('detailing-list').innerHTML = rows.length ? rows.map(d=>{
       const neta = (d.valor||0)-(d.costo_insumos||0)-(d.comision_ayudante||0);
       return '<tr>'
         +'<td style="color:var(--muted);font-family:monospace;font-size:11px">'+d.fecha+'</td>'
-        +'<td style="font-weight:700;color:var(--gold)">'+d.placa+'</td>'
+        +'<td style="font-weight:700;color:var(--gold)">'+d.placa+(d.descripcion?'<div style="font-size:10px;color:var(--muted);font-weight:400;max-width:160px">'+escHtml(d.descripcion)+'</div>':'')+'</td>'
         +'<td style="font-size:11px">'+(d.tipo_vehiculo==='camioneta'?'🚙 Camioneta':'🚗 Carro')+'</td>'
         +'<td style="font-weight:700">$'+fmt(d.valor)+'</td>'
         +'<td style="color:#FCA5A5">$'+fmt(d.costo_insumos)+'</td>'
-        +'<td style="color:#93C5FD">$'+fmt(d.comision_ayudante)+'</td>'
+        +'<td style="color:#93C5FD;font-size:12px">'+(comisionesDeFila(d).map(c=>escHtml(c.nombre)+' $'+fmt(c.valor)).join('<br>')||'$0')+'</td>'
         +'<td style="color:#6EE7B7;font-weight:700">$'+fmt(neta)+'</td>'
         +'<td><span class="badge '+(d.forma_pago==='mixto'?'bmx':d.forma_pago==='qr'?'bqr':'bg')+'">'+(d.forma_pago==='mixto'?'🔀 Mixto':d.forma_pago==='qr'?'📲 QR':'💵 Ef')+'</span></td>'
-        +'<td style="white-space:nowrap"><button class="btn btn-g" style="padding:3px 8px;font-size:10px" title="Editar (cambiar la fecha, valores, etc.)" onclick="abrirModalDetailing('+d.id+')">✏️</button> <button class="btn btn-r" style="padding:3px 8px;font-size:10px" onclick="borrarDetailing('+d.id+')">🗑️</button></td>'
+        +'<td style="white-space:nowrap"><button class="btn btn-g" style="padding:3px 8px;font-size:10px" title="Imprimir orden de servicio" onclick="imprimirOrdenDetailing('+d.id+')">🖨️</button> <button class="btn btn-g" style="padding:3px 8px;font-size:10px" title="Editar (cambiar la fecha, valores, etc.)" onclick="abrirModalDetailing('+d.id+')">✏️</button> <button class="btn btn-r" style="padding:3px 8px;font-size:10px" onclick="borrarDetailing('+d.id+')">🗑️</button></td>'
         +'</tr>';
     }).join('') : '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">Sin detailing registrados</td></tr>';
   }catch(e){
@@ -3547,6 +3614,26 @@ async function loadDetailing(){
     document.getElementById('detailing-list').innerHTML =
       '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">⚠️ No se pudo conectar con la tabla "detailing". Pídele a Claude que te ayude a crearla en Supabase.</td></tr>';
   }
+}
+
+function imprimirOrdenDetailing(id){
+  const d = (detailingTodos||[]).find(x=>x.id===id); if(!d){ showToast('No se encontró el detailing', true); return; }
+  // Hora: la del registro si es del mismo día de la fecha; si no, mediodía de la fecha
+  let hora = d.fecha+'T12:00:00';
+  if(d.created_at){
+    const c = new Date(d.created_at);
+    const cf = c.getFullYear()+'-'+String(c.getMonth()+1).padStart(2,'0')+'-'+String(c.getDate()).padStart(2,'0');
+    if(cf===d.fecha) hora = d.created_at;
+  }
+  const vehiculo = d.tipo_vehiculo==='camioneta' ? 'Camioneta' : 'Carro';
+  imprimirTicket({
+    numero_orden: 'D-'+d.id,
+    placa: d.placa,
+    hora_entrada: hora,
+    cliente_nombre: 'CONSUMIDOR FINAL',
+    servicios: [{servicio_nombre: 'DETAILING '+vehiculo+(d.descripcion?' - '+d.descripcion:''), cantidad:1, subtotal:d.valor||0}],
+    total: d.valor||0
+  });
 }
 
 async function borrarDetailing(id){
