@@ -796,11 +796,13 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           <div><div class="page-title">Historial de órdenes</div><div class="page-sub">Busca y edita órdenes de cualquier fecha</div></div>
         </div>
         <div class="card">
-          <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr auto">
-            <div class="field" style="margin:0">
-              <label>Buscar por placa</label>
-              <input type="text" id="hist-placa" autocomplete="off" placeholder="ABC 123" oninput="this.value=this.value.toUpperCase()"/>
-            </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+            <span style="font-size:11px;color:var(--muted)">Ver un día:</span>
+            <button class="btn btn-g" style="padding:5px 12px;font-size:12px" onclick="histDia(0)">Hoy</button>
+            <button class="btn btn-p" style="padding:5px 12px;font-size:12px" onclick="histDia(1)">Ayer</button>
+            <button class="btn btn-g" style="padding:5px 12px;font-size:12px" onclick="histDia(2)">Anteayer</button>
+          </div>
+          <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr">
             <div class="field" style="margin:0">
               <label>Fecha desde</label>
               <input type="date" id="hist-desde"/>
@@ -808,6 +810,20 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
             <div class="field" style="margin:0">
               <label>Fecha hasta</label>
               <input type="date" id="hist-hasta"/>
+            </div>
+            <div class="field" style="margin:0">
+              <label>Buscar por placa</label>
+              <input type="text" id="hist-placa" autocomplete="off" placeholder="ABC 123" oninput="this.value=this.value.toUpperCase()"/>
+            </div>
+          </div>
+          <div class="form-grid" style="grid-template-columns:1fr 1fr auto;margin-top:10px">
+            <div class="field" style="margin:0">
+              <label>Servicio (ej: brillado, moto, lavado)</label>
+              <input type="text" id="hist-servicio" autocomplete="off" placeholder="Escribe parte del nombre del servicio" onkeydown="if(event.key==='Enter')buscarHistorial()"/>
+            </div>
+            <div class="field" style="margin:0">
+              <label>Lavador</label>
+              <select id="hist-lavador"><option value="">Todos</option></select>
             </div>
             <div class="field" style="margin:0">
               <label>&nbsp;</label>
@@ -4678,57 +4694,99 @@ function initHistorial(){
   if(hastaEl) hastaEl.value = hoy;
   if(placaEl) placaEl.value = '';
   if(resEl)   resEl.innerHTML = '';
+  const svEl = document.getElementById('hist-servicio'); if(svEl) svEl.value = '';
+  const lvEl = document.getElementById('hist-lavador');
+  if(lvEl) lvEl.innerHTML = '<option value="">Todos</option>' + conceseros.map(c=>'<option value="'+escHtml(c.nombre)+'">'+escHtml(c.nombre)+'</option>').join('');
+}
+
+// Botones rápidos: Hoy / Ayer / Anteayer
+function histDia(atras){
+  const d = new Date(); d.setDate(d.getDate()-atras);
+  const f = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  document.getElementById('hist-desde').value = f;
+  document.getElementById('hist-hasta').value = f;
+  buscarHistorial();
 }
 
 async function buscarHistorial(){
   const placa  = document.getElementById('hist-placa').value.trim();
   const desde  = document.getElementById('hist-desde').value;
   const hasta  = document.getElementById('hist-hasta').value;
+  const servTxt = (document.getElementById('hist-servicio')?.value||'').trim();
+  const lavador = document.getElementById('hist-lavador')?.value||'';
   const res    = document.getElementById('hist-results');
 
-  if(!placa && !desde){
-    showToast('Ingresa al menos una placa o fecha',true);
+  if(!placa && !desde && !servTxt){
+    showToast('Elige un día (Hoy/Ayer) o escribe una placa o servicio',true);
     return;
   }
-
   res.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted)">Buscando...</div>';
 
   try{
-    let query = 'ordenes?order=id.desc&limit=100';
-    if(placa)  query += '&placa=eq.'+placa;
+    let query = 'ordenes?order=hora_entrada.asc&limit=1000';
+    if(placa)  query += '&placa=eq.'+encodeURIComponent(placa);
     if(desde)  query += '&fecha=gte.'+desde;
     if(hasta)  query += '&fecha=lte.'+hasta;
-    if(!desde && !hasta && !placa) query += '&fecha=eq.'+today();
+    if(!desde && !hasta && !placa) query += '&fecha=gte.'+new Date(Date.now()-30*864e5).toISOString().slice(0,10);
+    let ords = await api(query);
+    if(lavador) ords = ords.filter(o=>o.concesero_nombre===lavador);
 
-    const ords = await api(query);
+    // Servicios de todas las órdenes (en bloques para no armar URLs enormes)
+    const svcsPor = {};
+    for(let i=0;i<ords.length;i+=60){
+      const ids = ords.slice(i,i+60).map(o=>o.id).join(',');
+      const rows = await api('orden_servicios?orden_id=in.('+ids+')');
+      rows.forEach(r=>{ (svcsPor[r.orden_id] = svcsPor[r.orden_id] || []).push(r); });
+    }
+    const norm = t => String(t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    if(servTxt){
+      const q = norm(servTxt);
+      ords = ords.filter(o=>(svcsPor[o.id]||[]).some(sv=>norm(sv.servicio_nombre).includes(q)));
+    }
 
     if(!ords.length){
-      res.innerHTML = '<div class="card"><div style="text-align:center;padding:30px;color:var(--muted)">📋 No se encontraron órdenes.</div></div>';
+      res.innerHTML = '<div class="card"><div style="text-align:center;padding:30px;color:var(--muted)">📋 No se encontraron órdenes con esos filtros.</div></div>';
       return;
     }
 
+    const hora = h => h ? new Date(h).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
+    const pagoTxt = {efectivo:'💵 Efectivo', qr:'📲 QR', mixto:'🔀 Mixto', sin_cobro:'🚫 Sin cobro'};
+    const conteo = {};
+    let total = 0;
     let rows = '';
     for(const o of ords){
+      const svcs = svcsPor[o.id]||[];
+      svcs.forEach(sv=>{ conteo[sv.servicio_nombre] = (conteo[sv.servicio_nombre]||0) + (sv.cantidad||1); });
+      total += parseInt(o.total)||0;
       const esGen = !o.cliente_nombre || o.cliente_nombre==='CONSUMIDOR FINAL';
+      const chips = svcs.map(sv=>'<div style="font-size:11px;white-space:nowrap">• '+escHtml(sv.servicio_nombre)+' <span style="color:var(--gold)">$'+fmt(sv.valor_unit)+'</span></div>').join('') || '<span style="color:var(--muted);font-size:11px">sin servicios</span>';
       rows += '<tr>'
         +'<td style="font-family:monospace;color:var(--muted)">#'+o.numero_orden+'</td>'
-        +'<td style="color:var(--muted);font-size:11px">'+o.fecha+'</td>'
-        +'<td style="font-weight:700;color:var(--gold)">'+o.placa+'</td>'
-        +'<td style="font-size:11px">'+( o.concesero_nombre||'')+'</td>'
-        +'<td style="font-size:11px">'+(esGen?'<span style="color:var(--muted)">Genérico</span>':o.cliente_nombre)+'</td>'
-        +'<td><span class="badge '+(o.estado==='cerrada'?'bg':'ba')+'">'+o.estado+'</span></td>'
+        +'<td style="font-size:11px;color:var(--muted);white-space:nowrap">'+o.fecha+'<br>'+hora(o.hora_entrada)+' → '+hora(o.hora_salida)+'</td>'
+        +'<td><span style="font-weight:700;color:var(--gold)">'+escHtml(o.placa)+'</span>'+(o.observaciones?'<div style="font-size:10px;color:var(--muted);font-style:italic;max-width:140px">'+escHtml(o.observaciones)+'</div>':'')+'</td>'
+        +'<td style="font-size:12px;font-weight:600">'+escHtml(o.concesero_nombre||'')+'</td>'
+        +'<td>'+chips+'</td>'
+        +'<td style="font-size:11px">'+(esGen?'<span style="color:var(--muted)">Genérico</span>':escHtml(o.cliente_nombre))+'</td>'
+        +'<td style="font-size:11px">'+(pagoTxt[o.forma_pago]||'—')+'</td>'
+        +'<td><span class="badge '+(o.estado==='cerrada'?'bg':'ba')+'">'+escHtml(o.estado)+'</span></td>'
         +'<td style="font-weight:700">$'+fmt(o.total)+'</td>'
         +'<td style="display:flex;gap:4px">'
-          +'<button class="btn btn-p" style="padding:3px 8px;font-size:10px" onclick="abrirEditarOrd('+o.id+')">✏️ Editar</button>'
+          +'<button class="btn btn-p" style="padding:3px 8px;font-size:10px" onclick="abrirEditarOrd('+o.id+')">✏️</button>'
           +'<button class="btn btn-g" style="padding:3px 8px;font-size:10px" onclick="reimprimirHist('+o.id+')">🖨️</button>'
         +'</td>'
         +'</tr>';
     }
+    const resumenSvcs = Object.entries(conteo).sort((a,b)=>b[1]-a[1])
+      .map(([n,c])=>'<span style="display:inline-block;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:12px;padding:2px 10px;margin:2px 4px 2px 0;font-size:11px">'+escHtml(n)+' <b style="color:var(--gold)">×'+c+'</b></span>').join('');
 
     res.innerHTML = '<div class="card">'
-      +'<div style="font-size:11px;color:var(--muted);margin-bottom:8px">'+ords.length+' órdenes encontradas</div>'
+      +'<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px">'
+        +'<span style="font-size:13px;font-weight:700">'+ords.length+' orden'+(ords.length===1?'':'es')+(servTxt?' con "'+escHtml(servTxt)+'"':'')+'</span>'
+        +'<span style="font-size:13px;color:var(--gold);font-weight:700">Total $'+fmt(total)+'</span>'
+      +'</div>'
+      +'<div style="margin-bottom:10px">'+resumenSvcs+'</div>'
       +'<div class="tbl-wrap"><table>'
-        +'<thead><tr><th>#</th><th>Fecha</th><th>Placa</th><th>Concesor</th><th>Cliente</th><th>Estado</th><th>Total</th><th>Acciones</th></tr></thead>'
+        +'<thead><tr><th>#</th><th>Fecha / hora</th><th>Placa</th><th>Lavador</th><th>Servicios</th><th>Cliente</th><th>Pago</th><th>Estado</th><th>Total</th><th></th></tr></thead>'
         +'<tbody>'+rows+'</tbody>'
       +'</table></div>'
       +'</div>';
