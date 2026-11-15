@@ -182,6 +182,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
       <div class="ni" onclick="go('planilla',this)" id="nav-planilla"><span class="ni-ico">📋</span>Planilla</div>
       <div class="ni" onclick="go('productos',this)" id="nav-productos"><span class="ni-ico">🛒</span>Productos</div>
       <div class="ni" onclick="go('inventario',this)" id="nav-inventario"><span class="ni-ico">📦</span>Inventario</div>
+      <div class="ni" onclick="go('propinas',this)" id="nav-propinas"><span class="ni-ico">🎁</span>Propinas</div>
       <div class="ni" onclick="go('turnos',this)" id="nav-turnos"><span class="ni-ico">🎫</span>Turnos</div>
       <div class="ni hidden" onclick="go('detailing',this)" id="nav-detailing"><span class="ni-ico">✨</span>Detailing</div>
       <div class="ni hidden" onclick="go('cierre',this)" id="nav-cierre"><span class="ni-ico">💰</span>Cierre del día</div>
@@ -308,6 +309,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
           </div>
           <div class="cierre-row" style="margin-top:6px"><span style="color:var(--muted)">− Ya está en la cuenta (QR)</span><span style="font-weight:700;color:#C4B5FD;font-family:'Georgia',serif" id="dc-qr-cuenta">$0</span></div>
           <div class="cierre-row" style="border-bottom:none"><span style="font-weight:700">= Efectivo que deja el día <span style="font-size:10px;color:var(--muted)">(sin contar la base de caja)</span></span><span style="font-size:18px;font-weight:800;color:#6EE7B7;font-family:'Georgia',serif" id="dc-efectivo-dia">$0</span></div>
+          <div class="cierre-row" id="dc-prop-row" style="display:none;border-bottom:none"><span style="color:var(--muted);font-size:12px">🎁 Propinas (no son nuestras) <span id="dc-prop-nota" style="font-size:10px"></span></span><span style="font-weight:700;color:#FCD34D;font-family:'Georgia',serif" id="dc-prop-val">$0</span></div>
         </div>
 
         <!-- Ventas productos card -->
@@ -1022,6 +1024,34 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
         </div>
       </div>
 
+      <!-- PROPINAS -->
+      <div id="s-propinas" class="screen">
+        <div class="row">
+          <div><div class="page-title">🎁 Propinas</div><div class="page-sub">Lo que los clientes transfieren por QR para los lavadores — entra a la cuenta y se les entrega en efectivo de la caja</div></div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-g" onclick="loadPropinas()">🔄</button>
+            <button class="btn btn-p" onclick="abrirModalPropina()">+ Registrar propina</button>
+          </div>
+        </div>
+        <div class="kpis" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">
+          <div class="kpi" style="border-left-color:#FCD34D"><div class="kpi-l">⏳ Por entregar</div><div class="kpi-v" style="color:#FCD34D;font-size:24px" id="pr-pend">$0</div><div class="kpi-s">Está en la cuenta (QR), no en la caja</div></div>
+          <div class="kpi" style="border-left-color:#C4B5FD"><div class="kpi-l">📲 Recibidas hoy</div><div class="kpi-v" style="color:#C4B5FD;font-size:24px" id="pr-rec-hoy">$0</div><div class="kpi-s">Entraron por QR</div></div>
+          <div class="kpi" style="border-left-color:#6EE7B7"><div class="kpi-l">💵 Entregadas hoy</div><div class="kpi-v" style="color:#6EE7B7;font-size:24px" id="pr-ent-hoy">$0</div><div class="kpi-s">Salieron de la caja</div></div>
+        </div>
+        <div class="card">
+          <div class="card-t"><span class="card-tg">⏳ Por entregar a cada lavador</span></div>
+          <div id="pr-pendientes"></div>
+        </div>
+        <div class="card">
+          <div class="card-t"><span class="card-tg">📒 Historial reciente</span></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Entró</th><th>Lavador</th><th>Valor</th><th>Estado</th><th>Nota</th><th></th></tr></thead>
+            <tbody id="pr-hist"></tbody>
+          </table></div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px">Las propinas no cuentan como ingreso ni como gasto del negocio: entran por QR y salen en efectivo para el lavador. En el Cuadre de caja, la caja baja el día que marcas la propina como entregada.</div>
+        </div>
+      </div>
+
       <!-- EMPRESAS -->
       <div id="s-empresas" class="screen">
         <div class="row">
@@ -1286,7 +1316,7 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
     </div>
     <div id="propina-fields" style="display:none">
       <div class="field">
-        <label>Valor de la propina (se paga en efectivo al concesor)</label>
+        <label>Valor de la propina (queda en 🎁 Propinas para entregarla en efectivo)</label>
         <input type="number" id="cobrar-propina" placeholder="0" oninput="calcPropina()"
           style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%"/>
       </div>
@@ -1644,6 +1674,24 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
   <div style="display:flex;gap:8px">
     <button class="btn btn-p" style="flex:1;padding:10px" id="prod-btn-guardar" onclick="guardarVentaProducto()">💾 Guardar</button>
     <button class="btn btn-g" onclick="cerrarModal('modal-producto')">Cancelar</button>
+  </div>
+</div>
+</div>
+
+<!-- Modal registrar propina -->
+<div id="modal-propina" class="modal-bg" style="display:none">
+<div class="modal">
+  <div class="modal-h"><span>🎁 Registrar propina</span><span class="modal-x" onclick="cerrarModal('modal-propina')">✕</span></div>
+  <div class="field"><label>Lavador</label><select id="pr-conc" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%"></select></div>
+  <div class="form-grid" style="grid-template-columns:1fr 1fr">
+    <div class="field"><label>Valor de la propina</label><input type="number" id="pr-valor" min="0" placeholder="0" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%"/></div>
+    <div class="field"><label>Día que entró por QR</label><input type="date" id="pr-fecha" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%"/></div>
+  </div>
+  <div class="field"><label>Nota (opcional)</label><input type="text" id="pr-nota" placeholder="Ej: cliente de la placa ABC123" style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%"/></div>
+  <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:14px;cursor:pointer"><input type="checkbox" id="pr-ya"/> Ya se la entregué en efectivo ahora</label>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-p" style="flex:1;padding:10px" id="pr-btn" onclick="guardarPropina()">💾 Guardar</button>
+    <button class="btn btn-g" onclick="cerrarModal('modal-propina')">Cancelar</button>
   </div>
 </div>
 </div>
@@ -2011,6 +2059,7 @@ function go(s,el){
   else if(s==='historial') initHistorial();
   else if(s==='saldos') loadSaldos();
   else if(s==='inventario') loadInventario();
+  else if(s==='propinas') loadPropinas();
   else if(s==='productos') selProdModo('hoy');
   else if(s==='turnos') loadTurnos();
   else if(s==='empresas') loadEmpresas();
@@ -2364,6 +2413,11 @@ async function abrirCobrar(id){
     cobrarTipo='simple';
     cobrarTotal=o.total||0;
     cobrarOrdenFecha=o.fecha;
+    cobrarConc={id:o.concesero_id||null, nombre:o.concesero_nombre||''};
+    { const cp=document.getElementById('chk-propina'); if(cp) cp.checked=false;
+      const pf=document.getElementById('propina-fields'); if(pf) pf.style.display='none';
+      const ci=document.getElementById('cobrar-propina'); if(ci) ci.value='';
+      const pr=document.getElementById('propina-resumen'); if(pr) pr.style.display='none'; }
     document.getElementById('cobrar-fecha').value=today(); // por defecto hoy; se puede cambiar
     document.getElementById('cobrar-num').textContent=o.numero_orden;
     document.getElementById('cobrar-placa').textContent=o.placa;
@@ -2440,9 +2494,19 @@ async function confirmarCobrar(){
       pago_efectivo:cobrarTipo==='mixto'?efMonto:(cobrarPayMode==='efectivo'?cobrarTotal:0),
       pago_qr:cobrarTipo==='mixto'?qrMonto:(cobrarPayMode==='qr'?cobrarTotal:0)
     }, fechaCobro);
+    // Propina: queda registrada como "por entregar" al lavador (no suma a la orden)
+    let propMsg='';
+    const propVal = document.getElementById('chk-propina')?.checked ? (parseInt(document.getElementById('cobrar-propina')?.value)||0) : 0;
+    if(propVal>0){
+      try{
+        await api('propinas','POST',{fecha:fechaCobro, concesero_id:cobrarConc.id, concesero_nombre:cobrarConc.nombre||'Sin asignar',
+          valor:propVal, orden_id:cobrarOrdenId, nota:'Propina de la orden #'+(document.getElementById('cobrar-num')?.textContent||''), entregada:false});
+        propMsg=' · 🎁 propina $'+fmt(propVal)+' por entregar';
+      }catch(e){ showToast('La orden se cobró, pero la propina NO se guardó: falta correr el SQL de propinas en Supabase', true); }
+    }
     if(ordenActual){ordenActual.forma_pago=pagoFinal;imprimirTicket(ordenActual);}
     cerrarModal('modal-cobrar');
-    showToast('Orden cobrada ✅');
+    showToast('Orden cobrada ✅'+propMsg);
     loadOrdenes();
   }catch(e){showToast('Error: '+e.message,true);}
 }
@@ -2970,6 +3034,9 @@ async function loadCierre(){
       const cuadre = await calcCuadreCaja(hoy);
       arqueoEsperado = cuadre.esperado;
       s('arqueo-esperado', '$'+fmt(cuadre.esperado));
+      show('dc-prop-row', (cuadre.propRecQr+cuadre.propEntEf+cuadre.propPend)>0);
+      s('dc-prop-val', '$'+fmt(cuadre.propPend));
+      s('dc-prop-nota', '· por entregar. Hoy entraron $'+fmt(cuadre.propRecQr)+' por QR y entregaste $'+fmt(cuadre.propEntEf)+' en efectivo');
     }catch(e){ console.warn('cuadre en cierre:', e.message); }
 
     // ── Conceseros ────────────────────────────────────────────────────────────
@@ -5313,14 +5380,21 @@ let cuadreFecha = null;
 // productos y detailing; sale el pago a lavadores (50% de la planilla), los
 // insumos y comisión del detailing y los gastos pagados en efectivo.
 async function calcCuadreCaja(fecha){
-  const [lavadas, cobradas, det, vp, gs, pagosEmp] = await Promise.all([
+  const [lavadas, cobradas, det, vp, gs, pagosEmp, propRec, propEnt, propPendAll] = await Promise.all([
     api('ordenes?fecha=eq.'+fecha),
     ordenesCobradasRango(fecha, fecha),
     api('detailing?fecha=eq.'+fecha).catch(()=>[]),
     api('ventas_productos?fecha=eq.'+fecha).catch(()=>[]),
     api('gastos?fecha=eq.'+fecha).catch(()=>[]),
-    api('pagos_empresa?fecha_pago=eq.'+fecha).catch(()=>[])
+    api('pagos_empresa?fecha_pago=eq.'+fecha).catch(()=>[]),
+    api('propinas?fecha=eq.'+fecha).catch(()=>[]),
+    api('propinas?entregada=eq.true&fecha_entrega=eq.'+fecha).catch(()=>[]),
+    api('propinas?entregada=eq.false').catch(()=>[])
   ]);
+  // Propinas: entran por QR (a la cuenta) y salen en efectivo de la caja cuando se entregan
+  const propRecQr = propRec.reduce((a,x)=>a+(x.valor||0),0);
+  const propEntEf = propEnt.reduce((a,x)=>a+(x.valor||0),0);
+  const propPend  = propPendAll.reduce((a,x)=>a+(x.valor||0),0);
 
   // Cobros de lavadas (para el detalle y para poder cambiarles la fecha). Las
   // lavadas de una factura de empresa se agrupan en una sola fila por pago.
@@ -5368,12 +5442,13 @@ async function calcCuadreCaja(fecha){
 
   const entraEf = cobEf + prodEf + detEf;
   // Los gastos del día NO se restan del cuadre (no salen de la plata del diario)
-  const saleEf  = mitad + detCostoEf;
+  const saleEf  = mitad + detCostoEf + propEntEf;
   return {fecha, base:CAJA_BASE, cobros, facturas, cobEf, cobQr, prodEf, prodQr, detEf, detQr, detCostoEf, detCostoQr,
           planilla, mitad, gastosEf, gastosQr,
           entraEf, saleEf, esperado: CAJA_BASE + entraEf - saleEf,
           enCajaAhora: CAJA_BASE + entraEf - (saleEf - mitad),
-          entraQr: cobQr + prodQr + detQr, saleQr: detCostoQr + gastosQr};
+          propRecQr, propEntEf, propPend,
+          entraQr: cobQr + prodQr + detQr + propRecQr, saleQr: detCostoQr + gastosQr};
 }
 
 // Desde el Cierre: abre el Cuadre con el detalle de cobros a la vista (para cambiar fechas)
@@ -5413,6 +5488,7 @@ async function loadCuadre(){
     if(cu.prodEf>0)     html += fila('🛒 Productos en efectivo','+$'+fmt(cu.prodEf),'#6EE7B7');
     if(cu.detEf>0)      html += fila('✨ Detailing en efectivo','+$'+fmt(cu.detEf),'#6EE7B7');
     if(cu.detCostoEf>0) html += fila('✨ Insumos y comisión del detailing','-$'+fmt(cu.detCostoEf),'#FCA5A5');
+    if(cu.propEntEf>0)  html += fila('🎁 Propinas entregadas a lavadores','-$'+fmt(cu.propEntEf),'#FCA5A5');
     if(yaPague) html += fila('👷 Ya pagado a lavadores (50% de la planilla)','-$'+fmt(cu.mitad),'#FCA5A5');
     document.getElementById('cuadre-resumen').innerHTML = html;
     document.getElementById('cuadre-esperado').textContent = '$'+fmt(cu.esperadoVista);
@@ -5424,7 +5500,8 @@ async function loadCuadre(){
     }
 
     const qrNeto = cu.entraQr - cu.saleQr;
-    document.getElementById('cuadre-qr-nota').textContent = '📲 Por QR entró $'+fmt(qrNeto)+' — va a la cuenta, no a la caja.';
+    document.getElementById('cuadre-qr-nota').textContent = '📲 Por QR entró $'+fmt(qrNeto)+(cu.propRecQr>0?' (incluye propinas $'+fmt(cu.propRecQr)+')':'')+' — va a la cuenta, no a la caja.'
+      +(cu.propPend>0?'  🎁 Propinas por entregar: $'+fmt(cu.propPend)+' (están en la cuenta, la caja baja cuando las entregues).':'');
 
     // Detalle de cobros (oculto por defecto) con el lápiz para cambiar el día del cobro
     const ddmm = f => f.split('-').reverse().slice(0,2).join('/');
@@ -6652,6 +6729,121 @@ async function borrarTurno(id){
     showToast('Turno eliminado');
     loadTurnos();
   }catch(e){ showToast('Error: '+e.message, true); }
+}
+
+// ── PROPINAS (QR del cliente → cuenta; efectivo de la caja → lavador) ───────
+let propinasData = [];
+let cobrarConc = {id:null, nombre:''};
+
+async function loadPropinas(){
+  if(!conceseros.length){ try{ conceseros = await api('conceseros?activo=eq.true&order=nombre'); }catch{} }
+  try{
+    propinasData = await api('propinas?order=id.desc&limit=300');
+  }catch(e){
+    document.getElementById('pr-pendientes').innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px">⚠️ Falta crear la tabla de propinas en Supabase. Corre el archivo <b>migracion_propinas.sql</b> y vuelve a abrir esta pantalla.</div>';
+    document.getElementById('pr-hist').innerHTML = '';
+    return;
+  }
+  renderPropinas();
+}
+
+function renderPropinas(){
+  const hoy = today();
+  const suma = arr => arr.reduce((a,x)=>a+(x.valor||0),0);
+  const pend = propinasData.filter(x=>!x.entregada);
+  const set = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+  set('pr-pend','$'+fmt(suma(pend)));
+  set('pr-rec-hoy','$'+fmt(suma(propinasData.filter(x=>x.fecha===hoy))));
+  set('pr-ent-hoy','$'+fmt(suma(propinasData.filter(x=>x.entregada && x.fecha_entrega===hoy))));
+
+  const porLav = {};
+  pend.forEach(x=>{ (porLav[x.concesero_nombre] = porLav[x.concesero_nombre] || []).push(x); });
+  const nombres = Object.keys(porLav).sort();
+  document.getElementById('pr-pendientes').innerHTML = nombres.length ? nombres.map(n=>{
+    const items = porLav[n];
+    return '<div style="border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,.04)">'
+        +'<span style="font-weight:700;font-size:13px">👷 '+escHtml(n)+'</span>'
+        +'<div style="display:flex;align-items:center;gap:10px"><span style="font-weight:800;color:#FCD34D">$'+fmt(suma(items))+'</span>'
+        +'<button class="btn btn-p" style="padding:4px 10px;font-size:11px" onclick="entregarPropinasLavador(\''+encodeURIComponent(n)+'\')">💵 Entregar todo</button></div>'
+      +'</div>'
+      + items.map(x=>
+        '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 14px;border-top:1px solid rgba(255,255,255,.05)">'
+          +'<span style="font-size:12px;color:var(--muted)">'+x.fecha+(x.nota?' · '+escHtml(x.nota):'')+'</span>'
+          +'<div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;color:var(--gold)">$'+fmt(x.valor)+'</span>'
+          +'<button class="btn btn-g" style="padding:2px 8px;font-size:11px" onclick="entregarPropina('+x.id+')">💵 Entregar</button>'
+          +'<button class="btn btn-r" style="padding:2px 6px;font-size:10px" onclick="borrarPropina('+x.id+')">🗑️</button></div>'
+        +'</div>').join('')
+    +'</div>';
+  }).join('') : '<div style="text-align:center;color:var(--muted);padding:24px">No hay propinas por entregar 🎉</div>';
+
+  document.getElementById('pr-hist').innerHTML = propinasData.slice(0,60).map(x=>
+    '<tr><td style="font-family:monospace;font-size:11px;color:var(--muted)">'+x.fecha+'</td>'
+    +'<td>'+escHtml(x.concesero_nombre)+'</td>'
+    +'<td style="font-weight:700;color:var(--gold)">$'+fmt(x.valor)+'</td>'
+    +'<td>'+(x.entregada?'<span style="color:#6EE7B7">💵 Entregada '+(x.fecha_entrega||'')+'</span>':'<span style="color:#FCD34D">⏳ Por entregar</span>')+'</td>'
+    +'<td style="color:var(--muted);font-size:12px">'+escHtml(x.nota||'')+'</td>'
+    +'<td>'+(x.entregada?'<button class="btn btn-g" style="padding:2px 8px;font-size:10px" title="Volver a por entregar" onclick="deshacerEntregaPropina('+x.id+')">↩️</button> ':'')
+      +'<button class="btn btn-r" style="padding:2px 6px;font-size:10px" onclick="borrarPropina('+x.id+')">🗑️</button></td></tr>'
+  ).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">Sin propinas registradas</td></tr>';
+}
+
+function abrirModalPropina(){
+  const sel = document.getElementById('pr-conc');
+  sel.innerHTML = '<option value="">— Seleccionar lavador —</option>'
+    + conceseros.map(c=>'<option value="'+c.id+'" data-nombre="'+escHtml(c.nombre)+'">'+escHtml(c.nombre)+'</option>').join('');
+  document.getElementById('pr-valor').value = '';
+  document.getElementById('pr-fecha').value = today();
+  document.getElementById('pr-nota').value = '';
+  document.getElementById('pr-ya').checked = false;
+  document.getElementById('modal-propina').style.display = 'flex';
+}
+
+let propinaEnProceso = false;
+async function guardarPropina(){
+  if(propinaEnProceso) return;
+  const sel = document.getElementById('pr-conc');
+  const concId = parseInt(sel.value);
+  const nombre = sel.options[sel.selectedIndex]?.dataset.nombre || '';
+  const valor = parseInt(document.getElementById('pr-valor').value)||0;
+  if(!concId){ showToast('Selecciona el lavador', true); return; }
+  if(valor<=0){ showToast('Escribe el valor de la propina', true); return; }
+  const ya = document.getElementById('pr-ya').checked;
+  const btn = document.getElementById('pr-btn');
+  propinaEnProceso = true; if(btn) btn.disabled = true;
+  try{
+    await api('propinas','POST',{
+      fecha: document.getElementById('pr-fecha').value || today(),
+      concesero_id: concId, concesero_nombre: nombre, valor,
+      nota: document.getElementById('pr-nota').value.trim() || null,
+      entregada: ya, fecha_entrega: ya ? today() : null
+    });
+    cerrarModal('modal-propina');
+    showToast(ya ? '🎁 Propina registrada y entregada' : '🎁 Propina registrada — por entregar a '+nombre);
+    loadPropinas();
+  }catch(e){ showToast('Error: '+e.message, true); }
+  finally{ propinaEnProceso = false; if(btn) btn.disabled = false; }
+}
+
+async function entregarPropina(id){
+  try{ await api('propinas?id=eq.'+id,'PATCH',{entregada:true, fecha_entrega:today()}); showToast('💵 Propina entregada'); loadPropinas(); }
+  catch(e){ showToast('Error: '+e.message, true); }
+}
+async function entregarPropinasLavador(nombreEnc){
+  const nombre = decodeURIComponent(nombreEnc);
+  const total = propinasData.filter(x=>!x.entregada && x.concesero_nombre===nombre).reduce((a,x)=>a+(x.valor||0),0);
+  if(!confirm('¿Entregar $'+fmt(total)+' en efectivo a '+nombre+'? Se descuenta de la caja hoy.')) return;
+  try{ await api('propinas?entregada=eq.false&concesero_nombre=eq.'+nombreEnc,'PATCH',{entregada:true, fecha_entrega:today()}); showToast('💵 Propinas entregadas a '+nombre); loadPropinas(); }
+  catch(e){ showToast('Error: '+e.message, true); }
+}
+async function deshacerEntregaPropina(id){
+  try{ await api('propinas?id=eq.'+id,'PATCH',{entregada:false, fecha_entrega:null}); showToast('Vuelve a "por entregar"'); loadPropinas(); }
+  catch(e){ showToast('Error: '+e.message, true); }
+}
+async function borrarPropina(id){
+  if(!confirm('¿Eliminar esta propina?')) return;
+  try{ await api('propinas?id=eq.'+id,'DELETE'); showToast('Propina eliminada'); loadPropinas(); }
+  catch(e){ showToast('Error: '+e.message, true); }
 }
 
 // ── PROPINA ───────────────────────────────────────────────────────────────────
