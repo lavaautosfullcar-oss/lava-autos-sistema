@@ -1329,9 +1329,14 @@ td{padding:8px 10px;border-top:1px solid var(--border);font-size:12px;vertical-a
   <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer" onclick="togglePropina()">
       <input type="checkbox" id="chk-propina" style="width:16px;height:16px;accent-color:var(--gold)"/>
-      <span style="font-size:12px;color:var(--muted)">🎁 ¿El cliente dejó propina? (pagó más de la cuenta en QR)</span>
+      <span style="font-size:12px;color:var(--muted)">🎁 ¿El cliente deja propina para el lavador? (consigna de más)</span>
     </div>
     <div id="propina-fields" style="display:none">
+      <div class="field">
+        <label>Total que consigna/paga el cliente (opcional: calcula la propina solo)</label>
+        <input type="number" id="cobrar-pagado" placeholder="Ej: 35000" oninput="calcPropinaDesdePagado()"
+          style="background:var(--navy-d);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Segoe UI',sans-serif;outline:none;width:100%"/>
+      </div>
       <div class="field">
         <label>Valor de la propina (queda en 🎁 Propinas para entregarla en efectivo)</label>
         <input type="number" id="cobrar-propina" placeholder="0" oninput="calcPropina()"
@@ -2440,6 +2445,7 @@ async function abrirCobrar(id){
     { const cp=document.getElementById('chk-propina'); if(cp) cp.checked=false;
       const pf=document.getElementById('propina-fields'); if(pf) pf.style.display='none';
       const ci=document.getElementById('cobrar-propina'); if(ci) ci.value='';
+      const cg=document.getElementById('cobrar-pagado'); if(cg) cg.value='';
       const pr=document.getElementById('propina-resumen'); if(pr) pr.style.display='none'; }
     document.getElementById('cobrar-fecha').value=today(); // por defecto hoy; se puede cambiar
     document.getElementById('cobrar-num').textContent=o.numero_orden;
@@ -2525,7 +2531,7 @@ async function confirmarCobrar(){
         await api('propinas','POST',{fecha:fechaCobro, concesero_id:cobrarConc.id, concesero_nombre:cobrarConc.nombre||'Sin asignar',
           valor:propVal, orden_id:cobrarOrdenId, nota:'Propina de la orden #'+(document.getElementById('cobrar-num')?.textContent||''), entregada:false});
         propMsg=' · 🎁 propina $'+fmt(propVal)+' por entregar';
-      }catch(e){ showToast('La orden se cobró, pero la propina NO se guardó: falta correr el SQL de propinas en Supabase', true); }
+      }catch(e){ showToast('La orden se cobró, pero la propina NO se guardó. '+errPropinas(e), true); }
     }
     if(ordenActual){ordenActual.forma_pago=pagoFinal;imprimirTicket(ordenActual);}
     cerrarModal('modal-cobrar');
@@ -6933,6 +6939,15 @@ function renderPropinas(){
   ).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">Sin propinas registradas</td></tr>';
 }
 
+function errPropinas(e){
+  const m = String((e&&e.message)||e||'');
+  if(m.includes('42501') || m.toLowerCase().includes('row-level security'))
+    return 'Supabase está bloqueando la tabla propinas (seguridad RLS). Corre el archivo fix_rls_tablas_nuevas.sql en el SQL Editor y vuelve a intentar.';
+  if(m.includes('42P01') || m.includes('does not exist') || m.includes('404'))
+    return 'Falta crear la tabla propinas. Corre migracion_propinas.sql en Supabase.';
+  return 'Error: '+m;
+}
+
 function abrirModalPropina(){
   const sel = document.getElementById('pr-conc');
   sel.innerHTML = '<option value="">— Seleccionar lavador —</option>'
@@ -6966,13 +6981,13 @@ async function guardarPropina(){
     cerrarModal('modal-propina');
     showToast(ya ? '🎁 Propina registrada y entregada' : '🎁 Propina registrada — por entregar a '+nombre);
     loadPropinas();
-  }catch(e){ showToast('Error: '+e.message, true); }
+  }catch(e){ showToast(errPropinas(e), true); }
   finally{ propinaEnProceso = false; if(btn) btn.disabled = false; }
 }
 
 async function entregarPropina(id){
   try{ await api('propinas?id=eq.'+id,'PATCH',{entregada:true, fecha_entrega:today()}); showToast('💵 Propina entregada'); loadPropinas(); }
-  catch(e){ showToast('Error: '+e.message, true); }
+  catch(e){ showToast(errPropinas(e), true); }
 }
 async function entregarPropinasLavador(nombreEnc){
   const nombre = decodeURIComponent(nombreEnc);
@@ -7000,10 +7015,20 @@ function togglePropina(){
     if(!chk.checked){
       const inp = document.getElementById('cobrar-propina');
       if(inp) inp.value='';
+      const cgp = document.getElementById('cobrar-pagado'); if(cgp) cgp.value='';
       const res = document.getElementById('propina-resumen');
       if(res) res.style.display='none';
     }
   },10);
+}
+
+// Si el cliente dice "la lavada es de 25.000 pero consigno 35.000": propina = 35.000 − 25.000
+function calcPropinaDesdePagado(){
+  const total = parseInt((document.getElementById('cobrar-total')?.textContent||'0').replace(/[^0-9]/g,''))||0;
+  const pagado = parseInt(document.getElementById('cobrar-pagado')?.value)||0;
+  const inp = document.getElementById('cobrar-propina');
+  if(inp) inp.value = pagado>total ? (pagado-total) : '';
+  calcPropina();
 }
 
 function calcPropina(){
