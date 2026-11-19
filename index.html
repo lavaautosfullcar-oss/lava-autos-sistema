@@ -2667,8 +2667,9 @@ async function guardarEditarOrden(){
   // Client data
   const chkCli=document.getElementById('chk-edit-cliente')?.checked;
   const editEmpSel = document.getElementById('edit-ord-empresa');
-  const editEmpId = chkCli&&editEmpSel?.value?parseInt(editEmpSel.value):null;
-  const editEmpNombre = chkCli&&editEmpSel?.value?editEmpSel.options[editEmpSel.selectedIndex]?.dataset.nombre||'':'';
+  // Si se eligió una empresa, se aplica SIEMPRE (aunque la casilla no esté marcada)
+  const editEmpId = editEmpSel?.value?parseInt(editEmpSel.value):null;
+  const editEmpNombre = editEmpSel?.value?editEmpSel.options[editEmpSel.selectedIndex]?.dataset.nombre||'':'';
   const patch={placa,concesero_id:concId,concesero_nombre:concNombre,total};
   // Fechas (si se cambiaron)
   const nuevaFecha=document.getElementById('edit-ord-fecha').value;
@@ -2681,7 +2682,7 @@ async function guardarEditarOrden(){
     const fcFinal = patch.fecha_cobro || editOrdOrig.fecha_cobro;
     if(fcFinal && fcFinal < fechaFinal){ showToast('La fecha del cobro no puede ser antes de la fecha de la lavada',true); return; }
   }
-  if(chkCli){
+  if(chkCli || editEmpId){
     if(editEmpId){
       patch.empresa_id = editEmpId;
       patch.empresa_nombre = editEmpNombre;
@@ -5451,6 +5452,19 @@ async function fillEmpresasSelector(){
     sel.innerHTML = '<option value="">— Cliente particular —</option>'
       + emps.map(e=>'<option value="'+e.id+'" data-nombre="'+e.nombre+'">🏢 '+e.nombre+'</option>').join('');
   }catch(e){ console.error('Error cargando empresas:', e.message); }
+}
+
+// Al editar una orden: elegir una empresa oculta los datos de particular y marca la casilla
+function selEditEmpresaOrden(){
+  const sel = document.getElementById('edit-ord-empresa');
+  const particular = document.getElementById('edit-cli-particular');
+  const chk = document.getElementById('chk-edit-cliente');
+  if(sel?.value){
+    if(particular) particular.style.display='none';
+    if(chk) chk.checked = true;
+  } else {
+    if(particular) particular.style.display='block';
+  }
 }
 
 function selEmpresaOrden(){
